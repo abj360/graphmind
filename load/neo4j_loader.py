@@ -10,6 +10,9 @@ Contains:
     LoadConfig.from_env(): builds config from environment
     LoadStats: counters describing one load run
     TransientWriteError: retryable write failure
+    LoadError: unrecoverable load failure
+    Neo4jDriver: minimal driver protocol for testability
+    Neo4jLoader: upserts triples into Neo4j in batches
 """
 
 import logging
@@ -98,3 +101,49 @@ class LoadStats:
 
 class TransientWriteError(RuntimeError):
     """Marks a write failure that is safe to retry."""
+
+
+class LoadError(RuntimeError):
+    """Raised when a load cannot complete after retries."""
+
+
+class Neo4jDriver(Protocol):
+    """Describes the slice of the neo4j driver the loader uses."""
+
+    def execute_query(self, query: str, parameters: dict[str, Any], database: str) -> None:
+        """Executes one Cypher statement with parameters.
+
+        Args:
+            query: Cypher statement to run.
+            parameters: Query parameters, including the rows payload.
+            database: Target database name.
+        """
+        ...
+
+    def close(self) -> None:
+        """Releases driver resources."""
+        ...
+
+
+class Neo4jLoader:
+    """Upserts resolved triples into Neo4j, one statement per triple.
+
+    Attributes:
+        config: Connection configuration.
+        stats: Mutable counters for the current or last load.
+    """
+
+    def __init__(
+        self,
+        config: LoadConfig | None = None,
+        driver: Neo4jDriver | None = None,
+    ) -> None:
+        """Creates a loader, optionally with an injected driver for tests.
+
+        Args:
+            config: Connection configuration; from_env() when omitted.
+            driver: Injected driver double; a real driver is built otherwise.
+        """
+        self.config = config or LoadConfig.from_env()
+        self._driver = driver
+        self.stats = LoadStats()
