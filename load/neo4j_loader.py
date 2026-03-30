@@ -15,6 +15,8 @@ Contains:
     Neo4jLoader: upserts triples into Neo4j in batches
     Neo4jLoader.connect(): establishes the driver connection
     Neo4jLoader.close(): releases the driver
+    Neo4jLoader.__enter__/__exit__: context manager support
+    Neo4jLoader.write_triples(): upserts a triple set
 """
 
 import logging
@@ -165,3 +167,63 @@ class Neo4jLoader:
         if self._driver is not None:
             self._driver.close()
             self._driver = None
+
+    def __enter__(self) -> "Neo4jLoader":
+        """Connects on context entry.
+
+        Returns:
+            loader: The connected loader instance.
+        """
+        self.connect()
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        """Closes the driver on context exit.
+
+        Args:
+            exc_info: Exception details supplied by the runtime.
+        """
+        self.close()
+
+    def write_triples(self, triples: list[Triple]) -> LoadStats:
+        """Upserts a set of triples into Neo4j, one statement per triple.
+
+        Args:
+            triples: Resolved triples to write.
+
+        Returns:
+            stats: Counters describing the completed load.
+        """
+        started = time.monotonic()
+        self.connect()
+        for triple in triples:
+            self._run(
+                SINGLE_NODE_QUERY,
+                {
+                    "name": triple.subject.name,
+                    "entity_type": triple.subject.entity_type,
+                    "doc_id": triple.source_doc_id,
+                },
+            )
+            self._run(
+                SINGLE_NODE_QUERY,
+                {
+                    "name": triple.object.name,
+                    "entity_type": triple.object.entity_type,
+                    "doc_id": triple.source_doc_id,
+                },
+            )
+            self.stats.nodes_written += 2
+            self._run(
+                SINGLE_REL_QUERY,
+                {
+                    "subject": triple.subject.name,
+                    "object": triple.object.name,
+                    "predicate": triple.predicate,
+                    "confidence": triple.confidence,
+                    "doc_id": triple.source_doc_id,
+                },
+            )
+            self.stats.relationships_written += 1
+        self.stats.duration_seconds = time.monotonic() - started
+        return self.stats
