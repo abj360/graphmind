@@ -13,6 +13,8 @@ Contains:
     LoadError: unrecoverable load failure
     Neo4jDriver: minimal driver protocol for testability
     Neo4jLoader: upserts triples into Neo4j in batches
+    Neo4jLoader.connect(): establishes the driver connection
+    Neo4jLoader.close(): releases the driver
 """
 
 import logging
@@ -147,3 +149,19 @@ class Neo4jLoader:
         self.config = config or LoadConfig.from_env()
         self._driver = driver
         self.stats = LoadStats()
+
+    def connect(self) -> None:
+        """Establishes the Neo4j driver connection if none was injected."""
+        if self._driver is not None:
+            return
+        from neo4j import GraphDatabase  # local import: optional dependency
+
+        self._driver = GraphDatabase.driver(
+            self.config.uri, auth=(self.config.user, self.config.password)
+        )
+
+    def close(self) -> None:
+        """Releases the Neo4j driver connection."""
+        if self._driver is not None:
+            self._driver.close()
+            self._driver = None
