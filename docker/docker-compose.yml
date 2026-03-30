@@ -1,0 +1,28 @@
+services:
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+      NEO4J_server_memory_heap_max__size: 1G
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  pipeline:
+    build:
+      context: ..
+      dockerfile: docker/pipeline.Dockerfile
+    env_file: ../.env
+    volumes:
+      - corpus_data:/data/docs:ro
+      - pipeline_out:/out
+    depends_on:
+      neo4j:
+        condition: service_healthy
