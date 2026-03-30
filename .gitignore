@@ -1,0 +1,10 @@
+# Secrets — never commit real env files
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
