@@ -6,9 +6,22 @@
   "description": "Express BFF for the graphmind knowledge graph viewer",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test test/",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "neo4j-driver": "^5.20.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.3.0",
+    "prettier": "^3.2.5"
   }
 }
