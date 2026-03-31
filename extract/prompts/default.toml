@@ -1,0 +1,3 @@
+[prompts]
+domain = "general"
+few_shot_count = 2
