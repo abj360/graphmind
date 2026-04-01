@@ -4,6 +4,7 @@ ontology.py --- ontology rules and schema enforcement for extracted triples
 
 Contains:
     OntologyRule: one allowed subject-predicate-object type pattern
+    OntologyViolation: one rejected triple with its reason
 """
 
 import json
@@ -41,3 +42,16 @@ class OntologyRule:
             and triple.predicate.casefold() == self.predicate.casefold()
             and triple.object.entity_type == self.object_type
         )
+
+
+@dataclass(frozen=True)
+class OntologyViolation:
+    """Records a triple rejected by ontology enforcement.
+
+    Attributes:
+        triple: The rejected triple.
+        reason: Human-readable explanation of the rejection.
+    """
+
+    triple: Triple
+    reason: str
