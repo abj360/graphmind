@@ -5,6 +5,7 @@ relationship_inference.py --- infers bridging relationships between disconnected
 Contains:
     InferenceConfig: knobs for the bridging pass
     BridgeCandidate: one proposed cross-component relationship
+    RelationshipInferer: finds and bridges disconnected subgraphs
 """
 
 from dataclasses import dataclass
@@ -42,3 +43,19 @@ class BridgeCandidate:
     target_name: str
     predicate: str
     score: float
+
+
+class RelationshipInferer:
+    """Infers bridging relationships that connect disconnected subgraphs.
+
+    Attributes:
+        config: Inference tunables controlling bridge selection.
+    """
+
+    def __init__(self, config: InferenceConfig | None = None) -> None:
+        """Creates an inferer with the given bridging configuration.
+
+        Args:
+            config: Inference overrides; defaults applied when omitted.
+        """
+        self.config = config or InferenceConfig()
