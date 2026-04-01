@@ -1,0 +1,31 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  background: #0f1620;
+  color: #e9ecef;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #16202e;
+  border-bottom: 1px solid #223047;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
