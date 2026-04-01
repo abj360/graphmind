@@ -26,3 +26,14 @@ services:
     depends_on:
       neo4j:
         condition: service_healthy
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    env_file: ../.env
+    ports:
+      - "${API_PORT:-4000}:4000"
+    depends_on:
+      neo4j:
+        condition: service_healthy
