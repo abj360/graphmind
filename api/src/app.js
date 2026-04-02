@@ -9,6 +9,7 @@
 import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
+import { exportGraphmlRouter } from "./routes/exportGraphml.js";
 import { graphRouter } from "./routes/graph.js";
 
 /**
@@ -23,6 +24,7 @@ export function createApp(driver, config) {
   app.use(express.json());
   mountHealthEndpoint(app);
   app.use("/api", graphRouter(driver, config));
+  app.use("/api", exportGraphmlRouter(driver, config));
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
