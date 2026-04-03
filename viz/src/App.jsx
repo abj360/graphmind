@@ -10,9 +10,11 @@ import { useEffect, useState } from "react";
 
 import { fetchGraph } from "./apiClient.js";
 import GraphViewer from "./components/GraphViewer.jsx";
+import SearchBar from "./components/SearchBar.jsx";
+import { useGraphFilter } from "./hooks/useGraphFilter.js";
 
 /**
- * Composes the graph viewer shell.
+ * Composes the graph viewer with search controls.
  *
  * @returns element - Root application layout.
  */
@@ -20,6 +22,7 @@ export default function App() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { query, setQuery, filtered } = useGraphFilter(graph);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,10 +54,11 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <h1>graphmind</h1>
+        <SearchBar query={query} onChange={setQuery} />
       </header>
       <main className="app-main">
         <section className="app-canvas">
-          <GraphViewer graph={graph} />
+          <GraphViewer graph={filtered} />
         </section>
       </main>
     </div>
