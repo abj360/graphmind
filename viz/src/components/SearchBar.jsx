@@ -6,6 +6,7 @@
  *  *   SearchBar: query input with result count
  *  *   normalizeQuery(): trims and case-folds filter text
  *  *   matchesQuery(): checks a node against the filter
+ *  *   FilterToggle: checkbox row for optional filters
  */
 
 /**
@@ -57,5 +58,22 @@ export function matchesQuery(node, query) {
   }
   return (
     node.label.toLowerCase().includes(query) || node.type.toLowerCase().includes(query)
+  );
+}
+
+/**
+ * Renders a labeled checkbox row for an optional filter.
+ *
+ * @param props.label - Human-readable filter label.
+ * @param props.checked - Current toggle state.
+ * @param props.onToggle - Called with the new state.
+ * @returns element - Labeled checkbox row.
+ */
+export function FilterToggle({ label, checked, onToggle }) {
+  return (
+    <label className="filter-toggle">
+      <input type="checkbox" checked={checked} onChange={() => onToggle(!checked)} />
+      {label}
+    </label>
   );
 }
