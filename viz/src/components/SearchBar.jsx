@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   SearchBar: query input with result count
  *  *   normalizeQuery(): trims and case-folds filter text
+ *  *   matchesQuery(): checks a node against the filter
  */
 
 /**
@@ -41,4 +42,20 @@ export default function SearchBar({ query, onChange, resultCount }) {
  */
 export function normalizeQuery(query) {
   return query.trim().toLowerCase();
+}
+
+/**
+ * Checks whether a node matches the current filter text.
+ *
+ * @param node - View-graph node with label and type.
+ * @param query - Normalized filter text.
+ * @returns matches - True when the label or type contains the query.
+ */
+export function matchesQuery(node, query) {
+  if (!query) {
+    return true;
+  }
+  return (
+    node.label.toLowerCase().includes(query) || node.type.toLowerCase().includes(query)
+  );
 }
