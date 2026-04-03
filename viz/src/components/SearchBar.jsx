@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   SearchBar: query input with result count
+ *  *   normalizeQuery(): trims and case-folds filter text
  */
 
 /**
@@ -30,4 +31,14 @@ export default function SearchBar({ query, onChange, resultCount }) {
       )}
     </div>
   );
+}
+
+/**
+ * Trims and case-folds raw filter text.
+ *
+ * @param query - Raw filter text from the input.
+ * @returns normalized - Trimmed, lowercased query.
+ */
+export function normalizeQuery(query) {
+  return query.trim().toLowerCase();
 }
