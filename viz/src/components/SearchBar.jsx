@@ -8,6 +8,7 @@
  *  *   matchesQuery(): checks a node against the filter
  *  *   FilterToggle: checkbox row for optional filters
  *  *   typeAheadCandidates(): label suggestions for the query
+ *  *   ClearButton: resets the current query
  */
 
 /**
@@ -97,4 +98,22 @@ export function typeAheadCandidates(nodes, query, limit = 6) {
     .map((node) => node.label)
     .sort()
     .slice(0, limit);
+}
+
+/**
+ * Renders a button clearing the current query.
+ *
+ * @param props.visible - Whether the button renders at all.
+ * @param props.onClear - Called when the button is pressed.
+ * @returns element - Clear button, or null when hidden.
+ */
+export function ClearButton({ visible, onClear }) {
+  if (!visible) {
+    return null;
+  }
+  return (
+    <button type="button" className="search-clear" onClick={onClear} aria-label="clear filter">
+      ×
+    </button>
+  );
 }
