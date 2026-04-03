@@ -6,6 +6,7 @@ Contains:
     logger
     ChangeKind: kinds of observed source changes
     ChangeEvent: one observed source document change
+    PollerConfig: tuning for the CDC polling loop
 """
 
 import hashlib
@@ -43,3 +44,18 @@ class ChangeEvent:
     path: Path
     checksum: str
     modified_at: float
+
+
+@dataclass(frozen=True)
+class PollerConfig:
+    """Controls the CDC polling loop behavior.
+
+    Attributes:
+        interval_seconds: Delay between consecutive polls.
+        state_path: JSON file persisting the last-seen document state.
+        glob_pattern: Pattern selecting which corpus files are tracked.
+    """
+
+    interval_seconds: float = 5.0
+    state_path: Path = Path("out/cdc_state.json")
+    glob_pattern: str = "**/*.txt"
