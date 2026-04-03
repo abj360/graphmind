@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+/**
+ * SearchBar.jsx --- search and filter controls for the graph viewer
+ *  *
+ *  * Contains:
+ *  *   SearchBar: query input with result count
+ */
+
+/**
+ * Renders the search input filtering the visible graph.
+ *
+ * @param props.query - Current filter text.
+ * @param props.onChange - Called with the new filter text on every edit.
+ * @param props.resultCount - Optional count of visible nodes to display.
+ * @returns element - Search control row.
+ */
+export default function SearchBar({ query, onChange, resultCount }) {
+  return (
+    <div className="search-bar">
+      <input
+        type="search"
+        className="search-input"
+        placeholder="filter entities…"
+        value={query}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label="filter entities"
+      />
+      {typeof resultCount === "number" && (
+        <span className="search-count">{resultCount} shown</span>
+      )}
+    </div>
+  );
+}
