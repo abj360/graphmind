@@ -7,6 +7,7 @@
  *  *   normalizeQuery(): trims and case-folds filter text
  *  *   matchesQuery(): checks a node against the filter
  *  *   FilterToggle: checkbox row for optional filters
+ *  *   typeAheadCandidates(): label suggestions for the query
  */
 
 /**
@@ -76,4 +77,24 @@ export function FilterToggle({ label, checked, onToggle }) {
       {label}
     </label>
   );
+}
+
+/**
+ * Computes type-ahead label suggestions for the current query.
+ *
+ * @param nodes - Visible node list to suggest from.
+ * @param query - Raw query text.
+ * @param limit - Maximum suggestions returned.
+ * @returns suggestions - Matching labels, alphabetically sorted.
+ */
+export function typeAheadCandidates(nodes, query, limit = 6) {
+  const normalized = normalizeQuery(query);
+  if (!normalized) {
+    return [];
+  }
+  return nodes
+    .filter((node) => matchesQuery(node, normalized))
+    .map((node) => node.label)
+    .sort()
+    .slice(0, limit);
 }
