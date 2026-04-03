@@ -5,6 +5,7 @@ cdc_poller.py --- change-data-capture polling for incremental corpus ingestion
 Contains:
     logger
     ChangeKind: kinds of observed source changes
+    ChangeEvent: one observed source document change
 """
 
 import hashlib
@@ -23,3 +24,22 @@ class ChangeKind:
 
     UPSERT = "upsert"
     DELETE = "delete"
+
+
+@dataclass(frozen=True)
+class ChangeEvent:
+    """Represents one observed change in the source corpus.
+
+    Attributes:
+        doc_id: Stable document identifier derived from its path.
+        kind: ChangeKind value, upsert or delete.
+        path: Filesystem path of the changed document.
+        checksum: Content hash used to detect modifications.
+        modified_at: Modification timestamp reported by the filesystem.
+    """
+
+    doc_id: str
+    kind: str
+    path: Path
+    checksum: str
+    modified_at: float
