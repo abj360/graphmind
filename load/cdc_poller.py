@@ -4,6 +4,7 @@ cdc_poller.py --- change-data-capture polling for incremental corpus ingestion
 
 Contains:
     logger
+    ChangeKind: kinds of observed source changes
 """
 
 import hashlib
@@ -15,3 +16,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+class ChangeKind:
+    """Enumerates the kinds of source document changes."""
+
+    UPSERT = "upsert"
+    DELETE = "delete"
