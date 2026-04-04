@@ -34,3 +34,22 @@ Route a query to the graph when **all** of the following hold:
 Do not route single-entity lookup questions — retrieval-core's primary
 path already wins those. The graph path is a *complement*, never a
 replacement.
+
+## Architecture: how the two systems connect
+
+```
+query ──► retrieval-core ──► entity linker ──► graphmind Neo4j
+                │                                  │
+                │◄── grounded passages ◄── edge provenance
+                ▼
+           fused answer
+```
+
+- retrieval-core owns the user-facing query interface.
+- A lightweight entity linker (retrieval-core side) maps query mentions
+  to candidate canonical entity names.
+- graphmind's Neo4j is queried read-only with those names as anchors.
+- Returned edges carry `source_doc_id`, which retrieval-core resolves
+  back into passages through its own document store.
+
+graphmind never calls retrieval-core; the dependency is one-directional.
