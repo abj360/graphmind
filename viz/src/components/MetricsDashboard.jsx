@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   MetricsDashboard: dedup metrics panel
  *  *   DuplicateExamples: lists sample duplicate clusters
+ *  *   formatConfidence(): renders mean confidence for display
  */
 
 import { useEffect, useState } from "react";
@@ -83,4 +84,17 @@ function DuplicateExamples({ examples }) {
       ))}
     </ul>
   );
+}
+
+/**
+ * Formats a mean confidence score for compact display.
+ *
+ * @param value - Mean confidence between 0 and 1, possibly null.
+ * @returns text - Two-decimal rendering, or an em dash when absent.
+ */
+export function formatConfidence(value) {
+  if (typeof value !== "number") {
+    return "—";
+  }
+  return value.toFixed(2);
 }
