@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   MetricsDashboard: dedup metrics panel
+ *  *   DuplicateExamples: lists sample duplicate clusters
  */
 
 import { useEffect, useState } from "react";
@@ -60,5 +61,26 @@ export default function MetricsDashboard() {
       </dl>
       <DuplicateExamples examples={metrics.duplicates.examples} />
     </div>
+  );
+}
+
+/**
+ * Lists a few duplicate-name clusters for reviewer attention.
+ *
+ * @param props.examples - Duplicate cluster examples from the payload.
+ * @returns element - Compact list of variant groups.
+ */
+function DuplicateExamples({ examples }) {
+  if (!examples || examples.length === 0) {
+    return <p className="metrics-note">no duplicate-name clusters</p>;
+  }
+  return (
+    <ul className="metrics-duplicates">
+      {examples.map((cluster) => (
+        <li key={cluster.folded}>
+          {cluster.variants.join(" / ")}
+        </li>
+      ))}
+    </ul>
   );
 }
