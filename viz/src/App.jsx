@@ -10,11 +10,12 @@ import { useEffect, useState } from "react";
 
 import { fetchGraph } from "./apiClient.js";
 import GraphViewer from "./components/GraphViewer.jsx";
+import MetricsDashboard from "./components/MetricsDashboard.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import { useGraphFilter } from "./hooks/useGraphFilter.js";
 
 /**
- * Composes the graph viewer with search controls.
+ * Composes the graph viewer with search and the metrics dashboard.
  *
  * @returns element - Root application layout.
  */
@@ -60,6 +61,9 @@ export default function App() {
         <section className="app-canvas">
           <GraphViewer graph={filtered} />
         </section>
+        <aside className="app-sidebar">
+          <MetricsDashboard />
+        </aside>
       </main>
     </div>
   );
