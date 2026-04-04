@@ -53,3 +53,24 @@ query ──► retrieval-core ──► entity linker ──► graphmind Neo4j
   back into passages through its own document store.
 
 graphmind never calls retrieval-core; the dependency is one-directional.
+
+## The anchor query: one-hop expansion
+
+The workhorse query expands one hop around an anchored entity:
+
+```cypher
+MATCH (a:Entity {name: $name})-[r:RELATED]-(b:Entity)
+RETURN a.name AS anchor, r.predicate AS predicate, b.name AS neighbor,
+       r.confidence AS confidence, r.source_doc_id AS doc_id
+ORDER BY r.confidence DESC
+LIMIT $limit
+```
+
+Notes:
+
+- The relationship pattern is undirected here (`-[r:RELATED]-`): the
+  question "what involves X" does not care about edge direction.
+- Results are ordered by confidence so a noisy long tail never drowns
+  the strong edges.
+- `$limit` is a parameter, never string-interpolated — same rule as
+  everywhere else: no query text built by concatenating user input.
