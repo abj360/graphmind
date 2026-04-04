@@ -20,3 +20,17 @@ knowledge graph exists precisely for the second shape:
   `source_doc_id`, and `inferred`).
 - Every edge traces back to the document it came from, so a graph answer
   can always be grounded back into retrieval-core's document space.
+
+## When the graph path should answer
+
+Route a query to the graph when **all** of the following hold:
+
+1. The question mentions two or more recognizable entities, or asks for
+   a relationship ("who founded X", "what does Y depend on").
+2. Recall matters more than latency: graph expansion costs a round trip
+   to Neo4j that BM25 does not need.
+3. The entities plausibly exist in the corpus the graph was built from.
+
+Do not route single-entity lookup questions — retrieval-core's primary
+path already wins those. The graph path is a *complement*, never a
+replacement.
