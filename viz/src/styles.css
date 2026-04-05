@@ -94,3 +94,11 @@ body {
   color: #9fb0c7;
   white-space: nowrap;
 }
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #c9d4e3;
+}
