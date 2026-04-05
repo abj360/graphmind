@@ -29,3 +29,76 @@ body {
   font-size: 18px;
   letter-spacing: 0.04em;
 }
+
+.app-main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-canvas {
+  position: relative;
+  min-width: 0;
+}
+
+.app-sidebar {
+  overflow-y: auto;
+  border-left: 1px solid #223047;
+  background: #131c29;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.graph-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.app-status {
+  padding: 48px;
+  text-align: center;
+  color: #9fb0c7;
+}
+
+.app-error {
+  color: #ef476f;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: inherit;
+}
+
+.search-input:focus {
+  outline: 2px solid #457b9d;
+  outline-offset: 1px;
+}
+
+.search-count {
+  font-size: 12px;
+  color: #9fb0c7;
+  white-space: nowrap;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #c9d4e3;
+}
