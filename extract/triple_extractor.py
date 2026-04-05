@@ -14,6 +14,7 @@ Contains:
     TripleExtractor._extract_json_array(): pulls the JSON array out
     TripleExtractor._coerce_item(): validates one raw triple dict
     TripleExtractor.extract_text(): extracts triples from one document
+    TripleExtractor.describe_config(): human-readable config summary
 """
 
 import json
@@ -190,3 +191,15 @@ class TripleExtractor:
         triples = self._parse_response(raw, doc_id)
         self.stats.triples_extracted += len(triples)
         return triples
+
+    def describe_config(self) -> str:
+        """Builds a one-line summary of the active extraction configuration.
+
+        Returns:
+            summary: Human-readable description of model and thresholds.
+        """
+        return (
+            f"model={self.config.model} batch_size={self.config.batch_size} "
+            f"min_confidence={self.config.min_confidence} "
+            f"require_span={self.config.require_source_span}"
+        )
