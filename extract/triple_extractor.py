@@ -175,6 +175,8 @@ class TripleExtractor:
             triple: Validated triple, or None when validation fails.
         """
         try:
+            if "confidence" in item:
+                item = {**item, "confidence": clamp_confidence(float(item["confidence"]))}
             return validate_triple(item, doc_id)
         except (ValueError, TypeError, KeyError) as exc:
             logger.info("dropping invalid triple payload: %s", exc)
