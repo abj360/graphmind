@@ -36,11 +36,13 @@ class ExtractionConfig:
         model: Provider model identifier used for completions.
         max_retries: Attempts per prompt before giving up.
         request_timeout_seconds: Per-call timeout budget.
+        min_confidence: Triples scoring below this are dropped.
     """
 
     model: str = DEFAULT_MODEL
     max_retries: int = 2
     request_timeout_seconds: float = 30.0
+    min_confidence: float = 0.0
 
 
 @dataclass
