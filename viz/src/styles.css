@@ -56,3 +56,13 @@ body {
   position: absolute;
   inset: 0;
 }
+
+.app-status {
+  padding: 48px;
+  text-align: center;
+  color: #9fb0c7;
+}
+
+.app-error {
+  color: #ef476f;
+}
