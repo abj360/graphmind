@@ -53,11 +53,13 @@ class ExtractionStats:
         calls_made: Number of LLM completions requested.
         triples_extracted: Number of triples kept after all filtering.
         retries: Number of retry attempts after transient failures.
+        dropped_low_confidence: Triples discarded by the confidence floor.
     """
 
     calls_made: int = 0
     triples_extracted: int = 0
     retries: int = 0
+    dropped_low_confidence: int = 0
 
 
 class ExtractionError(RuntimeError):
