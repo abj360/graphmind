@@ -66,3 +66,31 @@ body {
 .app-error {
   color: #ef476f;
 }
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: inherit;
+}
+
+.search-input:focus {
+  outline: 2px solid #457b9d;
+  outline-offset: 1px;
+}
+
+.search-count {
+  font-size: 12px;
+  color: #9fb0c7;
+  white-space: nowrap;
+}
