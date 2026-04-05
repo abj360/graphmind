@@ -29,3 +29,25 @@ body {
   font-size: 18px;
   letter-spacing: 0.04em;
 }
+
+.app-main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-canvas {
+  position: relative;
+  min-width: 0;
+}
+
+.app-sidebar {
+  overflow-y: auto;
+  border-left: 1px solid #223047;
+  background: #131c29;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
