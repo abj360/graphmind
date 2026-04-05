@@ -14,6 +14,7 @@ Contains:
     TripleExtractor._extract_json_array(): pulls the JSON array out
     TripleExtractor._coerce_item(): validates one raw triple dict
     TripleExtractor.extract_text(): extracts triples from one document
+    TripleExtractor.describe_config(): human-readable config summary
 """
 
 import json
@@ -35,11 +36,13 @@ class ExtractionConfig:
         model: Provider model identifier used for completions.
         max_retries: Attempts per prompt before giving up.
         request_timeout_seconds: Per-call timeout budget.
+        min_confidence: Triples scoring below this are dropped.
     """
 
     model: str = DEFAULT_MODEL
     max_retries: int = 2
     request_timeout_seconds: float = 30.0
+    min_confidence: float = 0.0
 
 
 @dataclass
@@ -50,11 +53,13 @@ class ExtractionStats:
         calls_made: Number of LLM completions requested.
         triples_extracted: Number of triples kept after all filtering.
         retries: Number of retry attempts after transient failures.
+        dropped_low_confidence: Triples discarded by the confidence floor.
     """
 
     calls_made: int = 0
     triples_extracted: int = 0
     retries: int = 0
+    dropped_low_confidence: int = 0
 
 
 class ExtractionError(RuntimeError):
@@ -170,6 +175,8 @@ class TripleExtractor:
             triple: Validated triple, or None when validation fails.
         """
         try:
+            if "confidence" in item:
+                item = {**item, "confidence": clamp_confidence(float(item["confidence"]))}
             return validate_triple(item, doc_id)
         except (ValueError, TypeError, KeyError) as exc:
             logger.info("dropping invalid triple payload: %s", exc)
@@ -190,3 +197,15 @@ class TripleExtractor:
         triples = self._parse_response(raw, doc_id)
         self.stats.triples_extracted += len(triples)
         return triples
+
+    def describe_config(self) -> str:
+        """Builds a one-line summary of the active extraction configuration.
+
+        Returns:
+            summary: Human-readable description of model and thresholds.
+        """
+        return (
+            f"model={self.config.model} batch_size={self.config.batch_size} "
+            f"min_confidence={self.config.min_confidence} "
+            f"require_span={self.config.require_source_span}"
+        )
