@@ -16,6 +16,7 @@ Contains:
     TripleExtractor.extract_text(): extracts triples from one document
     TripleExtractor.describe_config(): human-readable config summary
     TripleExtractor.extract_batch(): extracts from many texts at once
+    TripleExtractor._batch_documents(): groups documents under batch size
 """
 
 import json
@@ -228,3 +229,15 @@ class TripleExtractor:
                 triples.extend(self._parse_response(segment, doc_id))
         self.stats.triples_extracted += len(triples)
         return triples
+
+    def _batch_documents(self, documents: list[tuple[str, str]]) -> list[list[tuple[str, str]]]:
+        """Groups documents into batches of at most config.batch_size.
+
+        Args:
+            documents: (doc_id, text) pairs to group, in order.
+
+        Returns:
+            batches: Ordered document groups ready for batched prompting.
+        """
+        size = max(1, self.config.batch_size)
+        return [documents[i : i + size] for i in range(0, len(documents), size)]
