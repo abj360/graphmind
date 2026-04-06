@@ -38,12 +38,16 @@ class ExtractionConfig:
         model: Provider model identifier used for completions.
         max_retries: Attempts per prompt before giving up.
         request_timeout_seconds: Per-call timeout budget.
+        batch_size: Maximum chunks sent per batched request.
+        batch_token_budget: Approximate token ceiling per batched prompt.
         min_confidence: Triples scoring below this are dropped.
     """
 
     model: str = DEFAULT_MODEL
     max_retries: int = 2
     request_timeout_seconds: float = 30.0
+    batch_size: int = 8
+    batch_token_budget: int = 6_000
     min_confidence: float = 0.0
 
 
