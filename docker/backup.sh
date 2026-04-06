@@ -24,3 +24,16 @@ require_tools() {
         command -v "$tool" >/dev/null 2>&1 || fail "missing required tool: $tool"
     done
 }
+
+wait_for_neo4j() {
+    log "waiting for neo4j at ${NEO4J_HOST}:7687"
+    for attempt in $(seq 1 30); do
+        if cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+            "RETURN 1" >/dev/null 2>&1; then
+            log "neo4j is reachable"
+            return 0
+        fi
+        sleep 2
+    done
+    fail "neo4j did not become reachable in time"
+}
