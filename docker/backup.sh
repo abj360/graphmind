@@ -18,3 +18,9 @@ fail() {
     log "ERROR: $1" >&2
     exit 1
 }
+
+require_tools() {
+    for tool in cypher-shell tar; do
+        command -v "$tool" >/dev/null 2>&1 || fail "missing required tool: $tool"
+    done
+}
