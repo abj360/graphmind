@@ -13,3 +13,8 @@ ARCHIVE="${BACKUP_DIR}/neo4j-${TIMESTAMP}.tar.gz"
 log() {
     printf '[backup %s] %s\n' "$(date +%H:%M:%S)" "$1"
 }
+
+fail() {
+    log "ERROR: $1" >&2
+    exit 1
+}
