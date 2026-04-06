@@ -15,6 +15,7 @@ Contains:
     TripleExtractor._coerce_item(): validates one raw triple dict
     TripleExtractor.extract_text(): extracts triples from one document
     TripleExtractor.describe_config(): human-readable config summary
+    TripleExtractor.extract_batch(): extracts from many texts at once
 """
 
 import json
@@ -209,3 +210,21 @@ class TripleExtractor:
             f"min_confidence={self.config.min_confidence} "
             f"require_span={self.config.require_source_span}"
         )
+
+    def extract_batch(self, documents: list[tuple[str, str]]) -> list[Triple]:
+        """Extracts triples from many documents using batched completions.
+
+        Args:
+            documents: (doc_id, text) pairs to extract from.
+
+        Returns:
+            triples: All triples from all documents, in input order.
+        """
+        triples: list[Triple] = []
+        for batch in self._batch_documents(documents):
+            batch_prompt = self._render_batch_prompt(batch)
+            raw = self._complete_with_retry(batch_prompt)
+            for doc_id, segment in self._split_batch_response(raw, batch):
+                triples.extend(self._parse_response(segment, doc_id))
+        self.stats.triples_extracted += len(triples)
+        return triples
