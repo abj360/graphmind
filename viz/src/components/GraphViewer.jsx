@@ -37,9 +37,10 @@ export function toElements(graph) {
  * Renders the knowledge graph on a Cytoscape canvas.
  *
  * @param props.graph - { nodes, edges } payload to render.
+ * @param props.onSelectNode - Callback fired with the tapped node's data.
  * @returns element - Canvas container element.
  */
-export default function GraphViewer({ graph }) {
+export default function GraphViewer({ graph, onSelectNode }) {
   const containerRef = useRef(null);
   const cyRef = useRef(null);
 
@@ -59,9 +60,17 @@ export default function GraphViewer({ graph }) {
         },
       ],
     });
+    if (onSelectNode) {
+      cy.on("tap", "node", (event) => onSelectNode(event.target.data()));
+      cy.on("tap", (event) => {
+        if (event.target === cy) {
+          onSelectNode(null);
+        }
+      });
+    }
     cyRef.current = cy;
     return () => cy.destroy();
-  }, [graph]);
+  }, [graph, onSelectNode]);
 
   return <div ref={containerRef} className="graph-canvas" />;
 }
