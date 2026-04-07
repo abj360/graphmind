@@ -6,17 +6,18 @@
  *  *   App: composition root of the viewer
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { fetchGraph } from "./apiClient.js";
 import GraphLegend from "./components/GraphLegend.jsx";
 import GraphViewer from "./components/GraphViewer.jsx";
 import MetricsDashboard from "./components/MetricsDashboard.jsx";
+import NodeDetailPanel from "./components/NodeDetailPanel.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import { useGraphFilter } from "./hooks/useGraphFilter.js";
 
 /**
- * Composes the graph viewer with search, legend, and metrics.
+ * Composes the graph viewer with search, legend, metrics, and detail panel.
  *
  * @returns element - Root application layout.
  */
@@ -24,6 +25,7 @@ export default function App() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedNode, setSelectedNode] = useState(null);
   const { query, setQuery, filtered } = useGraphFilter(graph);
 
   useEffect(() => {
@@ -46,6 +48,9 @@ export default function App() {
     };
   }, []);
 
+  const handleSelect = useCallback((node) => setSelectedNode(node), []);
+  const handleClosePanel = useCallback(() => setSelectedNode(null), []);
+
   if (error) {
     return <div className="app-status app-error">failed to load graph: {error}</div>;
   }
@@ -60,11 +65,12 @@ export default function App() {
       </header>
       <main className="app-main">
         <section className="app-canvas">
-          <GraphViewer graph={filtered} />
+          <GraphViewer graph={filtered} onSelectNode={handleSelect} />
           <GraphLegend nodes={graph.nodes} />
         </section>
         <aside className="app-sidebar">
           <MetricsDashboard />
+          <NodeDetailPanel node={selectedNode} edges={graph.edges} onClose={handleClosePanel} />
         </aside>
       </main>
     </div>
