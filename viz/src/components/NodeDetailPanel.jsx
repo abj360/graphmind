@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   NodeDetailPanel: selected-node detail view
+ *  *   IncidentEdge: one relationship row in the panel
  */
 
 /**
@@ -35,5 +36,27 @@ export default function NodeDetailPanel({ node, edges, onClose }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+/**
+ * Renders one incident relationship row relative to the focused node.
+ *
+ * @param props.edge - Edge incident to the focused node.
+ * @param props.focus - Id of the focused node, orienting the row.
+ * @returns element - Relationship list item.
+ */
+function IncidentEdge({ edge, focus }) {
+  const outgoing = edge.source === focus;
+  const other = outgoing ? edge.target : edge.source;
+  return (
+    <li className="detail-edge">
+      <span className="detail-direction">{outgoing ? "→" : "←"}</span>
+      <span className="detail-predicate">{edge.predicate}</span>
+      <span className="detail-other">{other}</span>
+      {typeof edge.confidence === "number" && (
+        <span className="detail-confidence">{edge.confidence.toFixed(2)}</span>
+      )}
+    </li>
   );
 }
