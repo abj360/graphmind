@@ -25,6 +25,10 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from extract.llm_client import LLMClient
+from extract.prompts.templates import build_extraction_prompt
+from extract.schema import Triple, clamp_confidence, validate_triple
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "gpt-4o-mini"
@@ -101,12 +105,7 @@ class TripleExtractor:
         Returns:
             prompt: Fully rendered prompt string.
         """
-        return (
-            "Extract subject-predicate-object triples from the text below. "
-            "Return a JSON array of objects with subject, predicate, and object "
-            "keys, each having name and entity_type.\n\n"
-            f"Text:\n{text}"
-        )
+        return build_extraction_prompt(text)
 
     def _complete_with_retry(self, prompt: str) -> str:
         """Requests a completion, retrying transient failures with backoff.
