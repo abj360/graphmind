@@ -17,6 +17,8 @@ Contains:
     Neo4jLoader.close(): releases the driver
     Neo4jLoader.__enter__/__exit__: context manager support
     Neo4jLoader.write_triples(): upserts a triple set
+    Neo4jLoader._run(): executes one Cypher statement
+    Neo4jLoader._write_batch(): writes one row batch with retries
 """
 
 import logging
@@ -209,3 +211,36 @@ class Neo4jLoader:
             self._write_batch(UPSERT_RELS_QUERY, rel_rows, is_node_batch=False)
         self.stats.duration_seconds = time.monotonic() - started
         return self.stats
+
+    def _run(self, query: str, parameters: dict[str, Any]) -> None:
+        """Executes one Cypher statement through the active driver.
+
+        Args:
+            query: Cypher statement to run.
+            parameters: Query parameters for the statement.
+        """
+        if self._driver is None:
+            raise LoadError("loader is not connected")
+        self._driver.execute_query(query, parameters, database=self.config.database)
+
+    def _write_batch(self, query: str, rows: list[dict[str, Any]], is_node_batch: bool) -> None:
+        """Writes one batch of rows, retrying transient driver failures.
+
+        Args:
+            query: Cypher upsert statement to execute.
+            rows: Row payloads for the UNWIND parameter.
+            is_node_batch: Whether the batch carries node or relationship rows.
+        """
+        last_error: Exception | None = None
+        for attempt in range(self.config.max_retries + 1):
+            try:
+                self._run(query, {"rows": rows})
+                self._record_batch(rows, is_node_batch)
+                return
+            except TransientWriteError as exc:
+                last_error = exc
+                self.stats.retries += 1
+                backoff = 0.25 * (attempt + 1)
+                logger.warning("batch write failed, retrying in %.2fs: %s", backoff, exc)
+                time.sleep(backoff)
+        raise LoadError(f"batch write failed after retries: {last_error}")
