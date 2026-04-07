@@ -8,6 +8,7 @@ Contains:
     sentence_spans(): locates sentence boundaries in raw text
     TextChunker: converts documents into extraction-ready chunks
     TextChunker.chunk(): splits one document into chunks
+    TextChunker._pack_sentences(): groups sentences under the size ceiling
 """
 
 from dataclasses import dataclass
@@ -100,3 +101,31 @@ class TextChunker:
         sentences = sentence_spans(text)
         windows = self._pack_sentences(sentences, len(text))
         return self._with_overlap(doc_id, text, windows)
+
+    def _pack_sentences(
+        self, sentences: list[tuple[int, int]], text_length: int
+    ) -> list[tuple[int, int]]:
+        """Groups consecutive sentences into windows under max_chars.
+
+        Args:
+            sentences: Sentence spans to group, in document order.
+            text_length: Total character length of the source document.
+
+        Returns:
+            windows: (start, end) spans, each at most max_chars wide.
+        """
+        windows: list[tuple[int, int]] = []
+        window_start: int | None = None
+        window_end = 0
+        for span_start, span_end in sentences:
+            if window_start is None:
+                window_start, window_end = span_start, span_end
+                continue
+            if span_end - window_start > self.config.max_chars:
+                windows.append((window_start, window_end))
+                window_start, window_end = span_start, span_end
+            else:
+                window_end = span_end
+        if window_start is not None:
+            windows.append((window_start, min(window_end, text_length)))
+        return windows
