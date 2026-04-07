@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   NodeDetailPanel: selected-node detail view
  *  *   IncidentEdge: one relationship row in the panel
+ *  *   confidenceBadge(): color hint for a confidence score
  */
 
 /**
@@ -59,4 +60,20 @@ function IncidentEdge({ edge, focus }) {
       )}
     </li>
   );
+}
+
+/**
+ * Picks a CSS class hinting at a confidence score's strength.
+ *
+ * @param confidence - Score between 0 and 1.
+ * @returns className - Badge class name for the score bucket.
+ */
+export function confidenceBadge(confidence) {
+  if (confidence >= 0.8) {
+    return "badge-high";
+  }
+  if (confidence >= 0.5) {
+    return "badge-mid";
+  }
+  return "badge-low";
 }
