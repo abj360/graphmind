@@ -17,30 +17,36 @@ Contains:
     Neo4jLoader.close(): releases the driver
     Neo4jLoader.__enter__/__exit__: context manager support
     Neo4jLoader.write_triples(): upserts a triple set
+    Neo4jLoader._run(): executes one Cypher statement
+    Neo4jLoader._write_batch(): writes one row batch with retries
 """
 
 import logging
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, ClassVar, Protocol
 
 from extract.schema import Triple
+from load.batch_writer import BatchWriter
 
 logger = logging.getLogger(__name__)
 
-SINGLE_NODE_QUERY = """
-MERGE (n:Entity {name: $name})
-SET n.entity_type = $entity_type,
-    n.last_seen_doc = $doc_id
+UPSERT_NODES_QUERY = """
+UNWIND $rows AS row
+MERGE (n:Entity {name: row.name})
+SET n.entity_type = row.entity_type,
+    n.last_seen_doc = row.doc_id
 """.strip()
 
-SINGLE_REL_QUERY = """
-MATCH (s:Entity {name: $subject})
-MATCH (o:Entity {name: $object})
-MERGE (s)-[r:RELATED {predicate: $predicate}]->(o)
-SET r.confidence = $confidence,
-    r.source_doc_id = $doc_id
+UPSERT_RELS_QUERY = """
+UNWIND $rows AS row
+MATCH (s:Entity {name: row.subject})
+MATCH (o:Entity {name: row.object})
+MERGE (s)-[r:RELATED {predicate: row.predicate}]->(o)
+SET r.confidence = row.confidence,
+    r.source_doc_id = row.doc_id,
+    r.inferred = row.inferred
 """.strip()
 
 
@@ -130,10 +136,11 @@ class Neo4jDriver(Protocol):
 
 
 class Neo4jLoader:
-    """Upserts resolved triples into Neo4j, one statement per triple.
+    """Upserts resolved triples into Neo4j using batched UNWIND writes.
 
     Attributes:
-        config: Connection configuration.
+        config: Connection and batching configuration.
+        batch_writer: Helper converting triples into row batches.
         stats: Mutable counters for the current or last load.
     """
 
@@ -150,6 +157,7 @@ class Neo4jLoader:
         """
         self.config = config or LoadConfig.from_env()
         self._driver = driver
+        self.batch_writer = BatchWriter(batch_size=self.config.batch_size)
         self.stats = LoadStats()
 
     def connect(self) -> None:
@@ -186,7 +194,7 @@ class Neo4jLoader:
         self.close()
 
     def write_triples(self, triples: list[Triple]) -> LoadStats:
-        """Upserts a set of triples into Neo4j, one statement per triple.
+        """Upserts a set of triples into Neo4j in batches.
 
         Args:
             triples: Resolved triples to write.
@@ -196,34 +204,43 @@ class Neo4jLoader:
         """
         started = time.monotonic()
         self.connect()
-        for triple in triples:
-            self._run(
-                SINGLE_NODE_QUERY,
-                {
-                    "name": triple.subject.name,
-                    "entity_type": triple.subject.entity_type,
-                    "doc_id": triple.source_doc_id,
-                },
-            )
-            self._run(
-                SINGLE_NODE_QUERY,
-                {
-                    "name": triple.object.name,
-                    "entity_type": triple.object.entity_type,
-                    "doc_id": triple.source_doc_id,
-                },
-            )
-            self.stats.nodes_written += 2
-            self._run(
-                SINGLE_REL_QUERY,
-                {
-                    "subject": triple.subject.name,
-                    "object": triple.object.name,
-                    "predicate": triple.predicate,
-                    "confidence": triple.confidence,
-                    "doc_id": triple.source_doc_id,
-                },
-            )
-            self.stats.relationships_written += 1
+        self.ensure_constraints()
+        for node_rows in self.batch_writer.node_batches(triples):
+            self._write_batch(UPSERT_NODES_QUERY, node_rows, is_node_batch=True)
+        for rel_rows in self.batch_writer.relationship_batches(triples):
+            self._write_batch(UPSERT_RELS_QUERY, rel_rows, is_node_batch=False)
         self.stats.duration_seconds = time.monotonic() - started
         return self.stats
+
+    def _run(self, query: str, parameters: dict[str, Any]) -> None:
+        """Executes one Cypher statement through the active driver.
+
+        Args:
+            query: Cypher statement to run.
+            parameters: Query parameters for the statement.
+        """
+        if self._driver is None:
+            raise LoadError("loader is not connected")
+        self._driver.execute_query(query, parameters, database=self.config.database)
+
+    def _write_batch(self, query: str, rows: list[dict[str, Any]], is_node_batch: bool) -> None:
+        """Writes one batch of rows, retrying transient driver failures.
+
+        Args:
+            query: Cypher upsert statement to execute.
+            rows: Row payloads for the UNWIND parameter.
+            is_node_batch: Whether the batch carries node or relationship rows.
+        """
+        last_error: Exception | None = None
+        for attempt in range(self.config.max_retries + 1):
+            try:
+                self._run(query, {"rows": rows})
+                self._record_batch(rows, is_node_batch)
+                return
+            except TransientWriteError as exc:
+                last_error = exc
+                self.stats.retries += 1
+                backoff = 0.25 * (attempt + 1)
+                logger.warning("batch write failed, retrying in %.2fs: %s", backoff, exc)
+                time.sleep(backoff)
+        raise LoadError(f"batch write failed after retries: {last_error}")
