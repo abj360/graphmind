@@ -30,18 +30,21 @@ from load.batch_writer import BatchWriter
 
 logger = logging.getLogger(__name__)
 
-SINGLE_NODE_QUERY = """
-MERGE (n:Entity {name: $name})
-SET n.entity_type = $entity_type,
-    n.last_seen_doc = $doc_id
+UPSERT_NODES_QUERY = """
+UNWIND $rows AS row
+MERGE (n:Entity {name: row.name})
+SET n.entity_type = row.entity_type,
+    n.last_seen_doc = row.doc_id
 """.strip()
 
-SINGLE_REL_QUERY = """
-MATCH (s:Entity {name: $subject})
-MATCH (o:Entity {name: $object})
-MERGE (s)-[r:RELATED {predicate: $predicate}]->(o)
-SET r.confidence = $confidence,
-    r.source_doc_id = $doc_id
+UPSERT_RELS_QUERY = """
+UNWIND $rows AS row
+MATCH (s:Entity {name: row.subject})
+MATCH (o:Entity {name: row.object})
+MERGE (s)-[r:RELATED {predicate: row.predicate}]->(o)
+SET r.confidence = row.confidence,
+    r.source_doc_id = row.doc_id,
+    r.inferred = row.inferred
 """.strip()
 
 
