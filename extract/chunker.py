@@ -7,6 +7,7 @@ Contains:
     TextChunk: one immutable slice of a source document
     sentence_spans(): locates sentence boundaries in raw text
     TextChunker: converts documents into extraction-ready chunks
+    TextChunker.chunk(): splits one document into chunks
 """
 
 from dataclasses import dataclass
@@ -83,3 +84,19 @@ class TextChunker:
             config: Sizing overrides; defaults to ChunkConfig() when omitted.
         """
         self.config = config or ChunkConfig()
+
+    def chunk(self, doc_id: str, text: str) -> list[TextChunk]:
+        """Splits one document into a list of TextChunks.
+
+        Args:
+            doc_id: Identifier stamped onto every produced chunk.
+            text: Full source text of the document.
+
+        Returns:
+            chunks: Sentence-aligned chunks covering the whole document.
+        """
+        if not text.strip():
+            return []
+        sentences = sentence_spans(text)
+        windows = self._pack_sentences(sentences, len(text))
+        return self._with_overlap(doc_id, text, windows)
