@@ -6,6 +6,7 @@ Contains:
     ChunkConfig: sizing knobs for the chunking pass
     TextChunk: one immutable slice of a source document
     sentence_spans(): locates sentence boundaries in raw text
+    TextChunker: converts documents into extraction-ready chunks
 """
 
 from dataclasses import dataclass
@@ -66,3 +67,19 @@ def sentence_spans(text: str) -> list[tuple[int, int]]:
     if start < len(text):
         spans.append((start, len(text)))
     return spans
+
+
+class TextChunker:
+    """Splits documents into overlapping, sentence-aware chunks.
+
+    Attributes:
+        config: Sizing knobs governing chunk length and overlap.
+    """
+
+    def __init__(self, config: ChunkConfig | None = None) -> None:
+        """Creates a chunker with the given sizing configuration.
+
+        Args:
+            config: Sizing overrides; defaults to ChunkConfig() when omitted.
+        """
+        self.config = config or ChunkConfig()
