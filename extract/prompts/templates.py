@@ -6,6 +6,7 @@ Contains:
     SYSTEM_PROMPT: base instruction framing the extraction task
     EXTRACTION_RULES: hard output rules every prompt repeats
     format_rules(): renders the rule list as a numbered block
+    build_extraction_prompt(): assembles the full prompt
 """
 
 from typing import TYPE_CHECKING
@@ -39,3 +40,17 @@ def format_rules(rules: list[str]) -> str:
         block: Newline-joined numbered rules.
     """
     return "\n".join(f"{position}. {rule}" for position, rule in enumerate(rules, 1))
+
+
+def build_extraction_prompt(text: str) -> str:
+    """Assembles the full extraction prompt for one text window.
+
+    Args:
+        text: Text window the model should extract triples from.
+
+    Returns:
+        prompt: System prompt, rules, and the target text.
+    """
+    sections = [SYSTEM_PROMPT, format_rules(EXTRACTION_RULES)]
+    sections.append(f"Text:\n{text}\n\nTriples JSON:")
+    return "\n\n".join(sections)
