@@ -7,6 +7,7 @@
  *  *   GraphViewer: cytoscape canvas component
  *  *   dedupeEdges(): collapses parallel edges between endpoints
  *  *   partitionSelfLoops(): separates self-loops from normal edges
+ *  *   curveStyleFor(): picks a curve style per edge index
  */
 
 import cytoscape from "cytoscape";
@@ -108,4 +109,14 @@ export function partitionSelfLoops(edges) {
     }
   }
   return { loops, normal };
+}
+
+/**
+ * Picks the Cytoscape curve style for an edge among parallel siblings.
+ *
+ * @param index - Position of the edge within its parallel group.
+ * @returns style - bezier for fanned parallels, haystack otherwise.
+ */
+export function curveStyleFor(index) {
+  return index === 0 ? "straight" : "bezier";
 }
