@@ -23,6 +23,7 @@ Contains:
     Neo4jLoader.CONSTRAINT_QUERIES: uniqueness constraints
     Neo4jLoader.ensure_constraints(): applies uniqueness constraints
     Neo4jLoader.healthcheck(): verifies connectivity
+    Neo4jLoader.delete_doc_triples(): removes a document's facts
 """
 
 import logging
@@ -286,3 +287,12 @@ class Neo4jLoader:
         except (LoadError, OSError) as exc:
             logger.error("neo4j healthcheck failed: %s", exc)
             return False
+
+    def delete_doc_triples(self, doc_id: str) -> None:
+        """Removes relationships sourced from one document.
+
+        Args:
+            doc_id: Document whose sourced relationships are deleted.
+        """
+        query = "MATCH ()-[r:RELATED {source_doc_id: $doc_id}]->() DELETE r"
+        self._run(query, {"doc_id": doc_id})
