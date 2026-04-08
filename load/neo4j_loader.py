@@ -25,6 +25,7 @@ Contains:
     Neo4jLoader.healthcheck(): verifies connectivity
     Neo4jLoader.delete_doc_triples(): removes a document's facts
     load_triples(): one-shot convenience loader
+    format_load_stats(): one-line load summary
 """
 
 import logging
@@ -311,3 +312,19 @@ def load_triples(triples: list[Triple], config: LoadConfig | None = None) -> Loa
     """
     with Neo4jLoader(config) as loader:
         return loader.write_triples(triples)
+
+
+def format_load_stats(stats: LoadStats) -> str:
+    """Renders load counters as a log-friendly one-liner.
+
+    Args:
+        stats: Counters to summarize.
+
+    Returns:
+        summary: One-line rendering of rows, batches, and duration.
+    """
+    return (
+        f"nodes={stats.nodes_written} rels={stats.relationships_written} "
+        f"batches={stats.batches_written} retries={stats.retries} "
+        f"took={stats.duration_seconds:.2f}s"
+    )
