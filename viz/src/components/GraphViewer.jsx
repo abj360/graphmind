@@ -8,6 +8,7 @@
  *  *   dedupeEdges(): collapses parallel edges between endpoints
  *  *   partitionSelfLoops(): separates self-loops from normal edges
  *  *   curveStyleFor(): picks a curve style per edge index
+ *  *   assignParallelIndices(): numbers edges within endpoint groups
  */
 
 import cytoscape from "cytoscape";
@@ -119,4 +120,25 @@ export function partitionSelfLoops(edges) {
  */
 export function curveStyleFor(index) {
   return index === 0 ? "straight" : "bezier";
+}
+
+/**
+ * Numbers edges within their (source, target) parallel groups.
+ *
+ * @param edges - Edge list, possibly containing parallel groups.
+ * @returns edges - Edges annotated with parallelIndex and parallelCount.
+ */
+export function assignParallelIndices(edges) {
+  const groups = new Map();
+  for (const edge of edges) {
+    const key = `${edge.source}-->${edge.target}`;
+    const group = groups.get(key) ?? [];
+    group.push(edge);
+    groups.set(key, group);
+  }
+  return edges.map((edge) => {
+    const group = groups.get(`${edge.source}-->${edge.target}`);
+    const parallelIndex = group.indexOf(edge);
+    return { ...edge, parallelIndex, parallelCount: group.length };
+  });
 }
