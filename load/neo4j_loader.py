@@ -19,6 +19,8 @@ Contains:
     Neo4jLoader.write_triples(): upserts a triple set
     Neo4jLoader._run(): executes one Cypher statement
     Neo4jLoader._write_batch(): writes one row batch with retries
+    Neo4jLoader._record_batch(): updates stats after a batch
+    Neo4jLoader.CONSTRAINT_QUERIES: uniqueness constraints
 """
 
 import logging
@@ -244,3 +246,21 @@ class Neo4jLoader:
                 logger.warning("batch write failed, retrying in %.2fs: %s", backoff, exc)
                 time.sleep(backoff)
         raise LoadError(f"batch write failed after retries: {last_error}")
+
+    def _record_batch(self, rows: list[dict[str, Any]], is_node_batch: bool) -> None:
+        """Updates load counters after a successful batch write.
+
+        Args:
+            rows: Rows that were just written.
+            is_node_batch: Whether the batch carried node or relationship rows.
+        """
+        self.stats.batches_written += 1
+        if is_node_batch:
+            self.stats.nodes_written += len(rows)
+        else:
+            self.stats.relationships_written += len(rows)
+
+    CONSTRAINT_QUERIES: ClassVar[list[str]] = [
+        "CREATE CONSTRAINT entity_name_unique IF NOT EXISTS "
+        "FOR (n:Entity) REQUIRE n.name IS UNIQUE",
+    ]
