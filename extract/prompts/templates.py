@@ -8,6 +8,7 @@ Contains:
     format_rules(): renders the rule list as a numbered block
     build_extraction_prompt(): assembles the full prompt
     FEW_SHOT_EXAMPLE_TECHNICAL: worked example for technical docs
+    FEW_SHOT_EXAMPLE_NEWS: worked example for news prose
 """
 
 from typing import TYPE_CHECKING
@@ -72,6 +73,25 @@ FEW_SHOT_EXAMPLE_TECHNICAL: dict[str, object] = {
             "predicate": "depends on",
             "object": {"name": "Erlang", "entity_type": "SOFTWARE"},
             "confidence": 0.97,
+        },
+    ],
+}
+
+FEW_SHOT_EXAMPLE_NEWS: dict[str, object] = {
+    "domain": "news",
+    "input": "Acme acquired ByteWorks on Tuesday. ByteWorks was founded by Ada Reyes.",
+    "output": [
+        {
+            "subject": {"name": "Acme", "entity_type": "ORG"},
+            "predicate": "acquired",
+            "object": {"name": "ByteWorks", "entity_type": "ORG"},
+            "confidence": 0.98,
+        },
+        {
+            "subject": {"name": "Ada Reyes", "entity_type": "PERSON"},
+            "predicate": "founded",
+            "object": {"name": "ByteWorks", "entity_type": "ORG"},
+            "confidence": 0.96,
         },
     ],
 }
