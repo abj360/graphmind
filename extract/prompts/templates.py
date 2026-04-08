@@ -7,6 +7,7 @@ Contains:
     EXTRACTION_RULES: hard output rules every prompt repeats
     format_rules(): renders the rule list as a numbered block
     build_extraction_prompt(): assembles the full prompt
+    FEW_SHOT_EXAMPLE_TECHNICAL: worked example for technical docs
 """
 
 from typing import TYPE_CHECKING
@@ -54,3 +55,23 @@ def build_extraction_prompt(text: str) -> str:
     sections = [SYSTEM_PROMPT, format_rules(EXTRACTION_RULES)]
     sections.append(f"Text:\n{text}\n\nTriples JSON:")
     return "\n\n".join(sections)
+
+
+FEW_SHOT_EXAMPLE_TECHNICAL: dict[str, object] = {
+    "domain": "technical",
+    "input": "Kafka Connect ships with RabbitMQ. RabbitMQ depends on Erlang.",
+    "output": [
+        {
+            "subject": {"name": "Kafka Connect", "entity_type": "SOFTWARE"},
+            "predicate": "ships with",
+            "object": {"name": "RabbitMQ", "entity_type": "SOFTWARE"},
+            "confidence": 0.95,
+        },
+        {
+            "subject": {"name": "RabbitMQ", "entity_type": "SOFTWARE"},
+            "predicate": "depends on",
+            "object": {"name": "Erlang", "entity_type": "SOFTWARE"},
+            "confidence": 0.97,
+        },
+    ],
+}
