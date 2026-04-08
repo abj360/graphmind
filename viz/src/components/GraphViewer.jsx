@@ -5,10 +5,13 @@
  *  * Contains:
  *  *   toElements(): maps view graph to cytoscape elements
  *  *   GraphViewer: cytoscape canvas component
+ *  *   dedupeEdges(): collapses parallel edges between endpoints
  */
 
 import cytoscape from "cytoscape";
 import { useEffect, useRef } from "react";
+
+import { buildFullStylesheet, GRAPH_LAYOUT } from "../utils/graphStyles.js";
 
 /**
  * Maps a view graph into Cytoscape element definitions.
@@ -48,17 +51,9 @@ export default function GraphViewer({ graph, onSelectNode }) {
     const cy = cytoscape({
       container: containerRef.current,
       elements: toElements(graph),
-      layout: { name: "cose", animate: false },
-      style: [
-        {
-          selector: "node",
-          style: { label: "data(label)", "font-size": 10 },
-        },
-        {
-          selector: "edge",
-          style: { "curve-style": "haystack", width: 2 },
-        },
-      ],
+      layout: GRAPH_LAYOUT,
+      style: buildFullStylesheet(),
+      wheelSensitivity: 0.2,
     });
     if (onSelectNode) {
       cy.on("tap", "node", (event) => onSelectNode(event.target.data()));
@@ -73,4 +68,24 @@ export default function GraphViewer({ graph, onSelectNode }) {
   }, [graph, onSelectNode]);
 
   return <div ref={containerRef} className="graph-canvas" />;
+}
+
+/**
+ * Collapses parallel edges that share endpoints into single entries.
+ *
+ * @param edges - Edge list that may contain parallels.
+ * @returns edges - One edge per (source, target) pair, labels joined.
+ */
+export function dedupeEdges(edges) {
+  const byPair = new Map();
+  for (const edge of edges) {
+    const key = `${edge.source}-->${edge.target}`;
+    const existing = byPair.get(key);
+    if (existing) {
+      existing.predicate = `${existing.predicate}, ${edge.predicate}`;
+    } else {
+      byPair.set(key, { ...edge, id: key });
+    }
+  }
+  return [...byPair.values()];
 }
