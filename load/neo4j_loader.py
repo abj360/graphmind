@@ -22,6 +22,7 @@ Contains:
     Neo4jLoader._record_batch(): updates stats after a batch
     Neo4jLoader.CONSTRAINT_QUERIES: uniqueness constraints
     Neo4jLoader.ensure_constraints(): applies uniqueness constraints
+    Neo4jLoader.healthcheck(): verifies connectivity
 """
 
 import logging
@@ -271,3 +272,17 @@ class Neo4jLoader:
         self.connect()
         for query in self.CONSTRAINT_QUERIES:
             self._run(query, {})
+
+    def healthcheck(self) -> bool:
+        """Verifies Neo4j connectivity with a trivial query.
+
+        Returns:
+            healthy: True when the instance answers a trivial query.
+        """
+        try:
+            self.connect()
+            self._run("RETURN 1 AS ok", {})
+            return True
+        except (LoadError, OSError) as exc:
+            logger.error("neo4j healthcheck failed: %s", exc)
+            return False
