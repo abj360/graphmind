@@ -9,6 +9,7 @@ Contains:
     build_extraction_prompt(): assembles the full prompt
     FEW_SHOT_EXAMPLE_TECHNICAL: worked example for technical docs
     FEW_SHOT_EXAMPLE_NEWS: worked example for news prose
+    FEW_SHOT_EXAMPLES: registry of worked examples
 """
 
 from typing import TYPE_CHECKING
@@ -95,3 +96,5 @@ FEW_SHOT_EXAMPLE_NEWS: dict[str, object] = {
         },
     ],
 }
+
+FEW_SHOT_EXAMPLES = [FEW_SHOT_EXAMPLE_TECHNICAL, FEW_SHOT_EXAMPLE_NEWS]
