@@ -24,6 +24,7 @@ Contains:
     Neo4jLoader.ensure_constraints(): applies uniqueness constraints
     Neo4jLoader.healthcheck(): verifies connectivity
     Neo4jLoader.delete_doc_triples(): removes a document's facts
+    load_triples(): one-shot convenience loader
 """
 
 import logging
@@ -296,3 +297,17 @@ class Neo4jLoader:
         """
         query = "MATCH ()-[r:RELATED {source_doc_id: $doc_id}]->() DELETE r"
         self._run(query, {"doc_id": doc_id})
+
+
+def load_triples(triples: list[Triple], config: LoadConfig | None = None) -> LoadStats:
+    """Loads triples with a fresh loader, closing it afterwards.
+
+    Args:
+        triples: Resolved triples to write.
+        config: Connection configuration; from_env() when omitted.
+
+    Returns:
+        stats: Counters describing the completed load.
+    """
+    with Neo4jLoader(config) as loader:
+        return loader.write_triples(triples)
