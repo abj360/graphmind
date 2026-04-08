@@ -21,6 +21,7 @@ Contains:
     Neo4jLoader._write_batch(): writes one row batch with retries
     Neo4jLoader._record_batch(): updates stats after a batch
     Neo4jLoader.CONSTRAINT_QUERIES: uniqueness constraints
+    Neo4jLoader.ensure_constraints(): applies uniqueness constraints
 """
 
 import logging
@@ -264,3 +265,9 @@ class Neo4jLoader:
         "CREATE CONSTRAINT entity_name_unique IF NOT EXISTS "
         "FOR (n:Entity) REQUIRE n.name IS UNIQUE",
     ]
+
+    def ensure_constraints(self) -> None:
+        """Applies the uniqueness constraints the upserts rely on."""
+        self.connect()
+        for query in self.CONSTRAINT_QUERIES:
+            self._run(query, {})
