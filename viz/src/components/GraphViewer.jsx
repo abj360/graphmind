@@ -9,6 +9,7 @@
  *  *   partitionSelfLoops(): separates self-loops from normal edges
  *  *   curveStyleFor(): picks a curve style per edge index
  *  *   assignParallelIndices(): numbers edges within endpoint groups
+ *  *   edgeLabelFor(): compact label for crowded canvases
  */
 
 import cytoscape from "cytoscape";
@@ -141,4 +142,21 @@ export function assignParallelIndices(edges) {
     const parallelIndex = group.indexOf(edge);
     return { ...edge, parallelIndex, parallelCount: group.length };
   });
+}
+
+/**
+ * Builds a compact edge label for crowded canvases.
+ *
+ * @param edge - Edge data with predicate and optional confidence.
+ * @param showConfidence - Whether to append the confidence score.
+ * @returns label - Short label string, possibly empty on dense graphs.
+ */
+export function edgeLabelFor(edge, showConfidence = false) {
+  if (!edge.predicate) {
+    return "";
+  }
+  if (showConfidence && typeof edge.confidence === "number") {
+    return `${edge.predicate} (${edge.confidence.toFixed(2)})`;
+  }
+  return edge.predicate;
 }
