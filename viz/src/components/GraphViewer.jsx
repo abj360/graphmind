@@ -6,6 +6,7 @@
  *  *   toElements(): maps view graph to cytoscape elements
  *  *   GraphViewer: cytoscape canvas component
  *  *   dedupeEdges(): collapses parallel edges between endpoints
+ *  *   partitionSelfLoops(): separates self-loops from normal edges
  */
 
 import cytoscape from "cytoscape";
@@ -88,4 +89,23 @@ export function dedupeEdges(edges) {
     }
   }
   return [...byPair.values()];
+}
+
+/**
+ * Separates self-loop edges from normal edges for distinct styling.
+ *
+ * @param edges - Full edge list.
+ * @returns partitions - { loops, normal } edge lists.
+ */
+export function partitionSelfLoops(edges) {
+  const loops = [];
+  const normal = [];
+  for (const edge of edges) {
+    if (edge.source === edge.target) {
+      loops.push(edge);
+    } else {
+      normal.push(edge);
+    }
+  }
+  return { loops, normal };
 }
