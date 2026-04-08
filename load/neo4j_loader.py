@@ -19,6 +19,13 @@ Contains:
     Neo4jLoader.write_triples(): upserts a triple set
     Neo4jLoader._run(): executes one Cypher statement
     Neo4jLoader._write_batch(): writes one row batch with retries
+    Neo4jLoader._record_batch(): updates stats after a batch
+    Neo4jLoader.CONSTRAINT_QUERIES: uniqueness constraints
+    Neo4jLoader.ensure_constraints(): applies uniqueness constraints
+    Neo4jLoader.healthcheck(): verifies connectivity
+    Neo4jLoader.delete_doc_triples(): removes a document's facts
+    load_triples(): one-shot convenience loader
+    format_load_stats(): one-line load summary
 """
 
 import logging
@@ -244,3 +251,80 @@ class Neo4jLoader:
                 logger.warning("batch write failed, retrying in %.2fs: %s", backoff, exc)
                 time.sleep(backoff)
         raise LoadError(f"batch write failed after retries: {last_error}")
+
+    def _record_batch(self, rows: list[dict[str, Any]], is_node_batch: bool) -> None:
+        """Updates load counters after a successful batch write.
+
+        Args:
+            rows: Rows that were just written.
+            is_node_batch: Whether the batch carried node or relationship rows.
+        """
+        self.stats.batches_written += 1
+        if is_node_batch:
+            self.stats.nodes_written += len(rows)
+        else:
+            self.stats.relationships_written += len(rows)
+
+    CONSTRAINT_QUERIES: ClassVar[list[str]] = [
+        "CREATE CONSTRAINT entity_name_unique IF NOT EXISTS "
+        "FOR (n:Entity) REQUIRE n.name IS UNIQUE",
+    ]
+
+    def ensure_constraints(self) -> None:
+        """Applies the uniqueness constraints the upserts rely on."""
+        self.connect()
+        for query in self.CONSTRAINT_QUERIES:
+            self._run(query, {})
+
+    def healthcheck(self) -> bool:
+        """Verifies Neo4j connectivity with a trivial query.
+
+        Returns:
+            healthy: True when the instance answers a trivial query.
+        """
+        try:
+            self.connect()
+            self._run("RETURN 1 AS ok", {})
+            return True
+        except (LoadError, OSError) as exc:
+            logger.error("neo4j healthcheck failed: %s", exc)
+            return False
+
+    def delete_doc_triples(self, doc_id: str) -> None:
+        """Removes relationships sourced from one document.
+
+        Args:
+            doc_id: Document whose sourced relationships are deleted.
+        """
+        query = "MATCH ()-[r:RELATED {source_doc_id: $doc_id}]->() DELETE r"
+        self._run(query, {"doc_id": doc_id})
+
+
+def load_triples(triples: list[Triple], config: LoadConfig | None = None) -> LoadStats:
+    """Loads triples with a fresh loader, closing it afterwards.
+
+    Args:
+        triples: Resolved triples to write.
+        config: Connection configuration; from_env() when omitted.
+
+    Returns:
+        stats: Counters describing the completed load.
+    """
+    with Neo4jLoader(config) as loader:
+        return loader.write_triples(triples)
+
+
+def format_load_stats(stats: LoadStats) -> str:
+    """Renders load counters as a log-friendly one-liner.
+
+    Args:
+        stats: Counters to summarize.
+
+    Returns:
+        summary: One-line rendering of rows, batches, and duration.
+    """
+    return (
+        f"nodes={stats.nodes_written} rels={stats.relationships_written} "
+        f"batches={stats.batches_written} retries={stats.retries} "
+        f"took={stats.duration_seconds:.2f}s"
+    )
