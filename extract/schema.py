@@ -9,6 +9,7 @@ Contains:
     EntityRef.normalized_name(): case-folded comparison key
     Triple: one validated subject-predicate-object fact
     Triple.key(): deduplication identity tuple
+    clamp_confidence(): clamps a score into the unit interval
 """
 
 from typing import Any
@@ -140,3 +141,15 @@ class Triple(BaseModel):
             self.predicate.casefold(),
             self.object.normalized_name(),
         )
+
+
+def clamp_confidence(score: float) -> float:
+    """Clamps an arbitrary numeric score into [0.0, 1.0].
+
+    Args:
+        score: Raw confidence value, possibly out of range.
+
+    Returns:
+        clamped: Score constrained to the valid confidence interval.
+    """
+    return max(0.0, min(1.0, score))
