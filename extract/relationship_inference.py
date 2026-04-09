@@ -7,6 +7,7 @@ Contains:
     BridgeCandidate: one proposed cross-component relationship
     RelationshipInferer: finds and bridges disconnected subgraphs
     RelationshipInferer._build_adjacency(): entity to neighbor map
+    RelationshipInferer._connected_components(): groups entities
 """
 
 from dataclasses import dataclass
@@ -78,3 +79,30 @@ class RelationshipInferer:
             adjacency.setdefault(subject, set()).add(object_)
             adjacency.setdefault(object_, set()).add(subject)
         return adjacency
+
+    def _connected_components(self, triples: list[Triple]) -> list[set[str]]:
+        """Groups entity names into connected components.
+
+        Args:
+            triples: Triples defining the graph to partition.
+
+        Returns:
+            components: Disjoint sets of connected entity names.
+        """
+        adjacency = self._build_adjacency(triples)
+        seen: set[str] = set()
+        components: list[set[str]] = []
+        for start in adjacency:
+            if start in seen:
+                continue
+            stack = [start]
+            component: set[str] = set()
+            while stack:
+                node = stack.pop()
+                if node in seen:
+                    continue
+                seen.add(node)
+                component.add(node)
+                stack.extend(adjacency[node] - seen)
+            components.append(component)
+        return components
