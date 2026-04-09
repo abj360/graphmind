@@ -9,6 +9,7 @@ Contains:
     RelationshipInferer._build_adjacency(): entity to neighbor map
     RelationshipInferer._connected_components(): groups entities
     RelationshipInferer.infer(): proposes and materializes bridges
+    RelationshipInferer._candidate_bridges(): scores component pairs
 """
 
 from dataclasses import dataclass
@@ -128,3 +129,26 @@ class RelationshipInferer:
                 )
                 bridges.extend(self._materialize(candidates))
         return bridges
+
+    def _candidate_bridges(
+        self, triples: list[Triple], left: set[str], right: set[str]
+    ) -> list[BridgeCandidate]:
+        """Scores candidate bridges between two disconnected components.
+
+        Args:
+            triples: Full triple set providing type context.
+            left: Entity names of the first component.
+            right: Entity names of the second component.
+
+        Returns:
+            candidates: Scored bridge candidates above the confidence floor.
+        """
+        types = self._entity_types(triples)
+        candidates: list[BridgeCandidate] = []
+        for source in sorted(left):
+            for target in sorted(right):
+                score, predicate = self._score_bridge(source, target, types)
+                if score >= self.config.min_bridge_confidence:
+                    candidates.append(BridgeCandidate(source, target, predicate, score))
+        candidates.sort(key=lambda candidate: candidate.score, reverse=True)
+        return candidates[: self.config.candidate_limit]
