@@ -19,3 +19,6 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.9",
 ]
+
+[tool.setuptools.packages.find]
+include = ["extract*", "resolution*", "load*"]
