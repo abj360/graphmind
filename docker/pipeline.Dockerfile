@@ -4,3 +4,6 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
+
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir .
