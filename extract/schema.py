@@ -5,6 +5,7 @@ schema.py --- pydantic models and validation helpers for extracted SPO triples
 Contains:
     SourceSpan: character offsets anchoring a triple to its source text
     SourceSpan.end_after_start(): rejects zero-length or inverted spans
+    EntityRef: one endpoint of an SPO triple
 """
 
 from typing import Any
@@ -44,3 +45,17 @@ class SourceSpan(BaseModel):
             msg = f"span end {value} must be greater than start {start}"
             raise ValueError(msg)
         return value
+
+
+class EntityRef(BaseModel):
+    """Represents a named entity participating in a triple.
+
+    Attributes:
+        name: Surface form of the entity as seen in the source text.
+        entity_type: Coarse type label such as PERSON, ORG, or CONCEPT.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str = Field(min_length=1)
+    entity_type: str = Field(default="CONCEPT", min_length=1)
