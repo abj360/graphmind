@@ -8,6 +8,7 @@ Contains:
     RelationshipInferer: finds and bridges disconnected subgraphs
     RelationshipInferer._build_adjacency(): entity to neighbor map
     RelationshipInferer._connected_components(): groups entities
+    RelationshipInferer.infer(): proposes and materializes bridges
 """
 
 from dataclasses import dataclass
@@ -106,3 +107,24 @@ class RelationshipInferer:
                 stack.extend(adjacency[node] - seen)
             components.append(component)
         return components
+
+    def infer(self, triples: list[Triple]) -> list[Triple]:
+        """Infers bridging triples connecting disconnected components.
+
+        Args:
+            triples: Extracted triples forming possibly disjoint subgraphs.
+
+        Returns:
+            bridges: Inferred triples marked with inferred=True.
+        """
+        components = self._connected_components(triples)
+        if len(components) < 2 or len(components) > self.config.max_components:
+            return []
+        bridges: list[Triple] = []
+        for left_index in range(len(components)):
+            for right_index in range(left_index + 1, len(components)):
+                candidates = self._candidate_bridges(
+                    triples, components[left_index], components[right_index]
+                )
+                bridges.extend(self._materialize(candidates))
+        return bridges
