@@ -6,6 +6,7 @@ Contains:
     InferenceConfig: knobs for the bridging pass
     BridgeCandidate: one proposed cross-component relationship
     RelationshipInferer: finds and bridges disconnected subgraphs
+    RelationshipInferer._build_adjacency(): entity to neighbor map
 """
 
 from dataclasses import dataclass
@@ -59,3 +60,21 @@ class RelationshipInferer:
             config: Inference overrides; defaults applied when omitted.
         """
         self.config = config or InferenceConfig()
+
+    @staticmethod
+    def _build_adjacency(triples: list[Triple]) -> dict[str, set[str]]:
+        """Builds an undirected adjacency map over entity names.
+
+        Args:
+            triples: Triples whose endpoints become graph edges.
+
+        Returns:
+            adjacency: Mapping of entity name to connected entity names.
+        """
+        adjacency: dict[str, set[str]] = {}
+        for triple in triples:
+            subject = triple.subject.normalized_name()
+            object_ = triple.object.normalized_name()
+            adjacency.setdefault(subject, set()).add(object_)
+            adjacency.setdefault(object_, set()).add(subject)
+        return adjacency
