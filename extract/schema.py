@@ -6,6 +6,7 @@ Contains:
     SourceSpan: character offsets anchoring a triple to its source text
     SourceSpan.end_after_start(): rejects zero-length or inverted spans
     EntityRef: one endpoint of an SPO triple
+    EntityRef.normalized_name(): case-folded comparison key
 """
 
 from typing import Any
@@ -59,3 +60,28 @@ class EntityRef(BaseModel):
 
     name: str = Field(min_length=1)
     entity_type: str = Field(default="CONCEPT", min_length=1)
+
+    @field_validator("name", "entity_type")
+    @classmethod
+    def strip_and_check(cls, value: str) -> str:
+        """Normalizes whitespace and rejects blank values.
+
+        Args:
+            value: Raw field value supplied by the extractor.
+
+        Returns:
+            value: Trimmed, non-empty field value.
+        """
+        cleaned = value.strip()
+        if not cleaned:
+            msg = "entity fields must not be blank"
+            raise ValueError(msg)
+        return cleaned
+
+    def normalized_name(self) -> str:
+        """Computes the case-folded comparison key for this entity.
+
+        Returns:
+            key: Lowercased, whitespace-collapsed entity name.
+        """
+        return " ".join(self.name.casefold().split())
