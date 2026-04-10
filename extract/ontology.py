@@ -5,6 +5,8 @@ ontology.py --- ontology rules and schema enforcement for extracted triples
 Contains:
     OntologyRule: one allowed subject-predicate-object type pattern
     OntologyViolation: one rejected triple with its reason
+    Ontology: set of rules used to enforce schema conformance
+    Ontology.allows(): checks a triple against every rule
 """
 
 import json
@@ -55,3 +57,35 @@ class OntologyViolation:
 
     triple: Triple
     reason: str
+
+
+class Ontology:
+    """Enforces type-level conformance of triples against known rules.
+
+    Attributes:
+        rules: Frozen set of allowed type patterns.
+        strict: When true, unmatched triples are rejected; else flagged.
+    """
+
+    def __init__(self, rules: set[OntologyRule], strict: bool = True) -> None:
+        """Creates an ontology from a rule set.
+
+        Args:
+            rules: Allowed type patterns; empty set allows everything.
+            strict: Whether unmatched triples are rejected outright.
+        """
+        self.rules = frozenset(rules)
+        self.strict = strict
+
+    def allows(self, triple: Triple) -> bool:
+        """Checks whether any rule permits the given triple.
+
+        Args:
+            triple: Triple to test.
+
+        Returns:
+            allowed: True when at least one rule matches, or no rules exist.
+        """
+        if not self.rules:
+            return True
+        return any(rule.matches(triple) for rule in self.rules)
