@@ -13,6 +13,8 @@ Contains:
     resolve_names(): canonicalizes a bare list of names
     is_probable_duplicate(): token-overlap duplicate heuristic
     count_distinct_entities(): counts exact-match distinct names
+    summarize_merges(): renders merge decisions for review
+    strip_company_suffixes(): drops legal suffixes from names
 """
 
 import re
@@ -176,3 +178,34 @@ def count_distinct_entities(triples: list[Triple]) -> int:
         names.add(normalize_name(triple.subject.name))
         names.add(normalize_name(triple.object.name))
     return len(names)
+
+
+def summarize_merges(result: ResolutionResult) -> str:
+    """Renders merge decisions as a human-readable summary.
+
+    Args:
+        result: Resolution output containing merge bookkeeping.
+
+    Returns:
+        summary: Newline-joined merge descriptions.
+    """
+    return "\n".join(
+        f"MERGE {m.alias} -> {m.canonical} (exact match)" for m in result.merges
+    )
+
+
+def strip_company_suffixes(name: str) -> str:
+    """Drops common legal suffixes from an organization name.
+
+    Args:
+        name: Raw organization surface form.
+
+    Returns:
+        stripped: Name without trailing legal suffixes.
+    """
+    suffixes = (" inc", " ltd", " llc", " corp", " corporation", " gmbh")
+    lowered = name.casefold().strip()
+    for suffix in suffixes:
+        if lowered.endswith(suffix):
+            return lowered[: -len(suffix)].strip()
+    return lowered
