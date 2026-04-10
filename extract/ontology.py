@@ -6,6 +6,7 @@ Contains:
     OntologyRule: one allowed subject-predicate-object type pattern
     OntologyViolation: one rejected triple with its reason
     Ontology: set of rules used to enforce schema conformance
+    Ontology.allows(): checks a triple against every rule
 """
 
 import json
@@ -75,3 +76,16 @@ class Ontology:
         """
         self.rules = frozenset(rules)
         self.strict = strict
+
+    def allows(self, triple: Triple) -> bool:
+        """Checks whether any rule permits the given triple.
+
+        Args:
+            triple: Triple to test.
+
+        Returns:
+            allowed: True when at least one rule matches, or no rules exist.
+        """
+        if not self.rules:
+            return True
+        return any(rule.matches(triple) for rule in self.rules)
