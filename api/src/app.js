@@ -4,6 +4,8 @@
  *  *
  *  * Contains:
  *  *   createApp(): builds the configured express app
+ *  *   corsMiddleware(): minimal CORS headers for the viewer origin
+ *  *   mountHealthEndpoint(): liveness probe route
  */
 
 import express from "express";
@@ -31,4 +33,34 @@ export function createApp(driver, config) {
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
+}
+
+/**
+ * Builds minimal CORS middleware allowing the viewer origin.
+ *
+ * @param origin - Allowed origin for cross-origin viewer requests.
+ * @returns middleware - Express middleware setting CORS headers.
+ */
+export function corsMiddleware(origin) {
+  return (request, response, next) => {
+    response.setHeader("Access-Control-Allow-Origin", origin);
+    response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    if (request.method === "OPTIONS") {
+      response.status(204).end();
+      return;
+    }
+    next();
+  };
+}
+
+/**
+ * Mounts the liveness probe route used by compose healthchecks.
+ *
+ * @param app - Express application instance.
+ */
+export function mountHealthEndpoint(app) {
+  app.get("/health", (_request, response) => {
+    response.json({ status: "ok" });
+  });
 }

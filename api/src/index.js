@@ -4,6 +4,8 @@
  *  *
  *  * Contains:
  *  *   main(): boots the HTTP server
+ *  *   registerShutdown(): graceful SIGTERM/SIGINT handling
+ *  *   entrypoint invocation
  */
 
 import { createApp } from "./app.js";
@@ -23,3 +25,26 @@ async function main() {
   });
   registerShutdown(server, driver);
 }
+
+/**
+ * Registers graceful shutdown handlers on the HTTP server.
+ *
+ * @param server - Listening HTTP server.
+ * @param driver - Neo4j driver to close on shutdown.
+ */
+function registerShutdown(server, driver) {
+  const shutdown = async (signal) => {
+    console.log(`received ${signal}; shutting down`);
+    server.close(async () => {
+      await closeDriver(driver);
+      process.exit(0);
+    });
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+}
+
+main().catch((error) => {
+  console.error("fatal startup error:", error);
+  process.exit(1);
+});
