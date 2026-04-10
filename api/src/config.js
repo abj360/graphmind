@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   DEFAULTS: fallback configuration values
  *  *   loadConfig(): reads configuration from the environment
+ *  *   validateConfig(): rejects unusable configuration
  */
 
 const DEFAULTS = {
@@ -31,4 +32,20 @@ export function loadConfig(env = process.env) {
     neo4jDatabase: env.NEO4J_DATABASE ?? DEFAULTS.neo4jDatabase,
     corsOrigin: env.API_CORS_ORIGIN ?? DEFAULTS.corsOrigin,
   };
+}
+
+/**
+ * Rejects configuration values the service cannot start with.
+ *
+ * @param config - Configuration produced by loadConfig().
+ * @returns config - The same configuration, if valid.
+ */
+export function validateConfig(config) {
+  if (!Number.isInteger(config.port) || config.port <= 0) {
+    throw new Error(`invalid API port: ${config.port}`);
+  }
+  if (!config.neo4jUri.startsWith("bolt")) {
+    throw new Error(`NEO4J_URI must use the bolt scheme: ${config.neo4jUri}`);
+  }
+  return config;
 }
