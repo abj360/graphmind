@@ -27,3 +27,17 @@ around raw dicts between stages. Rationale:
   lived through elsewhere came from mutable shared payloads.
 - The loader's row shapes derive from the same models, so the Cypher
   layer cannot drift from the extraction layer silently.
+
+## Decision: triples carry provenance and confidence from birth
+
+Every triple has `source_doc_id`, an optional `source_span`, a
+`confidence` in `[0, 1]`, and an `inferred` flag. Alternatives
+considered:
+
+- Attach provenance in a sidecar table: rejected — provenance is not
+  optional metadata; it is how reviewers decide whether to trust an
+  edge. If it can be forgotten, it will be.
+- Add confidence later once scoring stabilizes: rejected — retrofitting
+  a float column through five stages is exactly the kind of change that
+  looks small and isn't. Confidence is present from the first triple,
+  defaulting to 1.0 so early extractors remain valid.
