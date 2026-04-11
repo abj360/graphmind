@@ -41,3 +41,18 @@ considered:
   a float column through five stages is exactly the kind of change that
   looks small and isn't. Confidence is present from the first triple,
   defaulting to 1.0 so early extractors remain valid.
+
+## Decision: the extractor depends on a protocol, not a vendor
+
+`TripleExtractor` takes any `LLMClient` — a Python `Protocol` with one
+method, `complete(prompt) -> str`. Production wiring adapts a LangChain
+chat model (`LangChainClient`); tests use scripted fakes. The extractor
+never imports LangChain itself.
+
+Consequences:
+
+- Provider swaps (OpenAI today, anything else later) touch one adapter.
+- Tests assert on the exact prompt text the model saw, which is where
+  extraction quality actually lives.
+- There is no hidden global client: dependency injection is explicit,
+  per the engineering standards.
