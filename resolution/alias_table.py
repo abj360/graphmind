@@ -6,6 +6,7 @@ Contains:
     AliasTable: canonical name to known aliases mapping
     AliasTable.add(): registers one alias under a canonical name
     AliasTable.canonical_for(): resolves an alias to its canonical
+    AliasTable.aliases(): lists aliases of a canonical name
 """
 
 import json
@@ -46,3 +47,17 @@ class AliasTable:
             canonical: Registered canonical form, or the normalized input.
         """
         return self.canonical_of.get(self._normalize(name), self._normalize(name))
+
+    def aliases(self, canonical: str) -> list[str]:
+        """Lists every alias registered under a canonical name.
+
+        Args:
+            canonical: Canonical name whose aliases are listed.
+
+        Returns:
+            aliases: Sorted alias keys registered for the canonical name.
+        """
+        canonical_key = self._normalize(canonical)
+        return sorted(
+            alias for alias, target in self.canonical_of.items() if target == canonical_key
+        )
