@@ -7,6 +7,7 @@ Contains:
     AliasTable.add(): registers one alias under a canonical name
     AliasTable.canonical_for(): resolves an alias to its canonical
     AliasTable.aliases(): lists aliases of a canonical name
+    AliasTable._normalize(): shared key normalization
 """
 
 import json
@@ -61,3 +62,15 @@ class AliasTable:
         return sorted(
             alias for alias, target in self.canonical_of.items() if target == canonical_key
         )
+
+    @staticmethod
+    def _normalize(name: str) -> str:
+        """Folds a name into the table's comparison key form.
+
+        Args:
+            name: Raw entity surface form.
+
+        Returns:
+            key: Case-folded, whitespace-collapsed comparison key.
+        """
+        return " ".join(name.casefold().split())
