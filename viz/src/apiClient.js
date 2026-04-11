@@ -6,6 +6,7 @@
  *  *   API_BASE: resolved API base URL
  *  *   fetchJson(): GET helper with error unwrapping
  *  *   fetchGraph(): loads the view graph
+ *  *   fetchLabels(): loads entity type counts
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -39,4 +40,13 @@ async function fetchJson(path) {
  */
 export function fetchGraph(limit = 500) {
   return fetchJson(`/api/graph?limit=${limit}`);
+}
+
+/**
+ * Loads entity type counts for the legend.
+ *
+ * @returns labels - Array of { type, count } entries.
+ */
+export function fetchLabels() {
+  return fetchJson("/api/graph/labels");
 }
