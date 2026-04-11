@@ -5,6 +5,10 @@ alias_table.py --- alias table and human-in-the-loop merge review queue
 Contains:
     AliasTable: canonical name to known aliases mapping
     AliasTable.add(): registers one alias under a canonical name
+    AliasTable.canonical_for(): resolves an alias to its canonical
+    AliasTable.aliases(): lists aliases of a canonical name
+    AliasTable._normalize(): shared key normalization
+    AliasTable.merge(): folds one canonical into another
 """
 
 import json
@@ -34,3 +38,56 @@ class AliasTable:
         canonical_key = self._normalize(canonical)
         if key != canonical_key:
             self.canonical_of[key] = canonical_key
+
+    def canonical_for(self, name: str) -> str:
+        """Resolves a name to its canonical representative.
+
+        Args:
+            name: Surface form to resolve.
+
+        Returns:
+            canonical: Registered canonical form, or the normalized input.
+        """
+        return self.canonical_of.get(self._normalize(name), self._normalize(name))
+
+    def aliases(self, canonical: str) -> list[str]:
+        """Lists every alias registered under a canonical name.
+
+        Args:
+            canonical: Canonical name whose aliases are listed.
+
+        Returns:
+            aliases: Sorted alias keys registered for the canonical name.
+        """
+        canonical_key = self._normalize(canonical)
+        return sorted(
+            alias for alias, target in self.canonical_of.items() if target == canonical_key
+        )
+
+    @staticmethod
+    def _normalize(name: str) -> str:
+        """Folds a name into the table's comparison key form.
+
+        Args:
+            name: Raw entity surface form.
+
+        Returns:
+            key: Case-folded, whitespace-collapsed comparison key.
+        """
+        return " ".join(name.casefold().split())
+
+    def merge(self, keep: str, drop: str) -> None:
+        """Folds one canonical entry into another, remapping its aliases.
+
+        Args:
+            keep: Canonical name that survives the merge.
+            drop: Canonical name folded into the survivor.
+        """
+        keep_key = self._normalize(keep)
+        drop_key = self._normalize(drop)
+        if keep_key == drop_key:
+            return
+        self.canonical_of[drop_key] = keep_key
+        for alias, target in list(self.canonical_of.items()):
+            if target == drop_key:
+                self.canonical_of[alias] = keep_key
