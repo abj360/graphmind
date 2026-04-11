@@ -6,6 +6,7 @@
  *  *   GRAPH_LAYOUT: default force-directed layout options
  *  *   TYPE_COLORS: entity type to color mapping
  *  *   colorForType(): resolves a type to its palette color
+ *  *   buildNodeStyle(): cytoscape node style block
  */
 
 export const GRAPH_LAYOUT = {
@@ -36,4 +37,27 @@ export const TYPE_COLORS = {
  */
 export function colorForType(type) {
   return TYPE_COLORS[type] ?? "#6c757d";
+}
+
+/**
+ * Builds the Cytoscape node style block using the type palette.
+ *
+ * @returns style - Cytoscape style definition for nodes.
+ */
+export function buildNodeStyle() {
+  return {
+    selector: "node",
+    style: {
+      label: "data(label)",
+      "font-size": 10,
+      "text-wrap": "wrap",
+      "text-max-width": 90,
+      "text-valign": "bottom",
+      "text-margin-y": 6,
+      width: 22,
+      height: 22,
+      "border-width": 1,
+      "border-color": "#1d3557",
+    },
+  };
 }
