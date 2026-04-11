@@ -5,6 +5,7 @@ alias_table.py --- alias table and human-in-the-loop merge review queue
 Contains:
     AliasTable: canonical name to known aliases mapping
     AliasTable.add(): registers one alias under a canonical name
+    AliasTable.canonical_for(): resolves an alias to its canonical
 """
 
 import json
@@ -34,3 +35,14 @@ class AliasTable:
         canonical_key = self._normalize(canonical)
         if key != canonical_key:
             self.canonical_of[key] = canonical_key
+
+    def canonical_for(self, name: str) -> str:
+        """Resolves a name to its canonical representative.
+
+        Args:
+            name: Surface form to resolve.
+
+        Returns:
+            canonical: Registered canonical form, or the normalized input.
+        """
+        return self.canonical_of.get(self._normalize(name), self._normalize(name))
