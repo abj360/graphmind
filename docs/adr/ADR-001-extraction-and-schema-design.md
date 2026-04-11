@@ -56,3 +56,16 @@ Consequences:
   extraction quality actually lives.
 - There is no hidden global client: dependency injection is explicit,
   per the engineering standards.
+
+## Decision: prompt configuration is decoupled from extraction logic
+
+Prompt wording changes an order of magnitude more often than extraction
+logic. `extract/prompts/` therefore owns templates and a `PromptConfig`
+dataclass loaded from TOML (`default.toml`), and the extractor only
+asks for "the prompt for this text". Domain variants (technical, news,
+biomedical) are registered hints plus matched few-shot examples, not
+forked template copies.
+
+Rejected alternative: one canonical prompt with if/else branches per
+domain — it accretes conditionals until nobody can tell which wording
+shipped in which run.
