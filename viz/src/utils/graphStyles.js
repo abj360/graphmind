@@ -7,6 +7,7 @@
  *  *   TYPE_COLORS: entity type to color mapping
  *  *   colorForType(): resolves a type to its palette color
  *  *   buildNodeStyle(): cytoscape node style block
+ *  *   buildTypeSelectors(): per-type color override selectors
  */
 
 export const GRAPH_LAYOUT = {
@@ -60,4 +61,16 @@ export function buildNodeStyle() {
       "border-color": "#1d3557",
     },
   };
+}
+
+/**
+ * Builds per-type color override selectors for the palette.
+ *
+ * @returns selectors - Cytoscape style list, one entry per known type.
+ */
+export function buildTypeSelectors() {
+  return Object.entries(TYPE_COLORS).map(([type, color]) => ({
+    selector: `node[type = "${type}"]`,
+    style: { "background-color": color },
+  }));
 }
