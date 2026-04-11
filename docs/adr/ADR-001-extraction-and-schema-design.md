@@ -27,3 +27,45 @@ around raw dicts between stages. Rationale:
   lived through elsewhere came from mutable shared payloads.
 - The loader's row shapes derive from the same models, so the Cypher
   layer cannot drift from the extraction layer silently.
+
+## Decision: triples carry provenance and confidence from birth
+
+Every triple has `source_doc_id`, an optional `source_span`, a
+`confidence` in `[0, 1]`, and an `inferred` flag. Alternatives
+considered:
+
+- Attach provenance in a sidecar table: rejected — provenance is not
+  optional metadata; it is how reviewers decide whether to trust an
+  edge. If it can be forgotten, it will be.
+- Add confidence later once scoring stabilizes: rejected — retrofitting
+  a float column through five stages is exactly the kind of change that
+  looks small and isn't. Confidence is present from the first triple,
+  defaulting to 1.0 so early extractors remain valid.
+
+## Decision: the extractor depends on a protocol, not a vendor
+
+`TripleExtractor` takes any `LLMClient` — a Python `Protocol` with one
+method, `complete(prompt) -> str`. Production wiring adapts a LangChain
+chat model (`LangChainClient`); tests use scripted fakes. The extractor
+never imports LangChain itself.
+
+Consequences:
+
+- Provider swaps (OpenAI today, anything else later) touch one adapter.
+- Tests assert on the exact prompt text the model saw, which is where
+  extraction quality actually lives.
+- There is no hidden global client: dependency injection is explicit,
+  per the engineering standards.
+
+## Decision: prompt configuration is decoupled from extraction logic
+
+Prompt wording changes an order of magnitude more often than extraction
+logic. `extract/prompts/` therefore owns templates and a `PromptConfig`
+dataclass loaded from TOML (`default.toml`), and the extractor only
+asks for "the prompt for this text". Domain variants (technical, news,
+biomedical) are registered hints plus matched few-shot examples, not
+forked template copies.
+
+Rejected alternative: one canonical prompt with if/else branches per
+domain — it accretes conditionals until nobody can tell which wording
+shipped in which run.
