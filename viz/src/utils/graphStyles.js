@@ -8,6 +8,7 @@
  *  *   colorForType(): resolves a type to its palette color
  *  *   buildNodeStyle(): cytoscape node style block
  *  *   buildTypeSelectors(): per-type color override selectors
+ *  *   buildEdgeStyle(): cytoscape edge style block
  */
 
 export const GRAPH_LAYOUT = {
@@ -73,4 +74,24 @@ export function buildTypeSelectors() {
     selector: `node[type = "${type}"]`,
     style: { "background-color": color },
   }));
+}
+
+/**
+ * Builds the Cytoscape edge style block with arrows and curves.
+ *
+ * @returns style - Cytoscape style definition for edges.
+ */
+export function buildEdgeStyle() {
+  return {
+    selector: "edge",
+    style: {
+      "curve-style": "bezier",
+      "target-arrow-shape": "triangle",
+      "arrow-scale": 0.8,
+      "line-color": "#adb5bd",
+      "target-arrow-color": "#adb5bd",
+      width: 2,
+      opacity: 0.85,
+    },
+  };
 }
