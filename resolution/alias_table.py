@@ -8,6 +8,7 @@ Contains:
     AliasTable.canonical_for(): resolves an alias to its canonical
     AliasTable.aliases(): lists aliases of a canonical name
     AliasTable._normalize(): shared key normalization
+    AliasTable.merge(): folds one canonical into another
 """
 
 import json
@@ -74,3 +75,19 @@ class AliasTable:
             key: Case-folded, whitespace-collapsed comparison key.
         """
         return " ".join(name.casefold().split())
+
+    def merge(self, keep: str, drop: str) -> None:
+        """Folds one canonical entry into another, remapping its aliases.
+
+        Args:
+            keep: Canonical name that survives the merge.
+            drop: Canonical name folded into the survivor.
+        """
+        keep_key = self._normalize(keep)
+        drop_key = self._normalize(drop)
+        if keep_key == drop_key:
+            return
+        self.canonical_of[drop_key] = keep_key
+        for alias, target in list(self.canonical_of.items()):
+            if target == drop_key:
+                self.canonical_of[alias] = keep_key
