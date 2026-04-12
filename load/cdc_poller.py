@@ -7,6 +7,7 @@ Contains:
     ChangeKind: kinds of observed source changes
     ChangeEvent: one observed source document change
     PollerConfig: tuning for the CDC polling loop
+    file_checksum(): content hash for change detection
 """
 
 import hashlib
@@ -59,3 +60,15 @@ class PollerConfig:
     interval_seconds: float = 5.0
     state_path: Path = Path("out/cdc_state.json")
     glob_pattern: str = "**/*.txt"
+
+
+def file_checksum(path: Path) -> str:
+    """Computes the content hash used to detect document modifications.
+
+    Args:
+        path: Document file to hash.
+
+    Returns:
+        checksum: Hex digest of the file content.
+    """
+    return hashlib.sha256(path.read_bytes()).hexdigest()
