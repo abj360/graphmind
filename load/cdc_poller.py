@@ -7,6 +7,8 @@ Contains:
     ChangeKind: kinds of observed source changes
     ChangeEvent: one observed source document change
     PollerConfig: tuning for the CDC polling loop
+    file_checksum(): content hash for change detection
+    doc_id_for_path(): stable id derived from a path
 """
 
 import hashlib
@@ -59,3 +61,28 @@ class PollerConfig:
     interval_seconds: float = 5.0
     state_path: Path = Path("out/cdc_state.json")
     glob_pattern: str = "**/*.txt"
+
+
+def file_checksum(path: Path) -> str:
+    """Computes the content hash used to detect document modifications.
+
+    Args:
+        path: Document file to hash.
+
+    Returns:
+        checksum: Hex digest of the file content.
+    """
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def doc_id_for_path(path: Path, root: Path) -> str:
+    """Derives a stable document identifier from a filesystem path.
+
+    Args:
+        path: Document file path.
+        root: Corpus root the path is made relative to.
+
+    Returns:
+        doc_id: Relative POSIX path used as the document identifier.
+    """
+    return path.relative_to(root).as_posix()
