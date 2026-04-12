@@ -4,6 +4,7 @@ factories.py --- shared test data builders for unit tests
 
 Contains:
     make_triple(): concise triple factory for tests
+    make_triple_chain(): builds a connected chain of triples
 """
 
 from extract.schema import EntityRef, Triple
@@ -39,3 +40,21 @@ def make_triple(
         confidence=confidence,
         source_doc_id=doc_id,
     )
+
+
+def make_triple_chain(names: list[str], predicate: str = "links") -> list[Triple]:
+    """Builds a chain of triples linking consecutive names.
+
+    Args:
+        names: Entity names to link in order.
+        predicate: Predicate phrase used for every link.
+
+    Returns:
+        triples: len(names) - 1 triples forming one chain.
+    """
+    from itertools import pairwise
+
+    return [
+        make_triple(left, predicate, right, subject_type="CONCEPT", object_type="CONCEPT")
+        for left, right in pairwise(names)
+    ]
