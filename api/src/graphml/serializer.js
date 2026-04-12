@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   GRAPHML_HEADER: document prolog and schema keys
+ *  *   GRAPHML_FOOTER: document closing tags
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -12,3 +13,5 @@ const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
   <key id="type" for="node" attr.name="type" attr.type="string"/>
   <key id="predicate" for="edge" attr.name="predicate" attr.type="string"/>
   <key id="confidence" for="edge" attr.name="confidence" attr.type="double"/>`;
+
+const GRAPHML_FOOTER = "</graphml>";
