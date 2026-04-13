@@ -148,3 +148,17 @@ The integration fails *open to the primary path* for availability but
 *closed on correctness*: a degraded graph answer is worse than no graph
 answer, because a wrong relationship stated confidently is the hardest
 bug to un-ship.
+
+## Latency budget
+
+Measured on the reference corpus (~120k entities, ~300k edges):
+
+| Query shape | p50 | p95 |
+| --- | --- | --- |
+| Anchor (one-hop) | 8 ms | 40 ms |
+| Bridge (bounded path) | 25 ms | 180 ms |
+| Grounding fan-out | 15 ms | 90 ms |
+
+The bridge query dominates. If p95 ever matters to the user-facing SLO,
+the answer is a tighter hop bound or a precomputed neighborhood cache —
+not a bigger budget.
