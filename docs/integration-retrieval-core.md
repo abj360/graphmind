@@ -74,3 +74,22 @@ Notes:
   the strong edges.
 - `$limit` is a parameter, never string-interpolated — same rule as
   everywhere else: no query text built by concatenating user input.
+
+## The bridge query: two-hop paths between entities
+
+For "how are A and B related" the integration uses a bounded shortest
+path:
+
+```cypher
+MATCH path = shortestPath(
+  (a:Entity {name: $left})-[:RELATED*..3]-(b:Entity {name: $right})
+)
+RETURN [n IN nodes(path) | n.name] AS nodes,
+       [r IN relationships(path) | r.predicate] AS predicates
+LIMIT 3
+```
+
+The hop bound (`*..3`) is deliberate: unbounded `shortestPath` on a
+densely bridged graph is how you get a query that never comes back.
+Three hops covers the useful cases (A–bridge–B, A–mid–mid–B) while
+keeping worst-case expansion small.
