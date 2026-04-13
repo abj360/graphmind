@@ -10,6 +10,7 @@
  *  *   typeAheadCandidates(): label suggestions for the query
  *  *   ClearButton: resets the current query
  *  *   compileSafeRegex(): parses a regex query, tolerating bad input
+ *  *   matchesRegex(): checks a node against a compiled pattern
  */
 
 /**
@@ -134,4 +135,18 @@ export function compileSafeRegex(query) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Checks whether a node matches a compiled regular expression.
+ *
+ * @param node - View-graph node with label and type.
+ * @param regex - Compiled pattern from compileSafeRegex().
+ * @returns matches - True when the label or type matches the pattern.
+ */
+export function matchesRegex(node, regex) {
+  if (!regex) {
+    return true;
+  }
+  return regex.test(node.label) || regex.test(node.type);
 }
