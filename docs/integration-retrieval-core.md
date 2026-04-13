@@ -107,3 +107,18 @@ Bridging relationships produced by `relationship_inference.py` carry
 This is the query-side mirror of the viewer rendering inferred edges
 dashed: the graph contains hypotheses, and consumers must know which
 edges they are.
+
+## Grounding back into passages
+
+Every edge returned by Neo4j carries `source_doc_id`. retrieval-core
+uses it to fetch the originating passage and present the graph answer
+with a citation:
+
+1. Run the anchor or bridge query.
+2. Collect distinct `source_doc_id` values from returned edges.
+3. Resolve those ids through retrieval-core's document store.
+4. Attach the passages to the answer as citations.
+
+Edges with `source_doc_id = "__inference__"` (inferred bridges) have no
+passage by construction — they ground through their *endpoint*
+entities' documents instead.
