@@ -43,3 +43,24 @@ jobs:
           cache: pip
       - run: pip install -e ".[dev]"
       - run: pytest tests/unit -q
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5-community
+        env:
+          NEO4J_AUTH: neo4j/graphmind-dev
+        ports:
+          - 7687:7687
+    env:
+      GRAPHMIND_TEST_NEO4J_URI: bolt://localhost:7687
+      GRAPHMIND_TEST_NEO4J_PASSWORD: graphmind-dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/integration -q
