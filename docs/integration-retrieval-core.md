@@ -93,3 +93,17 @@ The hop bound (`*..3`) is deliberate: unbounded `shortestPath` on a
 densely bridged graph is how you get a query that never comes back.
 Three hops covers the useful cases (A–bridge–B, A–mid–mid–B) while
 keeping worst-case expansion small.
+
+## Handling inferred edges
+
+Bridging relationships produced by `relationship_inference.py` carry
+`inferred: true` and a capped confidence. The integration's policy:
+
+- Inferred edges may *support* an answer, never *be* the answer alone:
+  a path consisting only of inferred edges is treated as "no answer".
+- When an inferred edge is used, the response marks it as inferred so
+  the caller can hedge appropriately ("likely related", not "related").
+
+This is the query-side mirror of the viewer rendering inferred edges
+dashed: the graph contains hypotheses, and consumers must know which
+edges they are.
