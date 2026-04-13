@@ -134,3 +134,17 @@ The integration filters edges client-side after the query:
 These thresholds are the query-side counterpart of the extraction-side
 `min_confidence` floor. They intentionally differ: extraction keeps a
 wider net, the query path presents a stricter one.
+
+## Failure modes and fallbacks
+
+| Failure | Behavior |
+| --- | --- |
+| Neo4j unreachable | Log, mark graph path degraded, answer via primary path only |
+| Anchor entity not found | Fall back to primary path; do not fuzzy-match silently |
+| Query exceeds latency budget | Cancel, return partial answer, record the timeout |
+| Empty graph (pre-ingestion) | Graph path reports itself empty; no error surfaced to users |
+
+The integration fails *open to the primary path* for availability but
+*closed on correctness*: a degraded graph answer is worse than no graph
+answer, because a wrong relationship stated confidently is the hardest
+bug to un-ship.
