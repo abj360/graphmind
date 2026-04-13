@@ -9,6 +9,7 @@
  *  *   FilterToggle: checkbox row for optional filters
  *  *   typeAheadCandidates(): label suggestions for the query
  *  *   ClearButton: resets the current query
+ *  *   compileSafeRegex(): parses a regex query, tolerating bad input
  */
 
 /**
@@ -116,4 +117,21 @@ export function ClearButton({ visible, onClear }) {
       ×
     </button>
   );
+}
+
+/**
+ * Parses a query as a regular expression, tolerating invalid patterns.
+ *
+ * @param query - Raw pattern text from the search input.
+ * @returns regex - Compiled RegExp, or null when the pattern is invalid.
+ */
+export function compileSafeRegex(query) {
+  if (!query) {
+    return null;
+  }
+  try {
+    return new RegExp(query, "i");
+  } catch {
+    return null;
+  }
 }
