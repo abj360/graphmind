@@ -122,3 +122,15 @@ with a citation:
 Edges with `source_doc_id = "__inference__"` (inferred bridges) have no
 passage by construction — they ground through their *endpoint*
 entities' documents instead.
+
+## Confidence thresholds
+
+The integration filters edges client-side after the query:
+
+- Below 0.5: dropped entirely — more noise than signal.
+- 0.5–0.7: usable as supporting evidence only.
+- Above 0.7: usable as primary evidence.
+
+These thresholds are the query-side counterpart of the extraction-side
+`min_confidence` floor. They intentionally differ: extraction keeps a
+wider net, the query path presents a stricter one.
