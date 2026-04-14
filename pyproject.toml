@@ -11,6 +11,8 @@ requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.6",
     "neo4j>=5.17",
+    "langchain-core>=0.2",
+    "langchain-openai>=0.1",
 ]
 
 [project.optional-dependencies]

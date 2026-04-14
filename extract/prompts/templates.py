@@ -45,16 +45,21 @@ def format_rules(rules: list[str]) -> str:
     return "\n".join(f"{position}. {rule}" for position, rule in enumerate(rules, 1))
 
 
-def build_extraction_prompt(text: str) -> str:
+def build_extraction_prompt(text: str, config: "PromptConfig | None" = None) -> str:
     """Assembles the full extraction prompt for one text window.
 
     Args:
         text: Text window the model should extract triples from.
+        config: Prompt configuration; defaults are used when omitted.
 
     Returns:
-        prompt: System prompt, rules, and the target text.
+        prompt: System prompt, rules, examples, and the target text.
     """
+    from extract.prompts.config import load_prompt_config
+
+    active = config or load_prompt_config()
     sections = [SYSTEM_PROMPT, format_rules(EXTRACTION_RULES)]
+    sections.append(format_few_shot(FEW_SHOT_EXAMPLES[: active.few_shot_count]))
     sections.append(f"Text:\n{text}\n\nTriples JSON:")
     return "\n\n".join(sections)
 
