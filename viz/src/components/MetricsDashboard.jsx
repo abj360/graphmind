@@ -6,6 +6,7 @@
  *  *   MetricsDashboard: dedup metrics panel
  *  *   DuplicateExamples: lists sample duplicate clusters
  *  *   formatConfidence(): renders mean confidence for display
+ *  *   MetricsRow: one label/value row in the grid
  */
 
 import { useEffect, useState } from "react";
@@ -97,4 +98,20 @@ export function formatConfidence(value) {
     return "—";
   }
   return value.toFixed(2);
+}
+
+/**
+ * Renders one label/value row in the metrics grid.
+ *
+ * @param props.label - Metric label.
+ * @param props.value - Preformatted metric value.
+ * @returns element - Grid row fragments for the metric.
+ */
+export function MetricsRow({ label, value }) {
+  return (
+    <>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </>
+  );
 }
