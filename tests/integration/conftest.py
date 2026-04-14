@@ -5,6 +5,7 @@ conftest.py --- shared fixtures for integration tests against Neo4j
 Contains:
     neo4j_available(): skips when no Neo4j is reachable
     neo4j_config fixture
+    loader fixture
 """
 
 import os
@@ -37,3 +38,19 @@ def neo4j_config():
         user=os.environ.get("GRAPHMIND_TEST_NEO4J_USER", "neo4j"),
         password=os.environ.get("GRAPHMIND_TEST_NEO4J_PASSWORD", "graphmind-dev"),
     )
+
+
+@pytest.fixture
+def loader(neo4j_config):
+    """Provides a connected Neo4jLoader bound to the test instance.
+
+    Args:
+        neo4j_config: Connection config fixture.
+
+    Yields:
+        loader: Connected loader, closed after the test.
+    """
+    from load.neo4j_loader import Neo4jLoader
+
+    with Neo4jLoader(neo4j_config) as instance:
+        yield instance
