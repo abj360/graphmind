@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from extract.llm_client import LLMClient
+from extract.prompts.config import PromptConfig, load_prompt_config
 from extract.prompts.templates import build_extraction_prompt
 from extract.schema import Triple, clamp_confidence, validate_triple
 
@@ -82,18 +83,26 @@ class TripleExtractor:
     Attributes:
         client: Completion provider used for extraction prompts.
         config: Extraction tunables (model, retries, confidence).
+        prompt_config: Decoupled prompt rendering configuration.
         stats: Mutable counters for the current or last run.
     """
 
-    def __init__(self, client: LLMClient, config: ExtractionConfig | None = None) -> None:
+    def __init__(
+        self,
+        client: LLMClient,
+        config: ExtractionConfig | None = None,
+        prompt_config: PromptConfig | None = None,
+    ) -> None:
         """Creates an extractor with injected dependencies.
 
         Args:
             client: Completion provider; tests pass a scripted fake.
             config: Extraction tunables; defaults applied when omitted.
+            prompt_config: Prompt rendering config; loaded when omitted.
         """
         self.client = client
         self.config = config or ExtractionConfig()
+        self.prompt_config = prompt_config or load_prompt_config()
         self.stats = ExtractionStats()
 
     def _build_prompt(self, text: str) -> str:
@@ -105,7 +114,7 @@ class TripleExtractor:
         Returns:
             prompt: Fully rendered prompt string.
         """
-        return build_extraction_prompt(text)
+        return build_extraction_prompt(text, self.prompt_config)
 
     def _complete_with_retry(self, prompt: str) -> str:
         """Requests a completion, retrying transient failures with backoff.
