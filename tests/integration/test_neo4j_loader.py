@@ -6,6 +6,7 @@ Contains:
     RecordingDriver: in-memory driver double
     make_loader(): builds a loader with a recording driver
     test_write_triples_emits_node_and_rel_queries
+    test_write_triples_applies_constraints_first
 """
 
 from typing import Any
@@ -83,3 +84,11 @@ def test_write_triples_emits_node_and_rel_queries() -> None:
     queries = [query for query, _ in driver.queries]
     assert UPSERT_NODES_QUERY in queries
     assert UPSERT_RELS_QUERY in queries
+
+
+def test_write_triples_applies_constraints_first() -> None:
+    """Checks that uniqueness constraints are applied before any batch."""
+    loader, driver = make_loader()
+    loader.write_triples([make_triple()])
+    first_queries = [query for query, _ in driver.queries[: len(Neo4jLoader.CONSTRAINT_QUERIES)]]
+    assert first_queries == Neo4jLoader.CONSTRAINT_QUERIES
