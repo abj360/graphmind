@@ -5,6 +5,8 @@ config.py --- decoupled prompt configuration loading and validation
 Contains:
     PromptConfig: rendering knobs decoupled from extraction logic
     DEFAULT_CONFIG_PATH: bundled prompt configuration file
+    load_prompt_config(): loads config from a TOML file
+    validate_prompt_config(): rejects inconsistent prompt settings
 """
 
 import tomllib
@@ -33,3 +35,45 @@ class PromptConfig:
 
 
 DEFAULT_CONFIG_PATH = Path(__file__).with_name("default.toml")
+
+
+def load_prompt_config(path: Path | None = None) -> PromptConfig:
+    """Loads prompt configuration from a TOML file.
+
+    Args:
+        path: Config file location; the bundled default is used when omitted.
+
+    Returns:
+        config: Validated prompt configuration.
+    """
+    source = path or DEFAULT_CONFIG_PATH
+    with source.open("rb") as handle:
+        data = tomllib.load(handle)
+    section = data.get("prompts", {})
+    return validate_prompt_config(
+        PromptConfig(
+            domain=section.get("domain", "general"),
+            few_shot_count=section.get("few_shot_count", 2),
+            require_citations=section.get("require_citations", False),
+            max_predicate_tokens=section.get("max_predicate_tokens", 5),
+            extra_instructions=tuple(section.get("extra_instructions", ())),
+        )
+    )
+
+
+def validate_prompt_config(config: PromptConfig) -> PromptConfig:
+    """Rejects prompt configurations that cannot render sensibly.
+
+    Args:
+        config: Candidate prompt configuration.
+
+    Returns:
+        config: The same configuration, if valid.
+    """
+    if config.few_shot_count < 0:
+        msg = f"few_shot_count {config.few_shot_count} must not be negative"
+        raise ValueError(msg)
+    if config.max_predicate_tokens < 1:
+        msg = f"max_predicate_tokens {config.max_predicate_tokens} must be at least 1"
+        raise ValueError(msg)
+    return config
