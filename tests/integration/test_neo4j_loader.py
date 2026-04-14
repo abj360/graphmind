@@ -5,6 +5,7 @@ test_neo4j_loader.py --- integration tests for the Neo4j loader against a live i
 Contains:
     RecordingDriver: in-memory driver double
     make_loader(): builds a loader with a recording driver
+    test_write_triples_emits_node_and_rel_queries
 """
 
 from typing import Any
@@ -73,3 +74,12 @@ def make_loader(failures: int = 0, batch_size: int = 2) -> tuple[Neo4jLoader, Re
     driver = RecordingDriver(failures)
     loader = Neo4jLoader(LoadConfig(batch_size=batch_size, max_retries=2), driver=driver)
     return loader, driver
+
+
+def test_write_triples_emits_node_and_rel_queries() -> None:
+    """Checks that writing triples emits both node and relationship batches."""
+    loader, driver = make_loader()
+    loader.write_triples([make_triple()])
+    queries = [query for query, _ in driver.queries]
+    assert UPSERT_NODES_QUERY in queries
+    assert UPSERT_RELS_QUERY in queries
