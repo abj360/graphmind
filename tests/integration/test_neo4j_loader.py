@@ -4,6 +4,7 @@ test_neo4j_loader.py --- integration tests for the Neo4j loader against a live i
 
 Contains:
     RecordingDriver: in-memory driver double
+    make_loader(): builds a loader with a recording driver
 """
 
 from typing import Any
@@ -56,3 +57,19 @@ class RecordingDriver:
     def close(self) -> None:
         """Marks the driver as closed."""
         self.closed = True
+
+
+def make_loader(failures: int = 0, batch_size: int = 2) -> tuple[Neo4jLoader, RecordingDriver]:
+    """Builds a loader wired to a recording driver double.
+
+    Args:
+        failures: Transient failures the driver should simulate.
+        batch_size: Batch size for the loader under test.
+
+    Returns:
+        loader: Loader under test.
+        driver: Recording driver capturing its queries.
+    """
+    driver = RecordingDriver(failures)
+    loader = Neo4jLoader(LoadConfig(batch_size=batch_size, max_retries=2), driver=driver)
+    return loader, driver
