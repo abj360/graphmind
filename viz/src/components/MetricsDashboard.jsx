@@ -7,6 +7,7 @@
  *  *   DuplicateExamples: lists sample duplicate clusters
  *  *   formatConfidence(): renders mean confidence for display
  *  *   MetricsRow: one label/value row in the grid
+ *  *   refreshInterval(): poll cadence for live metrics
  */
 
 import { useEffect, useState } from "react";
@@ -115,3 +116,5 @@ export function MetricsRow({ label, value }) {
     </>
   );
 }
+
+export const METRICS_REFRESH_MS = 30_000;
