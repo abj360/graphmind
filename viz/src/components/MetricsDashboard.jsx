@@ -6,6 +6,9 @@
  *  *   MetricsDashboard: dedup metrics panel
  *  *   DuplicateExamples: lists sample duplicate clusters
  *  *   formatConfidence(): renders mean confidence for display
+ *  *   MetricsRow: one label/value row in the grid
+ *  *   refreshInterval(): poll cadence for live metrics
+ *  *   RefreshButton: manual metrics refresh control
  */
 
 import { useEffect, useState } from "react";
@@ -97,4 +100,37 @@ export function formatConfidence(value) {
     return "—";
   }
   return value.toFixed(2);
+}
+
+/**
+ * Renders one label/value row in the metrics grid.
+ *
+ * @param props.label - Metric label.
+ * @param props.value - Preformatted metric value.
+ * @returns element - Grid row fragments for the metric.
+ */
+export function MetricsRow({ label, value }) {
+  return (
+    <>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </>
+  );
+}
+
+export const METRICS_REFRESH_MS = 30_000;
+
+/**
+ * Renders a button triggering an immediate metrics reload.
+ *
+ * @param props.onRefresh - Called when the button is pressed.
+ * @param props.busy - Whether a refresh is already in flight.
+ * @returns element - Refresh button with busy state.
+ */
+export function RefreshButton({ onRefresh, busy }) {
+  return (
+    <button type="button" className="metrics-refresh-button" onClick={onRefresh} disabled={busy}>
+      {busy ? "refreshing…" : "refresh"}
+    </button>
+  );
 }
