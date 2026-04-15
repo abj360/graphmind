@@ -11,6 +11,7 @@ Contains:
     Triple.key(): deduplication identity tuple
     clamp_confidence(): clamps a score into the unit interval
     ConfidenceStats: summary statistics over triple confidence
+    validate_triple(): coerces one raw dict into a Triple
 """
 
 from typing import Any
@@ -170,3 +171,17 @@ class ConfidenceStats(BaseModel):
     count: int = Field(ge=0)
     mean: float = Field(ge=0.0, le=1.0)
     low_confidence_count: int = Field(ge=0)
+
+
+def validate_triple(raw: dict[str, Any], source_doc_id: str) -> Triple:
+    """Coerces one raw extractor payload into a validated Triple.
+
+    Args:
+        raw: Unvalidated mapping produced by the LLM response parser.
+        source_doc_id: Document identifier stamped onto the triple.
+
+    Returns:
+        triple: Validated, immutable Triple instance.
+    """
+    payload = {**raw, "source_doc_id": source_doc_id}
+    return Triple.model_validate(payload)
