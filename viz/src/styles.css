@@ -126,3 +126,36 @@ body {
   border-radius: 50%;
   margin-right: 6px;
 }
+
+.metrics-panel {
+  background: #16202e;
+  border: 1px solid #223047;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.metrics-panel h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9fb0c7;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.metrics-grid dt {
+  color: #9fb0c7;
+}
+
+.metrics-grid dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
