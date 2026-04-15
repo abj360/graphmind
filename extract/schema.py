@@ -10,6 +10,7 @@ Contains:
     Triple: one validated subject-predicate-object fact
     Triple.key(): deduplication identity tuple
     clamp_confidence(): clamps a score into the unit interval
+    ConfidenceStats: summary statistics over triple confidence
 """
 
 from typing import Any
@@ -153,3 +154,19 @@ def clamp_confidence(score: float) -> float:
         clamped: Score constrained to the valid confidence interval.
     """
     return max(0.0, min(1.0, score))
+
+
+class ConfidenceStats(BaseModel):
+    """Summarizes the confidence distribution of a triple batch.
+
+    Attributes:
+        count: Number of triples the statistics were computed over.
+        mean: Average confidence across the batch.
+        low_confidence_count: Number of triples below the review threshold.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    count: int = Field(ge=0)
+    mean: float = Field(ge=0.0, le=1.0)
+    low_confidence_count: int = Field(ge=0)
