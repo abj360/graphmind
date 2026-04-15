@@ -37,3 +37,13 @@ wait_for_neo4j() {
     done
     fail "neo4j did not become reachable in time"
 }
+
+dump_database() {
+    local staging="$1"
+    log "exporting nodes"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH (n) RETURN n" --format plain > "${staging}/nodes.txt"
+    log "exporting relationships"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH ()-[r]->() RETURN r" --format plain > "${staging}/relationships.txt"
+}
