@@ -54,3 +54,8 @@ pack_archive() {
     tar -czf "$ARCHIVE" -C "$staging" .
     log "wrote ${ARCHIVE}"
 }
+
+prune_old_backups() {
+    log "pruning backups older than ${RETENTION_DAYS} days"
+    find "$BACKUP_DIR" -name 'neo4j-*.tar.gz' -mtime "+${RETENTION_DAYS}" -delete
+}
