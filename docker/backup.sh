@@ -47,3 +47,10 @@ dump_database() {
     cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
         "MATCH ()-[r]->() RETURN r" --format plain > "${staging}/relationships.txt"
 }
+
+pack_archive() {
+    local staging="$1"
+    mkdir -p "$BACKUP_DIR"
+    tar -czf "$ARCHIVE" -C "$staging" .
+    log "wrote ${ARCHIVE}"
+}
