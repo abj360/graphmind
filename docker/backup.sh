@@ -37,3 +37,30 @@ wait_for_neo4j() {
     done
     fail "neo4j did not become reachable in time"
 }
+
+dump_database() {
+    local staging="$1"
+    log "exporting nodes"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH (n) RETURN n" --format plain > "${staging}/nodes.txt"
+    log "exporting relationships"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH ()-[r]->() RETURN r" --format plain > "${staging}/relationships.txt"
+}
+
+pack_archive() {
+    local staging="$1"
+    mkdir -p "$BACKUP_DIR"
+    tar -czf "$ARCHIVE" -C "$staging" .
+    log "wrote ${ARCHIVE}"
+}
+
+prune_old_backups() {
+    log "pruning backups older than ${RETENTION_DAYS} days"
+    find "$BACKUP_DIR" -name 'neo4j-*.tar.gz' -mtime "+${RETENTION_DAYS}" -delete
+}
+
+verify_archive() {
+    tar -tzf "$ARCHIVE" >/dev/null 2>&1 || fail "archive ${ARCHIVE} is corrupt"
+    log "archive verified"
+}
