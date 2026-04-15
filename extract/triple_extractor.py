@@ -137,21 +137,25 @@ class TripleExtractor:
         raise ExtractionError(f"LLM completion failed after retries: {last_error}")
 
     def _parse_response(self, raw: str, doc_id: str) -> list[Triple]:
-        """Parses one raw completion into validated triples.
+        """Parses one raw completion into validated, filtered triples.
 
         Args:
             raw: Raw model output expected to embed a JSON array.
             doc_id: Document identifier stamped onto produced triples.
 
         Returns:
-            triples: Validated triples from the response.
+            triples: Validated triples passing the confidence floor.
         """
         items = self._extract_json_array(raw)
         triples: list[Triple] = []
         for item in items:
             triple = self._coerce_item(item, doc_id)
-            if triple is not None:
-                triples.append(triple)
+            if triple is None:
+                continue
+            if triple.confidence < self.config.min_confidence:
+                self.stats.dropped_low_confidence += 1
+                continue
+            triples.append(triple)
         return triples
 
     @staticmethod
