@@ -59,3 +59,8 @@ prune_old_backups() {
     log "pruning backups older than ${RETENTION_DAYS} days"
     find "$BACKUP_DIR" -name 'neo4j-*.tar.gz' -mtime "+${RETENTION_DAYS}" -delete
 }
+
+verify_archive() {
+    tar -tzf "$ARCHIVE" >/dev/null 2>&1 || fail "archive ${ARCHIVE} is corrupt"
+    log "archive verified"
+}
