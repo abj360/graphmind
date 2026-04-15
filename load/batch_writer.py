@@ -8,6 +8,7 @@ Contains:
     BatchWriter: slices triples into batched write payloads
     BatchWriter.node_rows(): deduplicated node rows from triples
     BatchWriter.relationship_rows(): rows from non-self-loop triples
+    BatchWriter.node_batches(): yields node row batches
 """
 
 from collections.abc import Iterator
@@ -91,3 +92,14 @@ class BatchWriter:
         self.metrics.relationship_rows = len(rows)
         self.metrics.skipped_self_loops = skipped
         return rows
+
+    def node_batches(self, triples: list[Triple]) -> Iterator[list[dict[str, Any]]]:
+        """Yields deduplicated node rows in fixed-size batches.
+
+        Args:
+            triples: Triples whose endpoints become node rows.
+
+        Yields:
+            batch: Node row lists of at most batch_size entries.
+        """
+        yield from batched(self.node_rows(triples), self.batch_size)
