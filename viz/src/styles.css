@@ -102,3 +102,27 @@ body {
   font-size: 13px;
   color: #c9d4e3;
 }
+
+.graph-legend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  background: rgba(19, 28, 41, 0.9);
+  border: 1px solid #223047;
+  border-radius: 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
