@@ -9,6 +9,8 @@ Contains:
     TextChunker: converts documents into extraction-ready chunks
     TextChunker.chunk(): splits one document into chunks
     TextChunker._pack_sentences(): groups sentences under the size ceiling
+    TextChunker._with_overlap(): applies trailing-context overlap
+    TextChunker.chunk_many(): chunks several documents in order
 """
 
 from dataclasses import dataclass
@@ -129,3 +131,43 @@ class TextChunker:
         if window_start is not None:
             windows.append((window_start, min(window_end, text_length)))
         return windows
+
+    def _with_overlap(
+        self, doc_id: str, text: str, windows: list[tuple[int, int]]
+    ) -> list[TextChunk]:
+        """Expands windows with trailing-context overlap and builds chunks.
+
+        Args:
+            doc_id: Identifier stamped onto every produced chunk.
+            text: Full source text of the document.
+            windows: Non-overlapping (start, end) windows to expand.
+
+        Returns:
+            chunks: Overlapping TextChunks in document order.
+        """
+        chunks: list[TextChunk] = []
+        for index, (start, end) in enumerate(windows):
+            overlapped_start = max(0, start - self.config.overlap_chars) if index else start
+            chunk_text = text[overlapped_start:end].strip()
+            if len(chunk_text) < self.config.min_chunk_chars and chunks:
+                previous = chunks[-1]
+                chunks[-1] = TextChunk(
+                    doc_id, previous.index, text[previous.start : end].strip(), previous.start, end
+                )
+                continue
+            chunks.append(TextChunk(doc_id, index, chunk_text, overlapped_start, end))
+        return chunks
+
+    def chunk_many(self, documents: list[tuple[str, str]]) -> list[TextChunk]:
+        """Chunks several documents, preserving input order.
+
+        Args:
+            documents: (doc_id, text) pairs to chunk.
+
+        Returns:
+            chunks: All chunks from all documents, in input order.
+        """
+        chunks: list[TextChunk] = []
+        for doc_id, text in documents:
+            chunks.extend(self.chunk(doc_id, text))
+        return chunks

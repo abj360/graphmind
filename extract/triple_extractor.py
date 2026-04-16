@@ -17,18 +17,25 @@ Contains:
     TripleExtractor.describe_config(): human-readable config summary
     TripleExtractor.extract_batch(): extracts from many texts at once
     TripleExtractor._batch_documents(): groups documents under batch size
+    TripleExtractor._render_batch_prompt(): joins chunks into one prompt
+    TripleExtractor._split_batch_response(): maps output back to docs
+    TripleExtractor.extract_chunks(): extracts from prepared chunks
 """
 
 import json
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from extract.chunker import TextChunk
 from extract.llm_client import LLMClient
 from extract.prompts.config import PromptConfig, load_prompt_config
 from extract.prompts.templates import build_extraction_prompt
 from extract.schema import Triple, clamp_confidence, validate_triple
+
+if TYPE_CHECKING:
+    import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -257,3 +264,55 @@ class TripleExtractor:
         """
         size = max(1, self.config.batch_size)
         return [documents[i : i + size] for i in range(0, len(documents), size)]
+
+    def _render_batch_prompt(self, batch: list[tuple[str, str]]) -> str:
+        """Renders one prompt covering several short text windows.
+
+        Args:
+            batch: (doc_id, text) pairs to cover in a single completion.
+
+        Returns:
+            prompt: Prompt with numbered sections, one per batch member.
+        """
+        sections = []
+        for position, (doc_id, text) in enumerate(batch, start=1):
+            sections.append(f"### Document {position} (id: {doc_id})\n{text}")
+        joined = "\n\n".join(sections)
+        return build_extraction_prompt(joined, self.prompt_config)
+
+    @staticmethod
+    def _split_batch_response(raw: str, batch: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """Associates segments of a batched response with their documents.
+
+        Args:
+            raw: Raw batched completion output.
+            batch: Documents that were included in the batch prompt.
+
+        Returns:
+            segments: (doc_id, response segment) pairs, one per document.
+        """
+        items = TripleExtractor._extract_json_array(raw)
+        if not items or not any("doc_id" in item for item in items):
+            return [(batch[0][0], raw)] if batch else []
+        segments: list[tuple[str, str]] = []
+        for doc_id, _ in batch:
+            own = [item for item in items if item.get("doc_id") == doc_id]
+            segments.append((doc_id, json.dumps(own)))
+        return segments
+
+    def extract_chunks(self, chunks: list[TextChunk]) -> list[Triple]:
+        """Extracts triples from pre-chunked text, batching when beneficial.
+
+        Args:
+            chunks: Prepared TextChunks from the chunking pass.
+
+        Returns:
+            triples: All extracted triples across the chunk set.
+        """
+        if len(chunks) <= self.config.batch_size:
+            triples: list[Triple] = []
+            for chunk in chunks:
+                triples.extend(self.extract_text(chunk.doc_id, chunk.text))
+            return triples
+        documents = [(chunk.doc_id, chunk.text) for chunk in chunks]
+        return self.extract_batch(documents)
