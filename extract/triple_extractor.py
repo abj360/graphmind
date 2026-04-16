@@ -18,6 +18,7 @@ Contains:
     TripleExtractor.extract_batch(): extracts from many texts at once
     TripleExtractor._batch_documents(): groups documents under batch size
     TripleExtractor._render_batch_prompt(): joins chunks into one prompt
+    TripleExtractor._split_batch_response(): maps output back to docs
 """
 
 import json
@@ -273,3 +274,23 @@ class TripleExtractor:
             sections.append(f"### Document {position} (id: {doc_id})\n{text}")
         joined = "\n\n".join(sections)
         return build_extraction_prompt(joined, self.prompt_config)
+
+    @staticmethod
+    def _split_batch_response(raw: str, batch: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """Associates segments of a batched response with their documents.
+
+        Args:
+            raw: Raw batched completion output.
+            batch: Documents that were included in the batch prompt.
+
+        Returns:
+            segments: (doc_id, response segment) pairs, one per document.
+        """
+        items = TripleExtractor._extract_json_array(raw)
+        if not items or not any("doc_id" in item for item in items):
+            return [(batch[0][0], raw)] if batch else []
+        segments: list[tuple[str, str]] = []
+        for doc_id, _ in batch:
+            own = [item for item in items if item.get("doc_id") == doc_id]
+            segments.append((doc_id, json.dumps(own)))
+        return segments
