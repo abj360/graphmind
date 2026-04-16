@@ -9,6 +9,7 @@
  *  *   test: graph endpoint honors the limit parameter
  *  *   test: limit parameter is clamped to range
  *  *   test: labels endpoint lists entity types
+ *  *   test: unknown route returns JSON 404
  */
 
 import assert from "node:assert/strict";
@@ -70,4 +71,11 @@ test("GET /api/graph/labels lists entity types with counts", async () => {
   const response = await request(app).get("/api/graph/labels");
   assert.equal(response.status, 200);
   assert.deepEqual(response.body, [{ type: "ORG", count: 4 }]);
+});
+
+test("unknown routes return a JSON 404", async () => {
+  const { app } = await makeApp();
+  const response = await request(app).get("/api/nope");
+  assert.equal(response.status, 404);
+  assert.match(response.body.error, /no such route/);
 });
