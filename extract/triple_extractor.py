@@ -17,6 +17,7 @@ Contains:
     TripleExtractor.describe_config(): human-readable config summary
     TripleExtractor.extract_batch(): extracts from many texts at once
     TripleExtractor._batch_documents(): groups documents under batch size
+    TripleExtractor._render_batch_prompt(): joins chunks into one prompt
 """
 
 import json
@@ -257,3 +258,18 @@ class TripleExtractor:
         """
         size = max(1, self.config.batch_size)
         return [documents[i : i + size] for i in range(0, len(documents), size)]
+
+    def _render_batch_prompt(self, batch: list[tuple[str, str]]) -> str:
+        """Renders one prompt covering several short text windows.
+
+        Args:
+            batch: (doc_id, text) pairs to cover in a single completion.
+
+        Returns:
+            prompt: Prompt with numbered sections, one per batch member.
+        """
+        sections = []
+        for position, (doc_id, text) in enumerate(batch, start=1):
+            sections.append(f"### Document {position} (id: {doc_id})\n{text}")
+        joined = "\n\n".join(sections)
+        return build_extraction_prompt(joined, self.prompt_config)
