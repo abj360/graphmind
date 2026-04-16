@@ -8,6 +8,7 @@
  *  *   test: graph endpoint dedupes repeated nodes
  *  *   test: graph endpoint honors the limit parameter
  *  *   test: limit parameter is clamped to range
+ *  *   test: labels endpoint lists entity types
  */
 
 import assert from "node:assert/strict";
@@ -58,4 +59,15 @@ test("GET /api/graph clamps an excessive limit", async () => {
   await request(app).get("/api/graph?limit=999999");
   const call = driver.calls.find((entry) => entry.params.limit);
   assert.equal(call.params.limit, 5000);
+});
+
+test("GET /api/graph/labels lists entity types with counts", async () => {
+  const { app } = await makeApp({
+    "RETURN DISTINCT n.entity_type": [
+      { get: (key) => (key === "type" ? "ORG" : { toNumber: () => 4 }) },
+    ],
+  });
+  const response = await request(app).get("/api/graph/labels");
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body, [{ type: "ORG", count: 4 }]);
 });
