@@ -10,6 +10,7 @@ Contains:
     TextChunker.chunk(): splits one document into chunks
     TextChunker._pack_sentences(): groups sentences under the size ceiling
     TextChunker._with_overlap(): applies trailing-context overlap
+    TextChunker.chunk_many(): chunks several documents in order
 """
 
 from dataclasses import dataclass
@@ -155,4 +156,18 @@ class TextChunker:
                 )
                 continue
             chunks.append(TextChunk(doc_id, index, chunk_text, overlapped_start, end))
+        return chunks
+
+    def chunk_many(self, documents: list[tuple[str, str]]) -> list[TextChunk]:
+        """Chunks several documents, preserving input order.
+
+        Args:
+            documents: (doc_id, text) pairs to chunk.
+
+        Returns:
+            chunks: All chunks from all documents, in input order.
+        """
+        chunks: list[TextChunk] = []
+        for doc_id, text in documents:
+            chunks.extend(self.chunk(doc_id, text))
         return chunks
