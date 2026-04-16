@@ -19,6 +19,7 @@ Contains:
     TripleExtractor._batch_documents(): groups documents under batch size
     TripleExtractor._render_batch_prompt(): joins chunks into one prompt
     TripleExtractor._split_batch_response(): maps output back to docs
+    TripleExtractor.extract_chunks(): extracts from prepared chunks
 """
 
 import json
@@ -294,3 +295,20 @@ class TripleExtractor:
             own = [item for item in items if item.get("doc_id") == doc_id]
             segments.append((doc_id, json.dumps(own)))
         return segments
+
+    def extract_chunks(self, chunks: list[TextChunk]) -> list[Triple]:
+        """Extracts triples from pre-chunked text, batching when beneficial.
+
+        Args:
+            chunks: Prepared TextChunks from the chunking pass.
+
+        Returns:
+            triples: All extracted triples across the chunk set.
+        """
+        if len(chunks) <= self.config.batch_size:
+            triples: list[Triple] = []
+            for chunk in chunks:
+                triples.extend(self.extract_text(chunk.doc_id, chunk.text))
+            return triples
+        documents = [(chunk.doc_id, chunk.text) for chunk in chunks]
+        return self.extract_batch(documents)
