@@ -5,6 +5,9 @@
  *  * Contains:
  *  *   test: health endpoint returns ok
  *  *   test: graph endpoint returns nodes and edges
+ *  *   test: graph endpoint dedupes repeated nodes
+ *  *   test: graph endpoint honors the limit parameter
+ *  *   test: limit parameter is clamped to range
  */
 
 import assert from "node:assert/strict";
@@ -30,4 +33,29 @@ test("GET /api/graph returns nodes and edges", async () => {
   assert.equal(response.body.nodes.length, 2);
   assert.equal(response.body.edges.length, 1);
   assert.equal(response.body.edges[0].predicate, "founded");
+});
+
+test("GET /api/graph dedupes repeated nodes", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [
+      fakeRecord("Alice", "founded", "Acme"),
+      fakeRecord("Bob", "joined", "Acme"),
+    ],
+  });
+  const response = await request(app).get("/api/graph");
+  assert.equal(response.body.nodes.length, 3);
+});
+
+test("GET /api/graph passes a parsed limit to the query", async () => {
+  const { app, driver } = await makeApp({ "MATCH (n:Entity)": [] });
+  await request(app).get("/api/graph?limit=50");
+  const call = driver.calls.find((entry) => entry.params.limit);
+  assert.equal(call.params.limit, 50);
+});
+
+test("GET /api/graph clamps an excessive limit", async () => {
+  const { app, driver } = await makeApp({ "MATCH (n:Entity)": [] });
+  await request(app).get("/api/graph?limit=999999");
+  const call = driver.calls.find((entry) => entry.params.limit);
+  assert.equal(call.params.limit, 5000);
 });
