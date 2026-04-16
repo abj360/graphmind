@@ -26,12 +26,16 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from extract.chunker import TextChunk
 from extract.llm_client import LLMClient
 from extract.prompts.config import PromptConfig, load_prompt_config
 from extract.prompts.templates import build_extraction_prompt
 from extract.schema import Triple, clamp_confidence, validate_triple
+
+if TYPE_CHECKING:
+    import argparse
 
 logger = logging.getLogger(__name__)
 
