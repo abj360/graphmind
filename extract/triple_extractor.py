@@ -22,6 +22,7 @@ Contains:
     TripleExtractor.extract_chunks(): extracts from prepared chunks
     calibrate_confidence(): adjusts raw scores for missing citations
     extract_from_documents(): one-shot convenience pipeline
+    ExtractionResult: triples bundled with their run stats
 """
 
 import json
@@ -353,3 +354,16 @@ def extract_from_documents(
     """
     extractor = TripleExtractor(client, config)
     return extractor.extract_batch(documents)
+
+
+@dataclass(frozen=True)
+class ExtractionResult:
+    """Bundles extracted triples with the stats of the producing run.
+
+    Attributes:
+        triples: Triples produced by the run.
+        stats: Counters describing the run.
+    """
+
+    triples: list[Triple]
+    stats: ExtractionStats
