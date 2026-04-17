@@ -26,6 +26,7 @@ Contains:
     Neo4jLoader.delete_doc_triples(): removes a document's facts
     load_triples(): one-shot convenience loader
     format_load_stats(): one-line load summary
+    main(): CLI entrypoint for the loader
 """
 
 import logging
@@ -328,3 +329,28 @@ def format_load_stats(stats: LoadStats) -> str:
         f"batches={stats.batches_written} retries={stats.retries} "
         f"took={stats.duration_seconds:.2f}s"
     )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Runs the loader CLI over a resolved-triples JSONL file.
+
+    Args:
+        argv: Command-line arguments; sys.argv when omitted.
+
+    Returns:
+        exit_code: 0 on success, nonzero on failure.
+    """
+    import argparse
+    import json
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description="Load resolved triples into Neo4j")
+    parser.add_argument("--input", required=True, help="resolved triples JSONL path")
+    args = parser.parse_args(argv)
+    triples = []
+    for line in Path(args.input).read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            triples.append(Triple.model_validate(json.loads(line)))
+    stats = load_triples(triples)
+    logger.info("%s", format_load_stats(stats))
+    return 0
