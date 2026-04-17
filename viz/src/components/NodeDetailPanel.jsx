@@ -6,6 +6,8 @@
  *  *   NodeDetailPanel: selected-node detail view
  *  *   IncidentEdge: one relationship row in the panel
  *  *   confidenceBadge(): color hint for a confidence score
+ *  *   groupByDirection(): splits incident edges by direction
+ *  *   sortByConfidence(): orders edges strongest first
  */
 
 /**
@@ -76,4 +78,34 @@ export function confidenceBadge(confidence) {
     return "badge-mid";
   }
   return "badge-low";
+}
+
+/**
+ * Splits incident edges into outgoing and incoming groups.
+ *
+ * @param edges - Edges incident to the focused node.
+ * @param focus - Id of the focused node.
+ * @returns groups - { outgoing, incoming } edge lists.
+ */
+export function groupByDirection(edges, focus) {
+  const outgoing = [];
+  const incoming = [];
+  for (const edge of edges) {
+    if (edge.source === focus) {
+      outgoing.push(edge);
+    } else {
+      incoming.push(edge);
+    }
+  }
+  return { outgoing, incoming };
+}
+
+/**
+ * Orders edges by confidence, strongest first, nulls last.
+ *
+ * @param edges - Edge list to sort.
+ * @returns edges - Sorted copy of the input list.
+ */
+export function sortByConfidence(edges) {
+  return [...edges].sort((left, right) => (right.confidence ?? -1) - (left.confidence ?? -1));
 }
