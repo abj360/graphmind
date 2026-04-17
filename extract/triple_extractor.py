@@ -25,6 +25,7 @@ Contains:
     ExtractionResult: triples bundled with their run stats
     extract_with_result(): extraction returning stats alongside
     merge_extraction_stats(): combines counters across runs
+    validate_extraction_config(): rejects inconsistent tunables
 """
 
 import json
@@ -402,3 +403,24 @@ def merge_extraction_stats(target: ExtractionStats, source: ExtractionStats) -> 
     target.dropped_low_confidence += source.dropped_low_confidence
     target.dropped_missing_span += source.dropped_missing_span
     return target
+
+
+def validate_extraction_config(config: ExtractionConfig) -> ExtractionConfig:
+    """Rejects extraction configurations that cannot work as requested.
+
+    Args:
+        config: Candidate extraction configuration.
+
+    Returns:
+        config: The same configuration, if valid.
+    """
+    if not 0.0 <= config.min_confidence <= 1.0:
+        msg = f"min_confidence {config.min_confidence} outside [0, 1]"
+        raise ValueError(msg)
+    if config.batch_size < 1:
+        msg = f"batch_size {config.batch_size} must be at least 1"
+        raise ValueError(msg)
+    if config.max_retries < 0:
+        msg = f"max_retries {config.max_retries} must not be negative"
+        raise ValueError(msg)
+    return config
