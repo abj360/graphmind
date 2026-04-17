@@ -12,6 +12,7 @@ Contains:
     clamp_confidence(): clamps a score into the unit interval
     ConfidenceStats: summary statistics over triple confidence
     validate_triple(): coerces one raw dict into a Triple
+    confidence_stats(): computes ConfidenceStats for a batch
 """
 
 from typing import Any
@@ -185,3 +186,20 @@ def validate_triple(raw: dict[str, Any], source_doc_id: str) -> Triple:
     """
     payload = {**raw, "source_doc_id": source_doc_id}
     return Triple.model_validate(payload)
+
+
+def confidence_stats(triples: list[Triple], review_threshold: float = 0.6) -> ConfidenceStats:
+    """Computes summary confidence statistics for a batch of triples.
+
+    Args:
+        triples: Triples whose confidence distribution is summarized.
+        review_threshold: Score below which a triple counts as low-confidence.
+
+    Returns:
+        stats: Aggregated count, mean, and low-confidence tally.
+    """
+    if not triples:
+        return ConfidenceStats(count=0, mean=0.0, low_confidence_count=0)
+    mean = sum(t.confidence for t in triples) / len(triples)
+    low = sum(1 for t in triples if t.confidence < review_threshold)
+    return ConfidenceStats(count=len(triples), mean=mean, low_confidence_count=low)
