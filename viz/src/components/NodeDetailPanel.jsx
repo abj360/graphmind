@@ -7,6 +7,7 @@
  *  *   IncidentEdge: one relationship row in the panel
  *  *   confidenceBadge(): color hint for a confidence score
  *  *   groupByDirection(): splits incident edges by direction
+ *  *   sortByConfidence(): orders edges strongest first
  */
 
 /**
@@ -97,4 +98,14 @@ export function groupByDirection(edges, focus) {
     }
   }
   return { outgoing, incoming };
+}
+
+/**
+ * Orders edges by confidence, strongest first, nulls last.
+ *
+ * @param edges - Edge list to sort.
+ * @returns edges - Sorted copy of the input list.
+ */
+export function sortByConfidence(edges) {
+  return [...edges].sort((left, right) => (right.confidence ?? -1) - (left.confidence ?? -1));
 }
