@@ -24,6 +24,7 @@ Contains:
     extract_from_documents(): one-shot convenience pipeline
     ExtractionResult: triples bundled with their run stats
     extract_with_result(): extraction returning stats alongside
+    merge_extraction_stats(): combines counters across runs
 """
 
 import json
@@ -383,3 +384,21 @@ def extract_with_result(extractor: TripleExtractor, doc_id: str, text: str) -> E
     """
     triples = extractor.extract_text(doc_id, text)
     return ExtractionResult(triples=triples, stats=extractor.stats)
+
+
+def merge_extraction_stats(target: ExtractionStats, source: ExtractionStats) -> ExtractionStats:
+    """Merges one stats counter set into another.
+
+    Args:
+        target: Counter set accumulating the combined totals.
+        source: Counter set whose values are added in.
+
+    Returns:
+        target: The mutated target, for convenient chaining.
+    """
+    target.calls_made += source.calls_made
+    target.triples_extracted += source.triples_extracted
+    target.retries += source.retries
+    target.dropped_low_confidence += source.dropped_low_confidence
+    target.dropped_missing_span += source.dropped_missing_span
+    return target
