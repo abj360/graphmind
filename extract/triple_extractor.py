@@ -20,6 +20,8 @@ Contains:
     TripleExtractor._render_batch_prompt(): joins chunks into one prompt
     TripleExtractor._split_batch_response(): maps output back to docs
     TripleExtractor.extract_chunks(): extracts from prepared chunks
+    calibrate_confidence(): adjusts raw scores for missing citations
+    extract_from_documents(): one-shot convenience pipeline
 """
 
 import json
@@ -316,3 +318,38 @@ class TripleExtractor:
             return triples
         documents = [(chunk.doc_id, chunk.text) for chunk in chunks]
         return self.extract_batch(documents)
+
+
+def calibrate_confidence(raw_score: float, has_span: bool) -> float:
+    """Adjusts a raw model-reported score using citation presence.
+
+    Args:
+        raw_score: Model-reported confidence, possibly out of range.
+        has_span: Whether the triple carries a source-span citation.
+
+    Returns:
+        calibrated: Clamped score, discounted when no citation exists.
+    """
+    score = clamp_confidence(raw_score)
+    if not has_span:
+        score *= 0.8
+    return round(score, 4)
+
+
+def extract_from_documents(
+    client: LLMClient,
+    documents: list[tuple[str, str]],
+    config: ExtractionConfig | None = None,
+) -> list[Triple]:
+    """Runs chunk-free extraction over documents with a fresh extractor.
+
+    Args:
+        client: Completion provider used for extraction prompts.
+        documents: (doc_id, text) pairs to extract from.
+        config: Extraction tunables; defaults applied when omitted.
+
+    Returns:
+        triples: All extracted triples across the document set.
+    """
+    extractor = TripleExtractor(client, config)
+    return extractor.extract_batch(documents)
