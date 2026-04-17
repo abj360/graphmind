@@ -27,6 +27,7 @@ Contains:
     load_triples(): one-shot convenience loader
     format_load_stats(): one-line load summary
     main(): CLI entrypoint for the loader
+    module entrypoint guard
 """
 
 import logging
@@ -354,3 +355,7 @@ def main(argv: list[str] | None = None) -> int:
     stats = load_triples(triples)
     logger.info("%s", format_load_stats(stats))
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
