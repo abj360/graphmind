@@ -23,6 +23,7 @@ Contains:
     calibrate_confidence(): adjusts raw scores for missing citations
     extract_from_documents(): one-shot convenience pipeline
     ExtractionResult: triples bundled with their run stats
+    extract_with_result(): extraction returning stats alongside
 """
 
 import json
@@ -367,3 +368,18 @@ class ExtractionResult:
 
     triples: list[Triple]
     stats: ExtractionStats
+
+
+def extract_with_result(extractor: TripleExtractor, doc_id: str, text: str) -> ExtractionResult:
+    """Runs extraction and returns triples bundled with run stats.
+
+    Args:
+        extractor: Extractor instance to run.
+        doc_id: Document identifier stamped onto produced triples.
+        text: Raw document text to extract from.
+
+    Returns:
+        result: Triples bundled with the producing run's counters.
+    """
+    triples = extractor.extract_text(doc_id, text)
+    return ExtractionResult(triples=triples, stats=extractor.stats)
