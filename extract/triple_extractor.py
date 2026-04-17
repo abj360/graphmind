@@ -20,6 +20,12 @@ Contains:
     TripleExtractor._render_batch_prompt(): joins chunks into one prompt
     TripleExtractor._split_batch_response(): maps output back to docs
     TripleExtractor.extract_chunks(): extracts from prepared chunks
+    calibrate_confidence(): adjusts raw scores for missing citations
+    extract_from_documents(): one-shot convenience pipeline
+    ExtractionResult: triples bundled with their run stats
+    extract_with_result(): extraction returning stats alongside
+    merge_extraction_stats(): combines counters across runs
+    validate_extraction_config(): rejects inconsistent tunables
 """
 
 import json
@@ -316,3 +322,105 @@ class TripleExtractor:
             return triples
         documents = [(chunk.doc_id, chunk.text) for chunk in chunks]
         return self.extract_batch(documents)
+
+
+def calibrate_confidence(raw_score: float, has_span: bool) -> float:
+    """Adjusts a raw model-reported score using citation presence.
+
+    Args:
+        raw_score: Model-reported confidence, possibly out of range.
+        has_span: Whether the triple carries a source-span citation.
+
+    Returns:
+        calibrated: Clamped score, discounted when no citation exists.
+    """
+    score = clamp_confidence(raw_score)
+    if not has_span:
+        score *= 0.8
+    return round(score, 4)
+
+
+def extract_from_documents(
+    client: LLMClient,
+    documents: list[tuple[str, str]],
+    config: ExtractionConfig | None = None,
+) -> list[Triple]:
+    """Runs chunk-free extraction over documents with a fresh extractor.
+
+    Args:
+        client: Completion provider used for extraction prompts.
+        documents: (doc_id, text) pairs to extract from.
+        config: Extraction tunables; defaults applied when omitted.
+
+    Returns:
+        triples: All extracted triples across the document set.
+    """
+    extractor = TripleExtractor(client, config)
+    return extractor.extract_batch(documents)
+
+
+@dataclass(frozen=True)
+class ExtractionResult:
+    """Bundles extracted triples with the stats of the producing run.
+
+    Attributes:
+        triples: Triples produced by the run.
+        stats: Counters describing the run.
+    """
+
+    triples: list[Triple]
+    stats: ExtractionStats
+
+
+def extract_with_result(extractor: TripleExtractor, doc_id: str, text: str) -> ExtractionResult:
+    """Runs extraction and returns triples bundled with run stats.
+
+    Args:
+        extractor: Extractor instance to run.
+        doc_id: Document identifier stamped onto produced triples.
+        text: Raw document text to extract from.
+
+    Returns:
+        result: Triples bundled with the producing run's counters.
+    """
+    triples = extractor.extract_text(doc_id, text)
+    return ExtractionResult(triples=triples, stats=extractor.stats)
+
+
+def merge_extraction_stats(target: ExtractionStats, source: ExtractionStats) -> ExtractionStats:
+    """Merges one stats counter set into another.
+
+    Args:
+        target: Counter set accumulating the combined totals.
+        source: Counter set whose values are added in.
+
+    Returns:
+        target: The mutated target, for convenient chaining.
+    """
+    target.calls_made += source.calls_made
+    target.triples_extracted += source.triples_extracted
+    target.retries += source.retries
+    target.dropped_low_confidence += source.dropped_low_confidence
+    target.dropped_missing_span += source.dropped_missing_span
+    return target
+
+
+def validate_extraction_config(config: ExtractionConfig) -> ExtractionConfig:
+    """Rejects extraction configurations that cannot work as requested.
+
+    Args:
+        config: Candidate extraction configuration.
+
+    Returns:
+        config: The same configuration, if valid.
+    """
+    if not 0.0 <= config.min_confidence <= 1.0:
+        msg = f"min_confidence {config.min_confidence} outside [0, 1]"
+        raise ValueError(msg)
+    if config.batch_size < 1:
+        msg = f"batch_size {config.batch_size} must be at least 1"
+        raise ValueError(msg)
+    if config.max_retries < 0:
+        msg = f"max_retries {config.max_retries} must not be negative"
+        raise ValueError(msg)
+    return config
