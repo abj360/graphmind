@@ -12,6 +12,7 @@
  *  *   edgeLabelFor(): compact label for crowded canvases
  *  *   filterEdgesForDensity(): hides labels beyond a density bound
  *  *   zIndexFor(): keeps edges below node labels
+ *  *   visibleEdgeWidth(): scales width with confidence
  */
 
 import cytoscape from "cytoscape";
@@ -185,4 +186,17 @@ export function shouldShowEdgeLabels(nodeCount, edgeCount) {
  */
 export function edgeZIndex(edge) {
   return edge.inferred ? 1 : 2;
+}
+
+/**
+ * Scales an edge's width by its confidence score.
+ *
+ * @param confidence - Confidence between 0 and 1, possibly null.
+ * @returns width - Pixel width between 1 and 5.
+ */
+export function edgeWidthFor(confidence) {
+  if (typeof confidence !== "number") {
+    return 2;
+  }
+  return 1 + 4 * Math.min(Math.max(confidence, 0), 1);
 }
