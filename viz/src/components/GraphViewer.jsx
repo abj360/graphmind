@@ -10,6 +10,7 @@
  *  *   curveStyleFor(): picks a curve style per edge index
  *  *   assignParallelIndices(): numbers edges within endpoint groups
  *  *   edgeLabelFor(): compact label for crowded canvases
+ *  *   filterEdgesForDensity(): hides labels beyond a density bound
  */
 
 import cytoscape from "cytoscape";
@@ -159,4 +160,18 @@ export function edgeLabelFor(edge, showConfidence = false) {
     return `${edge.predicate} (${edge.confidence.toFixed(2)})`;
   }
   return edge.predicate;
+}
+
+/**
+ * Decides whether edge labels should render given graph density.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @param edgeCount - Number of visible edges.
+ * @returns show - False when the canvas is too dense for readable labels.
+ */
+export function shouldShowEdgeLabels(nodeCount, edgeCount) {
+  if (nodeCount === 0) {
+    return true;
+  }
+  return edgeCount / nodeCount <= 3 && edgeCount <= 800;
 }
