@@ -10,6 +10,10 @@
  *  *   curveStyleFor(): picks a curve style per edge index
  *  *   assignParallelIndices(): numbers edges within endpoint groups
  *  *   edgeLabelFor(): compact label for crowded canvases
+ *  *   filterEdgesForDensity(): hides labels beyond a density bound
+ *  *   zIndexFor(): keeps edges below node labels
+ *  *   visibleEdgeWidth(): scales width with confidence
+ *  *   fitToContent(): recenters the canvas after load
  */
 
 import cytoscape from "cytoscape";
@@ -159,4 +163,52 @@ export function edgeLabelFor(edge, showConfidence = false) {
     return `${edge.predicate} (${edge.confidence.toFixed(2)})`;
   }
   return edge.predicate;
+}
+
+/**
+ * Decides whether edge labels should render given graph density.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @param edgeCount - Number of visible edges.
+ * @returns show - False when the canvas is too dense for readable labels.
+ */
+export function shouldShowEdgeLabels(nodeCount, edgeCount) {
+  if (nodeCount === 0) {
+    return true;
+  }
+  return edgeCount / nodeCount <= 3 && edgeCount <= 800;
+}
+
+/**
+ * Computes the z-index for edges relative to node labels.
+ *
+ * @param edge - Edge data with the inferred flag.
+ * @returns zIndex - Lower for inferred edges, keeping them visually behind.
+ */
+export function edgeZIndex(edge) {
+  return edge.inferred ? 1 : 2;
+}
+
+/**
+ * Scales an edge's width by its confidence score.
+ *
+ * @param confidence - Confidence between 0 and 1, possibly null.
+ * @returns width - Pixel width between 1 and 5.
+ */
+export function edgeWidthFor(confidence) {
+  if (typeof confidence !== "number") {
+    return 2;
+  }
+  return 1 + 4 * Math.min(Math.max(confidence, 0), 1);
+}
+
+/**
+ * Recenters the canvas to fit all elements after a load.
+ *
+ * @param cy - Cytoscape instance to fit.
+ * @param padding - Pixel padding around the fitted elements.
+ */
+export function fitToContent(cy, padding = 40) {
+  cy.fit(undefined, padding);
+  cy.center();
 }
