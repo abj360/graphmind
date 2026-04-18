@@ -19,3 +19,14 @@ files = [
 [package.dependencies]
 annotated-types = ">=0.4.0"
 pydantic-core = "2.18.2"
+
+[[package]]
+name = "pydantic-core"
+version = "2.18.2"
+description = "Core functionality for Pydantic validation and serialization"
+files = [
+    {file = "pydantic_core-2.18.2-cp312-cp312-manylinux_2_17_x86_64.whl", hash = "sha256:2f29ea6e3b07286dc43ba8f87b3807727ab773e9b0e7b0d2f7992049dc4d761d"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6.0"
