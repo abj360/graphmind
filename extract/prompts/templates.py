@@ -10,6 +10,10 @@ Contains:
     FEW_SHOT_EXAMPLE_TECHNICAL: worked example for technical docs
     FEW_SHOT_EXAMPLE_NEWS: worked example for news prose
     FEW_SHOT_EXAMPLES: registry of worked examples
+    format_few_shot(): renders worked examples as prompt text
+    DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
+    DOMAIN_HINT_NEWS: extraction guidance for news prose
+    DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
 """
 
 from typing import TYPE_CHECKING
@@ -103,3 +107,37 @@ FEW_SHOT_EXAMPLE_NEWS: dict[str, object] = {
 }
 
 FEW_SHOT_EXAMPLES = [FEW_SHOT_EXAMPLE_TECHNICAL, FEW_SHOT_EXAMPLE_NEWS]
+
+
+def format_few_shot(examples: list[dict[str, object]]) -> str:
+    """Renders worked examples as demonstration blocks for the prompt.
+
+    Args:
+        examples: Example mappings with input and output keys.
+
+    Returns:
+        block: Demonstration text with one block per example.
+    """
+    import json
+
+    blocks = []
+    for example in examples:
+        rendered = json.dumps(example["output"], indent=2)
+        blocks.append(f"Example input:\n{example['input']}\nExample output:\n{rendered}")
+    return "\n\n".join(blocks)
+
+
+DOMAIN_HINT_TECHNICAL = (
+    "Prefer SOFTWARE, PROTOCOL, and CONCEPT entity types. Versioned "
+    "dependencies and configuration relationships are usually explicit."
+)
+
+DOMAIN_HINT_NEWS = (
+    "Prefer PERSON, ORG, and GPE entity types. Acquisitions, employment, "
+    "and location relationships dominate; keep predicates in past tense."
+)
+
+DOMAIN_HINT_BIOMEDICAL = (
+    "Prefer GENE, DISEASE, DRUG, and PATHWAY entity types. Only extract "
+    "experimentally stated interactions, not background-knowledge ones."
+)
