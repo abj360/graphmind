@@ -11,6 +11,7 @@
  *  *   assignParallelIndices(): numbers edges within endpoint groups
  *  *   edgeLabelFor(): compact label for crowded canvases
  *  *   filterEdgesForDensity(): hides labels beyond a density bound
+ *  *   zIndexFor(): keeps edges below node labels
  */
 
 import cytoscape from "cytoscape";
@@ -174,4 +175,14 @@ export function shouldShowEdgeLabels(nodeCount, edgeCount) {
     return true;
   }
   return edgeCount / nodeCount <= 3 && edgeCount <= 800;
+}
+
+/**
+ * Computes the z-index for edges relative to node labels.
+ *
+ * @param edge - Edge data with the inferred flag.
+ * @returns zIndex - Lower for inferred edges, keeping them visually behind.
+ */
+export function edgeZIndex(edge) {
+  return edge.inferred ? 1 : 2;
 }
