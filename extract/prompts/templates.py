@@ -13,6 +13,7 @@ Contains:
     format_few_shot(): renders worked examples as prompt text
     DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
     DOMAIN_HINT_NEWS: extraction guidance for news prose
+    DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
 """
 
 from typing import TYPE_CHECKING
@@ -134,4 +135,9 @@ DOMAIN_HINT_TECHNICAL = (
 DOMAIN_HINT_NEWS = (
     "Prefer PERSON, ORG, and GPE entity types. Acquisitions, employment, "
     "and location relationships dominate; keep predicates in past tense."
+)
+
+DOMAIN_HINT_BIOMEDICAL = (
+    "Prefer GENE, DISEASE, DRUG, and PATHWAY entity types. Only extract "
+    "experimentally stated interactions, not background-knowledge ones."
 )
