@@ -12,6 +12,7 @@ Contains:
     FEW_SHOT_EXAMPLES: registry of worked examples
     format_few_shot(): renders worked examples as prompt text
     DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
+    DOMAIN_HINT_NEWS: extraction guidance for news prose
 """
 
 from typing import TYPE_CHECKING
@@ -128,4 +129,9 @@ def format_few_shot(examples: list[dict[str, object]]) -> str:
 DOMAIN_HINT_TECHNICAL = (
     "Prefer SOFTWARE, PROTOCOL, and CONCEPT entity types. Versioned "
     "dependencies and configuration relationships are usually explicit."
+)
+
+DOMAIN_HINT_NEWS = (
+    "Prefer PERSON, ORG, and GPE entity types. Acquisitions, employment, "
+    "and location relationships dominate; keep predicates in past tense."
 )
