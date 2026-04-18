@@ -11,6 +11,7 @@ Contains:
     FEW_SHOT_EXAMPLE_NEWS: worked example for news prose
     FEW_SHOT_EXAMPLES: registry of worked examples
     format_few_shot(): renders worked examples as prompt text
+    DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
 """
 
 from typing import TYPE_CHECKING
@@ -122,3 +123,9 @@ def format_few_shot(examples: list[dict[str, object]]) -> str:
         rendered = json.dumps(example["output"], indent=2)
         blocks.append(f"Example input:\n{example['input']}\nExample output:\n{rendered}")
     return "\n\n".join(blocks)
+
+
+DOMAIN_HINT_TECHNICAL = (
+    "Prefer SOFTWARE, PROTOCOL, and CONCEPT entity types. Versioned "
+    "dependencies and configuration relationships are usually explicit."
+)
