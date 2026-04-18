@@ -10,6 +10,7 @@ Contains:
     FEW_SHOT_EXAMPLE_TECHNICAL: worked example for technical docs
     FEW_SHOT_EXAMPLE_NEWS: worked example for news prose
     FEW_SHOT_EXAMPLES: registry of worked examples
+    format_few_shot(): renders worked examples as prompt text
 """
 
 from typing import TYPE_CHECKING
@@ -103,3 +104,21 @@ FEW_SHOT_EXAMPLE_NEWS: dict[str, object] = {
 }
 
 FEW_SHOT_EXAMPLES = [FEW_SHOT_EXAMPLE_TECHNICAL, FEW_SHOT_EXAMPLE_NEWS]
+
+
+def format_few_shot(examples: list[dict[str, object]]) -> str:
+    """Renders worked examples as demonstration blocks for the prompt.
+
+    Args:
+        examples: Example mappings with input and output keys.
+
+    Returns:
+        block: Demonstration text with one block per example.
+    """
+    import json
+
+    blocks = []
+    for example in examples:
+        rendered = json.dumps(example["output"], indent=2)
+        blocks.append(f"Example input:\n{example['input']}\nExample output:\n{rendered}")
+    return "\n\n".join(blocks)
