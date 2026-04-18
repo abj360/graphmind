@@ -15,6 +15,8 @@ Contains:
     count_distinct_entities(): counts exact-match distinct names
     summarize_merges(): renders merge decisions for review
     strip_company_suffixes(): drops legal suffixes from names
+    token_overlap_score(): jaccard-style overlap of two names
+    explain_match(): debug helper for merge decisions
 """
 
 import re
@@ -209,3 +211,33 @@ def strip_company_suffixes(name: str) -> str:
         if lowered.endswith(suffix):
             return lowered[: -len(suffix)].strip()
     return lowered
+
+
+def token_overlap_score(left: str, right: str) -> float:
+    """Computes a jaccard-style token overlap between two names.
+
+    Args:
+        left: First entity name.
+        right: Second entity name.
+
+    Returns:
+        score: Overlap ratio between 0.0 and 1.0.
+    """
+    left_tokens = set(normalize_name(left).split())
+    right_tokens = set(normalize_name(right).split())
+    if not left_tokens or not right_tokens:
+        return 0.0
+    return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
+
+
+def explain_match(left: str, right: str) -> str:
+    """Builds a debug line explaining why two names did not merge.
+
+    Args:
+        left: First entity name.
+        right: Second entity name.
+
+    Returns:
+        explanation: One-line comparison of normalized forms.
+    """
+    return f"{left!r} -> {normalize_name(left)!r} vs {right!r} -> {normalize_name(right)!r}"
