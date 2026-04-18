@@ -13,6 +13,7 @@
  *  *   filterEdgesForDensity(): hides labels beyond a density bound
  *  *   zIndexFor(): keeps edges below node labels
  *  *   visibleEdgeWidth(): scales width with confidence
+ *  *   fitToContent(): recenters the canvas after load
  */
 
 import cytoscape from "cytoscape";
@@ -199,4 +200,15 @@ export function edgeWidthFor(confidence) {
     return 2;
   }
   return 1 + 4 * Math.min(Math.max(confidence, 0), 1);
+}
+
+/**
+ * Recenters the canvas to fit all elements after a load.
+ *
+ * @param cy - Cytoscape instance to fit.
+ * @param padding - Pixel padding around the fitted elements.
+ */
+export function fitToContent(cy, padding = 40) {
+  cy.fit(undefined, padding);
+  cy.center();
 }
