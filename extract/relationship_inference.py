@@ -10,6 +10,9 @@ Contains:
     RelationshipInferer._connected_components(): groups entities
     RelationshipInferer.infer(): proposes and materializes bridges
     RelationshipInferer._candidate_bridges(): scores component pairs
+    RelationshipInferer._entity_types(): entity name to type map
+    RelationshipInferer._score_bridge(): heuristic bridge scoring
+    RelationshipInferer._share_tokens(): cheap name-overlap signal
 """
 
 from dataclasses import dataclass
@@ -152,3 +155,63 @@ class RelationshipInferer:
                     candidates.append(BridgeCandidate(source, target, predicate, score))
         candidates.sort(key=lambda candidate: candidate.score, reverse=True)
         return candidates[: self.config.candidate_limit]
+
+    @staticmethod
+    def _entity_types(triples: list[Triple]) -> dict[str, str]:
+        """Maps normalized entity names to their entity types.
+
+        Args:
+            triples: Triples supplying entity type information.
+
+        Returns:
+            types: Mapping of normalized entity name to entity type.
+        """
+        types: dict[str, str] = {}
+        for triple in triples:
+            types[triple.subject.normalized_name()] = triple.subject.entity_type
+            types[triple.object.normalized_name()] = triple.object.entity_type
+        return types
+
+    def _score_bridge(self, source: str, target: str, types: dict[str, str]) -> tuple[float, str]:
+        """Scores a potential bridge between two entities.
+
+        Args:
+            source: Normalized name of the bridge source entity.
+            target: Normalized name of the bridge target entity.
+            types: Entity name to type mapping for context.
+
+        Returns:
+            score: Confidence score between 0 and 1.
+            predicate: Suggested predicate phrase for the bridge.
+        """
+        source_type = types.get(source, "CONCEPT")
+        target_type = types.get(target, "CONCEPT")
+        score = 0.4
+        predicate = "relates to"
+        if source_type == target_type:
+            score += 0.15
+            predicate = "associated with"
+        if source_type == "PERSON" and target_type == "ORG":
+            score += 0.2
+            predicate = "affiliated with"
+        if source_type == "ORG" and target_type == "ORG":
+            score += 0.1
+            predicate = "related to"
+        if self._share_tokens(source, target):
+            score += 0.1
+        return min(score, 0.95), predicate
+
+    @staticmethod
+    def _share_tokens(source: str, target: str) -> bool:
+        """Checks whether two entity names share a significant token.
+
+        Args:
+            source: First normalized entity name.
+            target: Second normalized entity name.
+
+        Returns:
+            shares: True when the names share a token of length four or more.
+        """
+        source_tokens = {token for token in source.split() if len(token) >= 4}
+        target_tokens = {token for token in target.split() if len(token) >= 4}
+        return bool(source_tokens & target_tokens)
