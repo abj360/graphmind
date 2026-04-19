@@ -10,6 +10,7 @@ Contains:
     RelationshipInferer._connected_components(): groups entities
     RelationshipInferer.infer(): proposes and materializes bridges
     RelationshipInferer._candidate_bridges(): scores component pairs
+    RelationshipInferer._entity_types(): entity name to type map
 """
 
 from dataclasses import dataclass
@@ -152,3 +153,19 @@ class RelationshipInferer:
                     candidates.append(BridgeCandidate(source, target, predicate, score))
         candidates.sort(key=lambda candidate: candidate.score, reverse=True)
         return candidates[: self.config.candidate_limit]
+
+    @staticmethod
+    def _entity_types(triples: list[Triple]) -> dict[str, str]:
+        """Maps normalized entity names to their entity types.
+
+        Args:
+            triples: Triples supplying entity type information.
+
+        Returns:
+            types: Mapping of normalized entity name to entity type.
+        """
+        types: dict[str, str] = {}
+        for triple in triples:
+            types[triple.subject.normalized_name()] = triple.subject.entity_type
+            types[triple.object.normalized_name()] = triple.object.entity_type
+        return types
