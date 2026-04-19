@@ -12,6 +12,7 @@ Contains:
     RelationshipInferer._candidate_bridges(): scores component pairs
     RelationshipInferer._entity_types(): entity name to type map
     RelationshipInferer._score_bridge(): heuristic bridge scoring
+    RelationshipInferer._share_tokens(): cheap name-overlap signal
 """
 
 from dataclasses import dataclass
@@ -199,3 +200,18 @@ class RelationshipInferer:
         if self._share_tokens(source, target):
             score += 0.1
         return min(score, 0.95), predicate
+
+    @staticmethod
+    def _share_tokens(source: str, target: str) -> bool:
+        """Checks whether two entity names share a significant token.
+
+        Args:
+            source: First normalized entity name.
+            target: Second normalized entity name.
+
+        Returns:
+            shares: True when the names share a token of length four or more.
+        """
+        source_tokens = {token for token in source.split() if len(token) >= 4}
+        target_tokens = {token for token in target.split() if len(token) >= 4}
+        return bool(source_tokens & target_tokens)
