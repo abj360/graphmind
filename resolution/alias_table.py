@@ -9,6 +9,9 @@ Contains:
     AliasTable.aliases(): lists aliases of a canonical name
     AliasTable._normalize(): shared key normalization
     AliasTable.merge(): folds one canonical into another
+    AliasTable.to_dict(): serializes the table
+    save_alias_table(): persists the table as JSON
+    load_alias_table(): restores a table from JSON
 """
 
 import json
@@ -91,3 +94,37 @@ class AliasTable:
         for alias, target in list(self.canonical_of.items()):
             if target == drop_key:
                 self.canonical_of[alias] = keep_key
+
+    def to_dict(self) -> dict[str, str]:
+        """Serializes the alias table to a plain mapping.
+
+        Returns:
+            data: Alias-to-canonical mapping suitable for JSON output.
+        """
+        return dict(sorted(self.canonical_of.items()))
+
+
+def save_alias_table(table: AliasTable, path: Path) -> None:
+    """Persists an alias table to a JSON file.
+
+    Args:
+        table: Table to serialize.
+        path: Destination file location.
+    """
+    path.write_text(json.dumps(table.to_dict(), indent=2) + "\n", encoding="utf-8")
+
+
+def load_alias_table(path: Path) -> AliasTable:
+    """Restores an alias table from a JSON file, tolerating absence.
+
+    Args:
+        path: File location to read; missing files yield an empty table.
+
+    Returns:
+        table: Restored table, or an empty one when the file is absent.
+    """
+    if not path.exists():
+        return AliasTable()
+    table = AliasTable()
+    table.canonical_of = dict(json.loads(path.read_text(encoding="utf-8")))
+    return table
