@@ -9,6 +9,7 @@ Contains:
     AliasTable.aliases(): lists aliases of a canonical name
     AliasTable._normalize(): shared key normalization
     AliasTable.merge(): folds one canonical into another
+    AliasTable.to_dict(): serializes the table
 """
 
 import json
@@ -91,3 +92,11 @@ class AliasTable:
         for alias, target in list(self.canonical_of.items()):
             if target == drop_key:
                 self.canonical_of[alias] = keep_key
+
+    def to_dict(self) -> dict[str, str]:
+        """Serializes the alias table to a plain mapping.
+
+        Returns:
+            data: Alias-to-canonical mapping suitable for JSON output.
+        """
+        return dict(sorted(self.canonical_of.items()))
