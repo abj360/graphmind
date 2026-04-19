@@ -11,6 +11,7 @@ Contains:
     RelationshipInferer.infer(): proposes and materializes bridges
     RelationshipInferer._candidate_bridges(): scores component pairs
     RelationshipInferer._entity_types(): entity name to type map
+    RelationshipInferer._score_bridge(): heuristic bridge scoring
 """
 
 from dataclasses import dataclass
@@ -169,3 +170,32 @@ class RelationshipInferer:
             types[triple.subject.normalized_name()] = triple.subject.entity_type
             types[triple.object.normalized_name()] = triple.object.entity_type
         return types
+
+    def _score_bridge(self, source: str, target: str, types: dict[str, str]) -> tuple[float, str]:
+        """Scores a potential bridge between two entities.
+
+        Args:
+            source: Normalized name of the bridge source entity.
+            target: Normalized name of the bridge target entity.
+            types: Entity name to type mapping for context.
+
+        Returns:
+            score: Confidence score between 0 and 1.
+            predicate: Suggested predicate phrase for the bridge.
+        """
+        source_type = types.get(source, "CONCEPT")
+        target_type = types.get(target, "CONCEPT")
+        score = 0.4
+        predicate = "relates to"
+        if source_type == target_type:
+            score += 0.15
+            predicate = "associated with"
+        if source_type == "PERSON" and target_type == "ORG":
+            score += 0.2
+            predicate = "affiliated with"
+        if source_type == "ORG" and target_type == "ORG":
+            score += 0.1
+            predicate = "related to"
+        if self._share_tokens(source, target):
+            score += 0.1
+        return min(score, 0.95), predicate
