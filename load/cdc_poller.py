@@ -9,6 +9,7 @@ Contains:
     PollerConfig: tuning for the CDC polling loop
     file_checksum(): content hash for change detection
     doc_id_for_path(): stable id derived from a path
+    StateStore: persists last-seen document state
 """
 
 import hashlib
@@ -86,3 +87,19 @@ def doc_id_for_path(path: Path, root: Path) -> str:
         doc_id: Relative POSIX path used as the document identifier.
     """
     return path.relative_to(root).as_posix()
+
+
+class StateStore:
+    """Persists the last-seen checksum state between polling runs.
+
+    Attributes:
+        path: JSON file the state is read from and written to.
+    """
+
+    def __init__(self, path: Path) -> None:
+        """Creates a state store bound to one JSON file.
+
+        Args:
+            path: JSON file persisting checksums between runs.
+        """
+        self.path = path
