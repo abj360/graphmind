@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   createDriver(): builds the shared driver
+ *  *   runQuery(): executes a read query and unwraps records
  */
 
 import neo4j from "neo4j-driver";
@@ -16,4 +17,23 @@ import neo4j from "neo4j-driver";
  */
 export function createDriver(config) {
   return neo4j.driver(config.neo4jUri, neo4j.auth.basic(config.neo4jUser, config.neo4jPassword));
+}
+
+/**
+ * Executes one read query and unwraps the raw records.
+ *
+ * @param driver - Neo4j driver instance.
+ * @param query - Cypher statement to run.
+ * @param params - Query parameters.
+ * @param database - Target database name.
+ * @returns records - Raw Neo4j record objects.
+ */
+export async function runQuery(driver, query, params = {}, database = "neo4j") {
+  const session = driver.session({ database });
+  try {
+    const result = await session.run(query, params);
+    return result.records;
+  } finally {
+    await session.close();
+  }
 }
