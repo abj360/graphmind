@@ -10,6 +10,7 @@ Contains:
     file_checksum(): content hash for change detection
     doc_id_for_path(): stable id derived from a path
     StateStore: persists last-seen document state
+    StateStore.load(): restores persisted state
 """
 
 import hashlib
@@ -103,3 +104,17 @@ class StateStore:
             path: JSON file persisting checksums between runs.
         """
         self.path = path
+
+    def load(self) -> dict[str, dict[str, float | str]]:
+        """Restores the persisted per-document state.
+
+        Returns:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        if not self.path.exists():
+            return {}
+        data = json.loads(self.path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            logger.warning("corrupt CDC state file %s; starting fresh", self.path)
+            return {}
+        return data
