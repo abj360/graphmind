@@ -9,6 +9,10 @@ Contains:
     PollerConfig: tuning for the CDC polling loop
     file_checksum(): content hash for change detection
     doc_id_for_path(): stable id derived from a path
+    StateStore: persists last-seen document state
+    StateStore.load(): restores persisted state
+    StateStore.save(): persists current state atomically
+    CdcPoller: watches a corpus directory for changes
 """
 
 import hashlib
@@ -86,3 +90,65 @@ def doc_id_for_path(path: Path, root: Path) -> str:
         doc_id: Relative POSIX path used as the document identifier.
     """
     return path.relative_to(root).as_posix()
+
+
+class StateStore:
+    """Persists the last-seen checksum state between polling runs.
+
+    Attributes:
+        path: JSON file the state is read from and written to.
+    """
+
+    def __init__(self, path: Path) -> None:
+        """Creates a state store bound to one JSON file.
+
+        Args:
+            path: JSON file persisting checksums between runs.
+        """
+        self.path = path
+
+    def load(self) -> dict[str, dict[str, float | str]]:
+        """Restores the persisted per-document state.
+
+        Returns:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        if not self.path.exists():
+            return {}
+        data = json.loads(self.path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            logger.warning("corrupt CDC state file %s; starting fresh", self.path)
+            return {}
+        return data
+
+    def save(self, state: dict[str, dict[str, float | str]]) -> None:
+        """Persists the current per-document state atomically.
+
+        Args:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(self.path)
+
+
+class CdcPoller:
+    """Polls a corpus directory and emits change events for new edits.
+
+    Attributes:
+        corpus_dir: Directory watched for source document changes.
+        config: Polling loop tuning.
+        store: State persistence used to survive restarts.
+    """
+
+    def __init__(self, corpus_dir: Path, config: PollerConfig | None = None) -> None:
+        """Creates a poller over a corpus directory.
+
+        Args:
+            corpus_dir: Directory watched for changes.
+            config: Polling tuning; defaults applied when omitted.
+        """
+        self.corpus_dir = corpus_dir
+        self.config = config or PollerConfig()
+        self.store = StateStore(self.config.state_path)
