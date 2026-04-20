@@ -12,6 +12,7 @@ Contains:
     Ontology.merge(): combines two ontologies
     Ontology.from_dict(): builds an ontology from raw mappings
     Ontology.to_dict(): serializes the rule set
+    Ontology.coverage(): share of triples the ontology allows
 """
 
 import json
@@ -175,3 +176,17 @@ class Ontology:
             }
             for rule in sorted(self.rules, key=lambda r: (r.subject_type, r.predicate))
         ]
+
+    def coverage(self, triples: list[Triple]) -> float:
+        """Computes the share of triples allowed by the ontology.
+
+        Args:
+            triples: Triples to measure coverage over.
+
+        Returns:
+            coverage: Fraction of triples allowed, between 0 and 1.
+        """
+        if not triples:
+            return 1.0
+        allowed = sum(1 for triple in triples if self.allows(triple))
+        return allowed / len(triples)
