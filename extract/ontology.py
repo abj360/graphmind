@@ -9,6 +9,7 @@ Contains:
     Ontology.allows(): checks a triple against every rule
     Ontology.enforce(): partitions triples into kept and rejected
     Ontology.add_rule(): derives an ontology with one more rule
+    Ontology.merge(): combines two ontologies
 """
 
 import json
@@ -125,3 +126,14 @@ class Ontology:
             ontology: New Ontology containing the union of rules.
         """
         return Ontology(set(self.rules) | {rule}, strict=self.strict)
+
+    def merge(self, other: "Ontology") -> "Ontology":
+        """Combines two ontologies into their rule union.
+
+        Args:
+            other: Ontology whose rules are merged in.
+
+        Returns:
+            ontology: New Ontology with the combined rule set.
+        """
+        return Ontology(set(self.rules) | set(other.rules), strict=self.strict and other.strict)
