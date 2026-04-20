@@ -10,6 +10,7 @@ Contains:
     Ontology.enforce(): partitions triples into kept and rejected
     Ontology.add_rule(): derives an ontology with one more rule
     Ontology.merge(): combines two ontologies
+    Ontology.from_dict(): builds an ontology from raw mappings
 """
 
 import json
@@ -137,3 +138,24 @@ class Ontology:
             ontology: New Ontology with the combined rule set.
         """
         return Ontology(set(self.rules) | set(other.rules), strict=self.strict and other.strict)
+
+    @classmethod
+    def from_dict(cls, data: list[dict[str, str]], strict: bool = True) -> "Ontology":
+        """Builds an ontology from raw rule mappings.
+
+        Args:
+            data: Mappings with subject_type, predicate, and object_type keys.
+            strict: Whether the resulting ontology rejects unmatched triples.
+
+        Returns:
+            ontology: Ontology built from the supplied rules.
+        """
+        rules = {
+            OntologyRule(
+                subject_type=entry["subject_type"],
+                predicate=entry["predicate"],
+                object_type=entry["object_type"],
+            )
+            for entry in data
+        }
+        return cls(rules, strict=strict)
