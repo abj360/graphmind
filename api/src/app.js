@@ -12,7 +12,7 @@ import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { exportGraphmlRouter } from "./routes/exportGraphml.js";
-import { graphRouter } from "./routes/graph.js";
+import { graphRouter, mountLabelsEndpoint } from "./routes/graph.js";
 import { metricsRouter } from "./routes/metrics.js";
 
 /**
@@ -27,7 +27,9 @@ export function createApp(driver, config) {
   app.use(express.json());
   app.use(corsMiddleware(config.corsOrigin));
   mountHealthEndpoint(app);
-  app.use("/api", graphRouter(driver, config));
+  const graph = graphRouter(driver, config);
+  mountLabelsEndpoint(graph, driver, config);
+  app.use("/api", graph);
   app.use("/api", exportGraphmlRouter(driver, config));
   app.use("/api", metricsRouter(driver, config));
   app.use(notFoundHandler);
