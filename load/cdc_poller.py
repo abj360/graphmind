@@ -12,6 +12,7 @@ Contains:
     StateStore: persists last-seen document state
     StateStore.load(): restores persisted state
     StateStore.save(): persists current state atomically
+    CdcPoller: watches a corpus directory for changes
 """
 
 import hashlib
@@ -130,3 +131,24 @@ class StateStore:
         temporary = self.path.with_suffix(".tmp")
         temporary.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
         temporary.replace(self.path)
+
+
+class CdcPoller:
+    """Polls a corpus directory and emits change events for new edits.
+
+    Attributes:
+        corpus_dir: Directory watched for source document changes.
+        config: Polling loop tuning.
+        store: State persistence used to survive restarts.
+    """
+
+    def __init__(self, corpus_dir: Path, config: PollerConfig | None = None) -> None:
+        """Creates a poller over a corpus directory.
+
+        Args:
+            corpus_dir: Directory watched for changes.
+            config: Polling tuning; defaults applied when omitted.
+        """
+        self.corpus_dir = corpus_dir
+        self.config = config or PollerConfig()
+        self.store = StateStore(self.config.state_path)
