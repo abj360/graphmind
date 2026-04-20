@@ -11,6 +11,7 @@ Contains:
     Ontology.add_rule(): derives an ontology with one more rule
     Ontology.merge(): combines two ontologies
     Ontology.from_dict(): builds an ontology from raw mappings
+    Ontology.to_dict(): serializes the rule set
 """
 
 import json
@@ -159,3 +160,18 @@ class Ontology:
             for entry in data
         }
         return cls(rules, strict=strict)
+
+    def to_dict(self) -> list[dict[str, str]]:
+        """Serializes the rule set to plain mappings.
+
+        Returns:
+            data: Rule mappings suitable for JSON persistence.
+        """
+        return [
+            {
+                "subject_type": rule.subject_type,
+                "predicate": rule.predicate,
+                "object_type": rule.object_type,
+            }
+            for rule in sorted(self.rules, key=lambda r: (r.subject_type, r.predicate))
+        ]
