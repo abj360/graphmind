@@ -8,6 +8,7 @@ Contains:
     Ontology: set of rules used to enforce schema conformance
     Ontology.allows(): checks a triple against every rule
     Ontology.enforce(): partitions triples into kept and rejected
+    Ontology.add_rule(): derives an ontology with one more rule
 """
 
 import json
@@ -113,3 +114,14 @@ class Ontology:
                 )
                 violations.append(OntologyViolation(triple, reason))
         return kept, violations
+
+    def add_rule(self, rule: OntologyRule) -> "Ontology":
+        """Derives a new ontology with one additional rule.
+
+        Args:
+            rule: Rule to add to the existing set.
+
+        Returns:
+            ontology: New Ontology containing the union of rules.
+        """
+        return Ontology(set(self.rules) | {rule}, strict=self.strict)
