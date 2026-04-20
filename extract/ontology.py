@@ -13,6 +13,7 @@ Contains:
     Ontology.from_dict(): builds an ontology from raw mappings
     Ontology.to_dict(): serializes the rule set
     Ontology.coverage(): share of triples the ontology allows
+    Ontology.summary(): counts rules by subject type
 """
 
 import json
@@ -190,3 +191,14 @@ class Ontology:
             return 1.0
         allowed = sum(1 for triple in triples if self.allows(triple))
         return allowed / len(triples)
+
+    def summary(self) -> dict[str, int]:
+        """Counts how many rules exist per subject type.
+
+        Returns:
+            counts: Mapping of subject type to rule count.
+        """
+        counts: dict[str, int] = {}
+        for rule in self.rules:
+            counts[rule.subject_type] = counts.get(rule.subject_type, 0) + 1
+        return counts
