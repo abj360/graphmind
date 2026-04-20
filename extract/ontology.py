@@ -7,6 +7,7 @@ Contains:
     OntologyViolation: one rejected triple with its reason
     Ontology: set of rules used to enforce schema conformance
     Ontology.allows(): checks a triple against every rule
+    Ontology.enforce(): partitions triples into kept and rejected
 """
 
 import json
@@ -89,3 +90,26 @@ class Ontology:
         if not self.rules:
             return True
         return any(rule.matches(triple) for rule in self.rules)
+
+    def enforce(self, triples: list[Triple]) -> tuple[list[Triple], list[OntologyViolation]]:
+        """Partitions triples into conforming and rejected sets.
+
+        Args:
+            triples: Triples to check against the ontology.
+
+        Returns:
+            kept: Triples allowed by at least one rule.
+            violations: Rejected triples paired with rejection reasons.
+        """
+        kept: list[Triple] = []
+        violations: list[OntologyViolation] = []
+        for triple in triples:
+            if self.allows(triple):
+                kept.append(triple)
+            else:
+                reason = (
+                    f"no rule allows ({triple.subject.entity_type}, "
+                    f"{triple.predicate!r}, {triple.object.entity_type})"
+                )
+                violations.append(OntologyViolation(triple, reason))
+        return kept, violations
