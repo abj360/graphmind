@@ -7,6 +7,13 @@ Contains:
     OntologyViolation: one rejected triple with its reason
     Ontology: set of rules used to enforce schema conformance
     Ontology.allows(): checks a triple against every rule
+    Ontology.enforce(): partitions triples into kept and rejected
+    Ontology.add_rule(): derives an ontology with one more rule
+    Ontology.merge(): combines two ontologies
+    Ontology.from_dict(): builds an ontology from raw mappings
+    Ontology.to_dict(): serializes the rule set
+    Ontology.coverage(): share of triples the ontology allows
+    Ontology.summary(): counts rules by subject type
 """
 
 import json
@@ -89,3 +96,109 @@ class Ontology:
         if not self.rules:
             return True
         return any(rule.matches(triple) for rule in self.rules)
+
+    def enforce(self, triples: list[Triple]) -> tuple[list[Triple], list[OntologyViolation]]:
+        """Partitions triples into conforming and rejected sets.
+
+        Args:
+            triples: Triples to check against the ontology.
+
+        Returns:
+            kept: Triples allowed by at least one rule.
+            violations: Rejected triples paired with rejection reasons.
+        """
+        kept: list[Triple] = []
+        violations: list[OntologyViolation] = []
+        for triple in triples:
+            if self.allows(triple):
+                kept.append(triple)
+            else:
+                reason = (
+                    f"no rule allows ({triple.subject.entity_type}, "
+                    f"{triple.predicate!r}, {triple.object.entity_type})"
+                )
+                violations.append(OntologyViolation(triple, reason))
+        return kept, violations
+
+    def add_rule(self, rule: OntologyRule) -> "Ontology":
+        """Derives a new ontology with one additional rule.
+
+        Args:
+            rule: Rule to add to the existing set.
+
+        Returns:
+            ontology: New Ontology containing the union of rules.
+        """
+        return Ontology(set(self.rules) | {rule}, strict=self.strict)
+
+    def merge(self, other: "Ontology") -> "Ontology":
+        """Combines two ontologies into their rule union.
+
+        Args:
+            other: Ontology whose rules are merged in.
+
+        Returns:
+            ontology: New Ontology with the combined rule set.
+        """
+        return Ontology(set(self.rules) | set(other.rules), strict=self.strict and other.strict)
+
+    @classmethod
+    def from_dict(cls, data: list[dict[str, str]], strict: bool = True) -> "Ontology":
+        """Builds an ontology from raw rule mappings.
+
+        Args:
+            data: Mappings with subject_type, predicate, and object_type keys.
+            strict: Whether the resulting ontology rejects unmatched triples.
+
+        Returns:
+            ontology: Ontology built from the supplied rules.
+        """
+        rules = {
+            OntologyRule(
+                subject_type=entry["subject_type"],
+                predicate=entry["predicate"],
+                object_type=entry["object_type"],
+            )
+            for entry in data
+        }
+        return cls(rules, strict=strict)
+
+    def to_dict(self) -> list[dict[str, str]]:
+        """Serializes the rule set to plain mappings.
+
+        Returns:
+            data: Rule mappings suitable for JSON persistence.
+        """
+        return [
+            {
+                "subject_type": rule.subject_type,
+                "predicate": rule.predicate,
+                "object_type": rule.object_type,
+            }
+            for rule in sorted(self.rules, key=lambda r: (r.subject_type, r.predicate))
+        ]
+
+    def coverage(self, triples: list[Triple]) -> float:
+        """Computes the share of triples allowed by the ontology.
+
+        Args:
+            triples: Triples to measure coverage over.
+
+        Returns:
+            coverage: Fraction of triples allowed, between 0 and 1.
+        """
+        if not triples:
+            return 1.0
+        allowed = sum(1 for triple in triples if self.allows(triple))
+        return allowed / len(triples)
+
+    def summary(self) -> dict[str, int]:
+        """Counts how many rules exist per subject type.
+
+        Returns:
+            counts: Mapping of subject type to rule count.
+        """
+        counts: dict[str, int] = {}
+        for rule in self.rules:
+            counts[rule.subject_type] = counts.get(rule.subject_type, 0) + 1
+        return counts
