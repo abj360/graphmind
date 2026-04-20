@@ -222,3 +222,40 @@ body {
   letter-spacing: 0.08em;
   color: #457b9d;
 }
+
+.detail-edges {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-edge {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #0f1620;
+  border-radius: 6px;
+}
+
+.detail-direction {
+  color: #457b9d;
+}
+
+.detail-predicate {
+  color: #9fb0c7;
+  font-size: 12px;
+}
+
+.detail-other {
+  flex: 1;
+  word-break: break-word;
+}
+
+.detail-confidence {
+  font-variant-numeric: tabular-nums;
+  color: #06d6a0;
+}
