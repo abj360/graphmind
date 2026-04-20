@@ -6,6 +6,7 @@
  *  *   DEFAULTS: fallback configuration values
  *  *   loadConfig(): reads configuration from the environment
  *  *   validateConfig(): rejects unusable configuration
+ *  *   describeConfig(): redacted one-line config summary
  */
 
 const DEFAULTS = {
@@ -48,4 +49,15 @@ export function validateConfig(config) {
     throw new Error(`NEO4J_URI must use the bolt scheme: ${config.neo4jUri}`);
   }
   return config;
+}
+
+/**
+ * Renders a one-line config summary with the password redacted.
+ *
+ * @param config - Resolved service configuration.
+ * @returns summary - Log-friendly config description, password masked.
+ */
+export function describeConfig(config) {
+  return `port=${config.port} neo4j=${config.neo4jUri} user=${config.neo4jUser} ` +
+    `password=*** db=${config.neo4jDatabase} cors=${config.corsOrigin}`;
 }
