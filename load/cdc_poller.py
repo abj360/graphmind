@@ -11,6 +11,7 @@ Contains:
     doc_id_for_path(): stable id derived from a path
     StateStore: persists last-seen document state
     StateStore.load(): restores persisted state
+    StateStore.save(): persists current state atomically
 """
 
 import hashlib
@@ -118,3 +119,14 @@ class StateStore:
             logger.warning("corrupt CDC state file %s; starting fresh", self.path)
             return {}
         return data
+
+    def save(self, state: dict[str, dict[str, float | str]]) -> None:
+        """Persists the current per-document state atomically.
+
+        Args:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_suffix(".tmp")
+        temporary.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(self.path)
