@@ -7,6 +7,7 @@ Contains:
     make_loader(): builds a loader with a recording driver
     test_write_triples_emits_node_and_rel_queries
     test_write_triples_applies_constraints_first
+    test_batches_respect_configured_batch_size
 """
 
 from typing import Any
@@ -92,3 +93,13 @@ def test_write_triples_applies_constraints_first() -> None:
     loader.write_triples([make_triple()])
     first_queries = [query for query, _ in driver.queries[: len(Neo4jLoader.CONSTRAINT_QUERIES)]]
     assert first_queries == Neo4jLoader.CONSTRAINT_QUERIES
+
+
+def test_batches_respect_configured_batch_size() -> None:
+    """Checks that row batches never exceed the configured batch size."""
+    loader, driver = make_loader(batch_size=2)
+    triples = [make_triple(f"S{i}", "links", f"O{i}") for i in range(5)]
+    loader.write_triples(triples)
+    for query, parameters in driver.queries:
+        if query == UPSERT_NODES_QUERY:
+            assert len(parameters["rows"]) <= 2
