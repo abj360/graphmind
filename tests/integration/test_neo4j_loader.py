@@ -8,6 +8,7 @@ Contains:
     test_write_triples_emits_node_and_rel_queries
     test_write_triples_applies_constraints_first
     test_batches_respect_configured_batch_size
+    test_stats_count_written_rows
 """
 
 from typing import Any
@@ -103,3 +104,12 @@ def test_batches_respect_configured_batch_size() -> None:
     for query, parameters in driver.queries:
         if query == UPSERT_NODES_QUERY:
             assert len(parameters["rows"]) <= 2
+
+
+def test_stats_count_written_rows() -> None:
+    """Checks that load stats count nodes, relationships, and batches."""
+    loader, _ = make_loader(batch_size=10)
+    stats = loader.write_triples([make_triple(), make_triple("Bob", "joined", "Acme")])
+    assert stats.nodes_written == 3
+    assert stats.relationships_written == 2
+    assert stats.batches_written >= 2
