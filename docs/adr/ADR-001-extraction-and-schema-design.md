@@ -69,3 +69,26 @@ forked template copies.
 Rejected alternative: one canonical prompt with if/else branches per
 domain — it accretes conditionals until nobody can tell which wording
 shipped in which run.
+
+## Decision: validation is lossy by default, strict on demand
+
+`validate_triples()` drops invalid items and keeps going;
+`validate_triples_strict()` aggregates every failure and raises.
+Rationale: an LLM that returns 19 good triples and 1 malformed one
+should yield 19 triples, not zero — but a caller that *needs*
+all-or-nothing (e.g. a conformance test) can get it explicitly.
+
+This mirrors the fail-closed principle in the engineering standards:
+the *default* path degrades visibly (drops are logged and counted in
+`ExtractionStats`), never silently.
+
+## Decision: ontology enforcement happens after extraction, not inside it
+
+The ontology (`extract/ontology.py`) is a set of
+`(subject_type, predicate, object_type)` rules applied as a separate
+pass over validated triples. Extraction stays ontology-agnostic so the
+same extractor serves domains with no rule set at all.
+
+Enforcement returns `(kept, violations)` rather than raising: a
+rejected triple is data (something the model saw that our schema
+forbids) and reviewers want the rejection list, not an exception.
