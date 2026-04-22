@@ -11,6 +11,7 @@
  *  *   ClearButton: resets the current query
  *  *   compileSafeRegex(): parses a regex query, tolerating bad input
  *  *   matchesRegex(): checks a node against a compiled pattern
+ *  *   RegexToggle: switches between substring and regex modes
  */
 
 /**
@@ -149,4 +150,25 @@ export function matchesRegex(node, regex) {
     return true;
   }
   return regex.test(node.label) || regex.test(node.type);
+}
+
+/**
+ * Renders the substring/regex mode toggle next to the search input.
+ *
+ * @param props.enabled - Whether regex mode is active.
+ * @param props.onToggle - Called with the new mode state.
+ * @returns element - Mode toggle button.
+ */
+export function RegexToggle({ enabled, onToggle }) {
+  return (
+    <button
+      type="button"
+      className={enabled ? "regex-toggle regex-toggle-on" : "regex-toggle"}
+      onClick={() => onToggle(!enabled)}
+      title="toggle regex matching"
+      aria-pressed={enabled}
+    >
+      .*
+    </button>
+  );
 }
