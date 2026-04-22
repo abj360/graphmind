@@ -64,3 +64,18 @@ verify_archive() {
     tar -tzf "$ARCHIVE" >/dev/null 2>&1 || fail "archive ${ARCHIVE} is corrupt"
     log "archive verified"
 }
+
+main() {
+    require_tools
+    local staging
+    staging="$(mktemp -d)"
+    trap 'rm -rf "$staging"' EXIT
+    wait_for_neo4j
+    dump_database "$staging"
+    pack_archive "$staging"
+    verify_archive
+    prune_old_backups
+    log "backup complete"
+}
+
+main "$@"
