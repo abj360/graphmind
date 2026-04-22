@@ -6,6 +6,7 @@ Contains:
     LLMClient: minimal completion protocol every provider implements
     FakeLLMClient: deterministic scripted client for tests
     FailingLLMClient: raises a configurable error for retry tests
+    LangChainClient: adapts a LangChain chat model to LLMClient
 """
 
 from typing import Protocol, runtime_checkable
@@ -91,3 +92,32 @@ class FailingLLMClient:
             self.failures_remaining -= 1
             raise RuntimeError("simulated transient LLM failure")
         return self.inner.complete(prompt)
+
+
+class LangChainClient:
+    """Adapts any LangChain chat model to the LLMClient protocol.
+
+    Attributes:
+        model: LangChain chat model instance used for completions.
+    """
+
+    def __init__(self, model: object) -> None:
+        """Creates an adapter around a LangChain chat model.
+
+        Args:
+            model: Chat model exposing the LangChain invoke() interface.
+        """
+        self.model = model
+
+    def complete(self, prompt: str) -> str:
+        """Produces a completion by delegating to the wrapped chat model.
+
+        Args:
+            prompt: Rendered extraction prompt to complete.
+
+        Returns:
+            completion: Text content of the model's response message.
+        """
+        message = self.model.invoke(prompt)  # type: ignore[attr-defined]
+        content = message.content
+        return content if isinstance(content, str) else str(content)
