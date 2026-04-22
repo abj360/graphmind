@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
 # restore.sh --- restores a Neo4j backup archive produced by backup.sh
 set -euo pipefail
+
+NEO4J_HOST="${NEO4J_HOST:-neo4j}"
+NEO4J_USER="${NEO4J_USER:-neo4j}"
+NEO4J_PASSWORD="${NEO4J_PASSWORD:-graphmind-dev}"
+BACKUP_DIR="${GRAPHMIND_BACKUP_DIR:-/backups}"
