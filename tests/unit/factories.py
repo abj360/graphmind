@@ -5,6 +5,7 @@ factories.py --- shared test data builders for unit tests
 Contains:
     make_triple(): concise triple factory for tests
     make_triple_chain(): builds a connected chain of triples
+    make_raw_item(): raw LLM payload factory
 """
 
 from extract.schema import EntityRef, Triple
@@ -58,3 +59,28 @@ def make_triple_chain(names: list[str], predicate: str = "links") -> list[Triple
         make_triple(left, predicate, right, subject_type="CONCEPT", object_type="CONCEPT")
         for left, right in pairwise(names)
     ]
+
+
+def make_raw_item(
+    subject: str = "Alice",
+    predicate: str = "founded",
+    object_: str = "Acme",
+    confidence: float = 0.9,
+) -> dict:
+    """Builds a raw extractor payload dict with overridable defaults.
+
+    Args:
+        subject: Subject entity name.
+        predicate: Predicate phrase.
+        object_: Object entity name.
+        confidence: Confidence score.
+
+    Returns:
+        item: Raw mapping shaped like parsed LLM output.
+    """
+    return {
+        "subject": {"name": subject, "entity_type": "PERSON"},
+        "predicate": predicate,
+        "object": {"name": object_, "entity_type": "ORG"},
+        "confidence": confidence,
+    }
