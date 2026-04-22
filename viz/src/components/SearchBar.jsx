@@ -13,6 +13,7 @@
  *  *   matchesRegex(): checks a node against a compiled pattern
  *  *   RegexToggle: switches between substring and regex modes
  *  *   SearchHelp: hint text for the active search mode
+ *  *   isQueryEmpty(): shared empty-query check
  */
 
 /**
@@ -186,4 +187,14 @@ export function SearchHelp({ regexMode }) {
       {regexMode ? "regex mode: patterns like ^acme|corp$ work" : "substring mode: plain text filter"}
     </p>
   );
+}
+
+/**
+ * Checks whether a search query is effectively empty.
+ *
+ * @param query - Raw query text.
+ * @returns empty - True when the trimmed query has no characters.
+ */
+export function isQueryEmpty(query) {
+  return query.trim().length === 0;
 }
