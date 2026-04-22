@@ -12,6 +12,7 @@
  *  *   compileSafeRegex(): parses a regex query, tolerating bad input
  *  *   matchesRegex(): checks a node against a compiled pattern
  *  *   RegexToggle: switches between substring and regex modes
+ *  *   SearchHelp: hint text for the active search mode
  */
 
 /**
@@ -170,5 +171,19 @@ export function RegexToggle({ enabled, onToggle }) {
     >
       .*
     </button>
+  );
+}
+
+/**
+ * Renders a short hint describing the active search mode.
+ *
+ * @param props.regexMode - Whether regex mode is active.
+ * @returns element - Hint line under the search input.
+ */
+export function SearchHelp({ regexMode }) {
+  return (
+    <p className="search-help">
+      {regexMode ? "regex mode: patterns like ^acme|corp$ work" : "substring mode: plain text filter"}
+    </p>
   );
 }
