@@ -5,6 +5,7 @@ llm_client.py --- pluggable LLM client protocol used by the extraction pipeline
 Contains:
     LLMClient: minimal completion protocol every provider implements
     FakeLLMClient: deterministic scripted client for tests
+    FailingLLMClient: raises a configurable error for retry tests
 """
 
 from typing import Protocol, runtime_checkable
@@ -57,3 +58,36 @@ class FakeLLMClient:
         if len(self.responses) > 1:
             return self.responses.pop(0)
         return self.responses[0]
+
+
+class FailingLLMClient:
+    """Fails a fixed number of times before delegating, for retry tests.
+
+    Attributes:
+        failures_remaining: How many calls still raise before succeeding.
+        inner: Wrapped client that handles calls once failures run out.
+    """
+
+    def __init__(self, failures: int, inner: LLMClient) -> None:
+        """Creates a flaky wrapper around a working client.
+
+        Args:
+            failures: Number of calls that should raise RuntimeError.
+            inner: Client to delegate to once failures are exhausted.
+        """
+        self.failures_remaining = failures
+        self.inner = inner
+
+    def complete(self, prompt: str) -> str:
+        """Raises while failures remain, otherwise delegates.
+
+        Args:
+            prompt: Rendered extraction prompt to complete.
+
+        Returns:
+            completion: Inner client's completion, once failures run out.
+        """
+        if self.failures_remaining > 0:
+            self.failures_remaining -= 1
+            raise RuntimeError("simulated transient LLM failure")
+        return self.inner.complete(prompt)
