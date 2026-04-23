@@ -162,3 +162,60 @@ Measured on the reference corpus (~120k entities, ~300k edges):
 The bridge query dominates. If p95 ever matters to the user-facing SLO,
 the answer is a tighter hop bound or a precomputed neighborhood cache —
 not a bigger budget.
+
+## Local development setup
+
+Everything runs from the compose stack; nothing is installed locally:
+
+```bash
+cp .env.example .env
+docker compose -f docker/docker-compose.yml up --build
+```
+
+- Viewer: http://localhost:5173
+- BFF: http://localhost:4000 (`/api/graph`, `/api/metrics/dedup`,
+  `/api/export/graphml`)
+- Neo4j browser: http://localhost:7474 (credentials from `.env`)
+
+Load a corpus by dropping `.txt` files into the `corpus_data` volume's
+source directory and letting the CDC poller pick them up, or by running
+the pipeline stages manually (see below).
+
+## Running the pipeline by hand
+
+```bash
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m extract.triple_extractor --corpus /data/docs
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m resolution.entity_resolver --graph /out/triples.jsonl
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m load.neo4j_loader --input /out/resolved.jsonl
+```
+
+Each stage reads the previous stage's JSONL output, so a stage can be
+re-run without redoing the whole pipeline.
+
+## Testing the integration point
+
+The contract between the two repos is the *schema*, not a client
+library:
+
+- graphmind guarantees the `:Entity`/`:RELATED` shape and the
+  provenance fields documented above.
+- retrieval-core treats anything else as internal and subject to
+  change.
+
+A breaking schema change (renaming a property, changing id semantics)
+is a coordinated, versioned event: bump the graph schema version,
+migrate the data, then update the consumer — in that order.
+
+## Operational notes
+
+- Backups: `docker/backup.sh` produces timestamped archives and prunes
+  by retention window; restore is deliberately gated behind an explicit
+  confirmation flag.
+- The graph is rebuildable from the corpus at any time; treat Neo4j as
+  derived state, not a system of record.
+- Watch the duplicate-cluster count on the viewer's metrics dashboard:
+  a rising trend means resolution thresholds need attention before the
+  graph path's answers get weird.
