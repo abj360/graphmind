@@ -11,6 +11,7 @@ Contains:
     BatchWriter.node_batches(): yields node row batches
     BatchWriter.relationship_batches(): yields relationship batches
     batched(): slices a list into fixed-size batches
+    count_batches(): reports how many batches rows would make
 """
 
 from collections.abc import Iterator
@@ -130,3 +131,19 @@ def batched(rows: list[dict[str, Any]], size: int) -> Iterator[list[dict[str, An
     """
     for index in range(0, len(rows), size):
         yield rows[index : index + size]
+
+
+def count_batches(row_count: int, size: int) -> int:
+    """Reports how many batches a row count produces at a batch size.
+
+    Args:
+        row_count: Total rows to write.
+        size: Maximum rows per batch.
+
+    Returns:
+        count: Number of batches needed.
+    """
+    if size < 1:
+        msg = f"batch size {size} must be at least 1"
+        raise ValueError(msg)
+    return -(-row_count // size)
