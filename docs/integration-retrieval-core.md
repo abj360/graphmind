@@ -162,3 +162,21 @@ Measured on the reference corpus (~120k entities, ~300k edges):
 The bridge query dominates. If p95 ever matters to the user-facing SLO,
 the answer is a tighter hop bound or a precomputed neighborhood cache —
 not a bigger budget.
+
+## Local development setup
+
+Everything runs from the compose stack; nothing is installed locally:
+
+```bash
+cp .env.example .env
+docker compose -f docker/docker-compose.yml up --build
+```
+
+- Viewer: http://localhost:5173
+- BFF: http://localhost:4000 (`/api/graph`, `/api/metrics/dedup`,
+  `/api/export/graphml`)
+- Neo4j browser: http://localhost:7474 (credentials from `.env`)
+
+Load a corpus by dropping `.txt` files into the `corpus_data` volume's
+source directory and letting the CDC poller pick them up, or by running
+the pipeline stages manually (see below).
