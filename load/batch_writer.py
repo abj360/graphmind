@@ -12,6 +12,7 @@ Contains:
     BatchWriter.relationship_batches(): yields relationship batches
     batched(): slices a list into fixed-size batches
     count_batches(): reports how many batches rows would make
+    node_row(): builds one node row from entity parts
 """
 
 from collections.abc import Iterator
@@ -147,3 +148,17 @@ def count_batches(row_count: int, size: int) -> int:
         msg = f"batch size {size} must be at least 1"
         raise ValueError(msg)
     return -(-row_count // size)
+
+
+def node_row(name: str, entity_type: str, doc_id: str) -> dict[str, Any]:
+    """Builds one node upsert row from entity parts.
+
+    Args:
+        name: Canonical entity name.
+        entity_type: Coarse entity type label.
+        doc_id: Document the entity was last seen in.
+
+    Returns:
+        row: Mapping matching the UNWIND node payload shape.
+    """
+    return {"name": name, "entity_type": entity_type, "doc_id": doc_id}
