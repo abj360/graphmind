@@ -9,6 +9,7 @@
  *  *   MetricsRow: one label/value row in the grid
  *  *   refreshInterval(): poll cadence for live metrics
  *  *   RefreshButton: manual metrics refresh control
+ *  *   useMetricsRefresh(): polling refresh for the metrics panel
  */
 
 import { useEffect, useState } from "react";
@@ -133,4 +134,25 @@ export function RefreshButton({ onRefresh, busy }) {
       {busy ? "refreshing…" : "refresh"}
     </button>
   );
+}
+
+/**
+ * Polls the metrics endpoint on the shared refresh cadence.
+ *
+ * @param onPayload - Called with every successful metrics payload.
+ * @returns state - { busy, refresh } refresh state and manual trigger.
+ */
+export function useMetricsRefresh(onPayload) {
+  const [busy, setBusy] = useState(false);
+  const refresh = () => {
+    setBusy(true);
+    fetchDedupMetrics()
+      .then(onPayload)
+      .finally(() => setBusy(false));
+  };
+  useEffect(() => {
+    const handle = setInterval(refresh, METRICS_REFRESH_MS);
+    return () => clearInterval(handle);
+  }, []);
+  return { busy, refresh };
 }
