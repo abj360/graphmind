@@ -208,3 +208,14 @@ library:
 A breaking schema change (renaming a property, changing id semantics)
 is a coordinated, versioned event: bump the graph schema version,
 migrate the data, then update the consumer — in that order.
+
+## Operational notes
+
+- Backups: `docker/backup.sh` produces timestamped archives and prunes
+  by retention window; restore is deliberately gated behind an explicit
+  confirmation flag.
+- The graph is rebuildable from the corpus at any time; treat Neo4j as
+  derived state, not a system of record.
+- Watch the duplicate-cluster count on the viewer's metrics dashboard:
+  a rising trend means resolution thresholds need attention before the
+  graph path's answers get weird.
