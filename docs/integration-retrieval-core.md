@@ -194,3 +194,17 @@ docker compose -f docker/docker-compose.yml exec pipeline \
 
 Each stage reads the previous stage's JSONL output, so a stage can be
 re-run without redoing the whole pipeline.
+
+## Testing the integration point
+
+The contract between the two repos is the *schema*, not a client
+library:
+
+- graphmind guarantees the `:Entity`/`:RELATED` shape and the
+  provenance fields documented above.
+- retrieval-core treats anything else as internal and subject to
+  change.
+
+A breaking schema change (renaming a property, changing id semantics)
+is a coordinated, versioned event: bump the graph schema version,
+migrate the data, then update the consumer — in that order.
