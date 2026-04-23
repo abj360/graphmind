@@ -10,6 +10,7 @@
  *  *   refreshInterval(): poll cadence for live metrics
  *  *   RefreshButton: manual metrics refresh control
  *  *   useMetricsRefresh(): polling refresh for the metrics panel
+ *  *   MetricsError: inline error row for the panel
  */
 
 import { useEffect, useState } from "react";
@@ -155,4 +156,14 @@ export function useMetricsRefresh(onPayload) {
     return () => clearInterval(handle);
   }, []);
   return { busy, refresh };
+}
+
+/**
+ * Renders an inline error row when metrics fail to load.
+ *
+ * @param props.message - Error detail to display.
+ * @returns element - Inline error row.
+ */
+export function MetricsError({ message }) {
+  return <p className="metrics-error">metrics unavailable{message ? `: ${message}` : ""}</p>;
 }
