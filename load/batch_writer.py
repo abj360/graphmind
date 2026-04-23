@@ -10,6 +10,7 @@ Contains:
     BatchWriter.relationship_rows(): rows from non-self-loop triples
     BatchWriter.node_batches(): yields node row batches
     BatchWriter.relationship_batches(): yields relationship batches
+    batched(): slices a list into fixed-size batches
 """
 
 from collections.abc import Iterator
@@ -115,3 +116,17 @@ class BatchWriter:
             batch: Relationship row lists of at most batch_size entries.
         """
         yield from batched(self.relationship_rows(triples), self.batch_size)
+
+
+def batched(rows: list[dict[str, Any]], size: int) -> Iterator[list[dict[str, Any]]]:
+    """Slices a row list into batches of at most size entries.
+
+    Args:
+        rows: Rows to slice.
+        size: Maximum rows per batch.
+
+    Yields:
+        batch: Row lists of at most size entries.
+    """
+    for index in range(0, len(rows), size):
+        yield rows[index : index + size]
