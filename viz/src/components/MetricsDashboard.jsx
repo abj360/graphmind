@@ -12,6 +12,7 @@
  *  *   useMetricsRefresh(): polling refresh for the metrics panel
  *  *   MetricsError: inline error row for the panel
  *  *   MetricsEmpty: placeholder shown before first payload
+ *  *   clusterSizeBucket(): buckets duplicate clusters by size
  */
 
 import { useEffect, useState } from "react";
@@ -176,4 +177,25 @@ export function MetricsError({ message }) {
  */
 export function MetricsEmpty() {
   return <p className="metrics-note">gathering graph metrics…</p>;
+}
+
+/**
+ * Buckets duplicate clusters by variant count for the summary line.
+ *
+ * @param clusters - Duplicate cluster list from the metrics payload.
+ * @returns buckets - { small, medium, large } cluster counts.
+ */
+export function clusterSizeBucket(clusters) {
+  const buckets = { small: 0, medium: 0, large: 0 };
+  for (const cluster of clusters) {
+    const size = cluster.variants.length;
+    if (size <= 2) {
+      buckets.small += 1;
+    } else if (size <= 4) {
+      buckets.medium += 1;
+    } else {
+      buckets.large += 1;
+    }
+  }
+  return buckets;
 }
