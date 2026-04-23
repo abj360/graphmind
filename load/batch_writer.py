@@ -9,6 +9,11 @@ Contains:
     BatchWriter.node_rows(): deduplicated node rows from triples
     BatchWriter.relationship_rows(): rows from non-self-loop triples
     BatchWriter.node_batches(): yields node row batches
+    BatchWriter.relationship_batches(): yields relationship batches
+    batched(): slices a list into fixed-size batches
+    count_batches(): reports how many batches rows would make
+    node_row(): builds one node row from entity parts
+    relationship_row(): builds one relationship row from a triple
 """
 
 from collections.abc import Iterator
@@ -103,3 +108,77 @@ class BatchWriter:
             batch: Node row lists of at most batch_size entries.
         """
         yield from batched(self.node_rows(triples), self.batch_size)
+
+    def relationship_batches(self, triples: list[Triple]) -> Iterator[list[dict[str, Any]]]:
+        """Yields relationship rows in fixed-size batches.
+
+        Args:
+            triples: Triples to convert into relationship rows.
+
+        Yields:
+            batch: Relationship row lists of at most batch_size entries.
+        """
+        yield from batched(self.relationship_rows(triples), self.batch_size)
+
+
+def batched(rows: list[dict[str, Any]], size: int) -> Iterator[list[dict[str, Any]]]:
+    """Slices a row list into batches of at most size entries.
+
+    Args:
+        rows: Rows to slice.
+        size: Maximum rows per batch.
+
+    Yields:
+        batch: Row lists of at most size entries.
+    """
+    for index in range(0, len(rows), size):
+        yield rows[index : index + size]
+
+
+def count_batches(row_count: int, size: int) -> int:
+    """Reports how many batches a row count produces at a batch size.
+
+    Args:
+        row_count: Total rows to write.
+        size: Maximum rows per batch.
+
+    Returns:
+        count: Number of batches needed.
+    """
+    if size < 1:
+        msg = f"batch size {size} must be at least 1"
+        raise ValueError(msg)
+    return -(-row_count // size)
+
+
+def node_row(name: str, entity_type: str, doc_id: str) -> dict[str, Any]:
+    """Builds one node upsert row from entity parts.
+
+    Args:
+        name: Canonical entity name.
+        entity_type: Coarse entity type label.
+        doc_id: Document the entity was last seen in.
+
+    Returns:
+        row: Mapping matching the UNWIND node payload shape.
+    """
+    return {"name": name, "entity_type": entity_type, "doc_id": doc_id}
+
+
+def relationship_row(triple: Triple) -> dict[str, Any]:
+    """Builds one relationship upsert row from a triple.
+
+    Args:
+        triple: Triple to convert.
+
+    Returns:
+        row: Mapping matching the UNWIND relationship payload shape.
+    """
+    return {
+        "subject": triple.subject.name,
+        "object": triple.object.name,
+        "predicate": triple.predicate,
+        "confidence": triple.confidence,
+        "doc_id": triple.source_doc_id,
+        "inferred": triple.inferred,
+    }
