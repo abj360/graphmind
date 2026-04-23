@@ -5,6 +5,7 @@ test_alias_table.py --- unit tests for the alias table and merge review queue
 Contains:
     make_item(): concise review item factory
     test_add_and_resolve_alias
+    test_unknown_name_resolves_to_itself
 """
 
 import pytest
@@ -41,3 +42,9 @@ def test_add_and_resolve_alias() -> None:
     table = AliasTable()
     table.add("Acme", "ACME Corp")
     assert table.canonical_for("acme corp") == "acme"
+
+
+def test_unknown_name_resolves_to_itself() -> None:
+    """Checks that unregistered names normalize but pass through."""
+    table = AliasTable()
+    assert table.canonical_for("Globex Inc") == "globex inc"
