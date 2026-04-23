@@ -9,6 +9,10 @@
  *  *   MetricsRow: one label/value row in the grid
  *  *   refreshInterval(): poll cadence for live metrics
  *  *   RefreshButton: manual metrics refresh control
+ *  *   useMetricsRefresh(): polling refresh for the metrics panel
+ *  *   MetricsError: inline error row for the panel
+ *  *   MetricsEmpty: placeholder shown before first payload
+ *  *   clusterSizeBucket(): buckets duplicate clusters by size
  */
 
 import { useEffect, useState } from "react";
@@ -133,4 +137,65 @@ export function RefreshButton({ onRefresh, busy }) {
       {busy ? "refreshing…" : "refresh"}
     </button>
   );
+}
+
+/**
+ * Polls the metrics endpoint on the shared refresh cadence.
+ *
+ * @param onPayload - Called with every successful metrics payload.
+ * @returns state - { busy, refresh } refresh state and manual trigger.
+ */
+export function useMetricsRefresh(onPayload) {
+  const [busy, setBusy] = useState(false);
+  const refresh = () => {
+    setBusy(true);
+    fetchDedupMetrics()
+      .then(onPayload)
+      .finally(() => setBusy(false));
+  };
+  useEffect(() => {
+    const handle = setInterval(refresh, METRICS_REFRESH_MS);
+    return () => clearInterval(handle);
+  }, []);
+  return { busy, refresh };
+}
+
+/**
+ * Renders an inline error row when metrics fail to load.
+ *
+ * @param props.message - Error detail to display.
+ * @returns element - Inline error row.
+ */
+export function MetricsError({ message }) {
+  return <p className="metrics-error">metrics unavailable{message ? `: ${message}` : ""}</p>;
+}
+
+/**
+ * Renders the placeholder shown before the first metrics payload arrives.
+ *
+ * @returns element - Empty-state panel body.
+ */
+export function MetricsEmpty() {
+  return <p className="metrics-note">gathering graph metrics…</p>;
+}
+
+/**
+ * Buckets duplicate clusters by variant count for the summary line.
+ *
+ * @param clusters - Duplicate cluster list from the metrics payload.
+ * @returns buckets - { small, medium, large } cluster counts.
+ */
+export function clusterSizeBucket(clusters) {
+  const buckets = { small: 0, medium: 0, large: 0 };
+  for (const cluster of clusters) {
+    const size = cluster.variants.length;
+    if (size <= 2) {
+      buckets.small += 1;
+    } else if (size <= 4) {
+      buckets.medium += 1;
+    } else {
+      buckets.large += 1;
+    }
+  }
+  return buckets;
 }
