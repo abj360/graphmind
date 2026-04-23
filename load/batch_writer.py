@@ -13,6 +13,7 @@ Contains:
     batched(): slices a list into fixed-size batches
     count_batches(): reports how many batches rows would make
     node_row(): builds one node row from entity parts
+    relationship_row(): builds one relationship row from a triple
 """
 
 from collections.abc import Iterator
@@ -162,3 +163,22 @@ def node_row(name: str, entity_type: str, doc_id: str) -> dict[str, Any]:
         row: Mapping matching the UNWIND node payload shape.
     """
     return {"name": name, "entity_type": entity_type, "doc_id": doc_id}
+
+
+def relationship_row(triple: Triple) -> dict[str, Any]:
+    """Builds one relationship upsert row from a triple.
+
+    Args:
+        triple: Triple to convert.
+
+    Returns:
+        row: Mapping matching the UNWIND relationship payload shape.
+    """
+    return {
+        "subject": triple.subject.name,
+        "object": triple.object.name,
+        "predicate": triple.predicate,
+        "confidence": triple.confidence,
+        "doc_id": triple.source_doc_id,
+        "inferred": triple.inferred,
+    }
