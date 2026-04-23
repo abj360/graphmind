@@ -180,3 +180,17 @@ docker compose -f docker/docker-compose.yml up --build
 Load a corpus by dropping `.txt` files into the `corpus_data` volume's
 source directory and letting the CDC poller pick them up, or by running
 the pipeline stages manually (see below).
+
+## Running the pipeline by hand
+
+```bash
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m extract.triple_extractor --corpus /data/docs
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m resolution.entity_resolver --graph /out/triples.jsonl
+docker compose -f docker/docker-compose.yml exec pipeline \
+  python -m load.neo4j_loader --input /out/resolved.jsonl
+```
+
+Each stage reads the previous stage's JSONL output, so a stage can be
+re-run without redoing the whole pipeline.
