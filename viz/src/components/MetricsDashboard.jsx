@@ -11,6 +11,7 @@
  *  *   RefreshButton: manual metrics refresh control
  *  *   useMetricsRefresh(): polling refresh for the metrics panel
  *  *   MetricsError: inline error row for the panel
+ *  *   MetricsEmpty: placeholder shown before first payload
  */
 
 import { useEffect, useState } from "react";
@@ -166,4 +167,13 @@ export function useMetricsRefresh(onPayload) {
  */
 export function MetricsError({ message }) {
   return <p className="metrics-error">metrics unavailable{message ? `: ${message}` : ""}</p>;
+}
+
+/**
+ * Renders the placeholder shown before the first metrics payload arrives.
+ *
+ * @returns element - Empty-state panel body.
+ */
+export function MetricsEmpty() {
+  return <p className="metrics-note">gathering graph metrics…</p>;
 }
