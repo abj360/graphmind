@@ -28,3 +28,16 @@ at connect time. Everything else — idempotent upserts, the dedup
 metrics, the resolution pass — assumes that constraint exists. If you
 ever drop and recreate the database, the loader recreates the
 constraint on its next run; do not create it by hand and forget why.
+
+## Backup routine
+
+`docker/backup.sh` dumps nodes and relationships to a timestamped
+archive in the backup volume, verifies the archive, and prunes anything
+older than the retention window (default 14 days). Run it from compose:
+
+```bash
+docker compose -f docker/docker-compose.yml run --rm backup
+```
+
+Verify the archive pool weekly with `docker/verify_backup.sh` — a backup
+you have never verified is a rumor, not a backup.
