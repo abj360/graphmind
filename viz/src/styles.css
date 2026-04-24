@@ -285,3 +285,13 @@ body {
     max-height: 40vh;
   }
 }
+
+
+.app-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+  background: #223047;
+  border-radius: 4px;
+}
