@@ -259,3 +259,15 @@ body {
   font-variant-numeric: tabular-nums;
   color: #06d6a0;
 }
+
+.badge-high {
+  color: #06d6a0;
+}
+
+.badge-mid {
+  color: #e9c46a;
+}
+
+.badge-low {
+  color: #ef476f;
+}
