@@ -259,3 +259,49 @@ body {
   font-variant-numeric: tabular-nums;
   color: #06d6a0;
 }
+
+.badge-high {
+  color: #06d6a0;
+}
+
+.badge-mid {
+  color: #e9c46a;
+}
+
+.badge-low {
+  color: #ef476f;
+}
+
+
+@media (max-width: 860px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .app-sidebar {
+    border-left: none;
+    border-top: 1px solid #223047;
+    max-height: 40vh;
+  }
+}
+
+
+.app-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+  background: #223047;
+  border-radius: 4px;
+}
+
+::selection {
+  background: #457b9d;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #457b9d;
+  outline-offset: 1px;
+}
