@@ -20,3 +20,11 @@ corpus (~120k entities, ~300k relationships). Symptoms you have outgrown
 it: long GC pauses in the logs, queries that used to be fast going
 multi-second on the same data. Bump `NEO4J_server_memory_heap_max__size`
 before touching anything query-side.
+
+## Constraints we rely on
+
+`Entity.name` is unique, enforced by the constraint the loader applies
+at connect time. Everything else — idempotent upserts, the dedup
+metrics, the resolution pass — assumes that constraint exists. If you
+ever drop and recreate the database, the loader recreates the
+constraint on its next run; do not create it by hand and forget why.
