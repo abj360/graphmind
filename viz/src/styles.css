@@ -271,3 +271,17 @@ body {
 .badge-low {
   color: #ef476f;
 }
+
+
+@media (max-width: 860px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+
+  .app-sidebar {
+    border-left: none;
+    border-top: 1px solid #223047;
+    max-height: 40vh;
+  }
+}
