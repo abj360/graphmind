@@ -12,3 +12,11 @@ community deployment the compose stack runs. Clustering is out of scope.
   reachable from a network as needing a real one.
 - The loader connects with the service account, not personal accounts —
   personal access is for the browser only.
+
+## Memory sizing
+
+The compose file caps heap at 1G, which is comfortable for the reference
+corpus (~120k entities, ~300k relationships). Symptoms you have outgrown
+it: long GC pauses in the logs, queries that used to be fast going
+multi-second on the same data. Bump `NEO4J_server_memory_heap_max__size`
+before touching anything query-side.
