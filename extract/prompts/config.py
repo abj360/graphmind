@@ -7,6 +7,8 @@ Contains:
     DEFAULT_CONFIG_PATH: bundled prompt configuration file
     load_prompt_config(): loads config from a TOML file
     validate_prompt_config(): rejects inconsistent prompt settings
+    write_prompt_config(): persists a config back to TOML
+    with_domain(): derives a config pinned to a domain
 """
 
 import tomllib
@@ -77,3 +79,38 @@ def validate_prompt_config(config: PromptConfig) -> PromptConfig:
         msg = f"max_predicate_tokens {config.max_predicate_tokens} must be at least 1"
         raise ValueError(msg)
     return config
+
+
+def write_prompt_config(config: PromptConfig, path: Path) -> None:
+    """Persists a prompt configuration as a TOML file.
+
+    Args:
+        config: Configuration to serialize.
+        path: Destination file location.
+    """
+    lines = [
+        "[prompts]",
+        f'domain = "{config.domain}"',
+        f"few_shot_count = {config.few_shot_count}",
+        f"require_citations = {'true' if config.require_citations else 'false'}",
+        f"max_predicate_tokens = {config.max_predicate_tokens}",
+    ]
+    if config.extra_instructions:
+        rendered = ", ".join(f'"{line}"' for line in config.extra_instructions)
+        lines.append(f"extra_instructions = [{rendered}]")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def with_domain(config: PromptConfig, domain: str) -> PromptConfig:
+    """Derives a copy of a prompt config pinned to one domain.
+
+    Args:
+        config: Base configuration to copy.
+        domain: Domain key for the derived configuration.
+
+    Returns:
+        config: New configuration with the domain replaced.
+    """
+    from dataclasses import replace
+
+    return replace(config, domain=domain)
