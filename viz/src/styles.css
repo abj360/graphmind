@@ -295,3 +295,13 @@ body {
   background: #223047;
   border-radius: 4px;
 }
+
+::selection {
+  background: #457b9d;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #457b9d;
+  outline-offset: 1px;
+}
