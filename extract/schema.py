@@ -13,6 +13,7 @@ Contains:
     ConfidenceStats: summary statistics over triple confidence
     validate_triple(): coerces one raw dict into a Triple
     confidence_stats(): computes ConfidenceStats for a batch
+    filter_by_confidence(): drops triples below a threshold
 """
 
 from typing import Any
@@ -203,3 +204,16 @@ def confidence_stats(triples: list[Triple], review_threshold: float = 0.6) -> Co
     mean = sum(t.confidence for t in triples) / len(triples)
     low = sum(1 for t in triples if t.confidence < review_threshold)
     return ConfidenceStats(count=len(triples), mean=mean, low_confidence_count=low)
+
+
+def filter_by_confidence(triples: list[Triple], threshold: float) -> list[Triple]:
+    """Filters out triples whose confidence falls below a threshold.
+
+    Args:
+        triples: Triples to filter.
+        threshold: Minimum acceptable confidence, inclusive.
+
+    Returns:
+        kept: Triples meeting or exceeding the confidence threshold.
+    """
+    return [triple for triple in triples if triple.confidence >= threshold]
