@@ -26,6 +26,8 @@ Contains:
     extract_with_result(): extraction returning stats alongside
     merge_extraction_stats(): combines counters across runs
     validate_extraction_config(): rejects inconsistent tunables
+    extraction_config_from_env(): builds config from environment
+    with_config_overrides(): derives a config with selected changes
 """
 
 import json
@@ -424,3 +426,37 @@ def validate_extraction_config(config: ExtractionConfig) -> ExtractionConfig:
         msg = f"max_retries {config.max_retries} must not be negative"
         raise ValueError(msg)
     return config
+
+
+def extraction_config_from_env(env: dict[str, str]) -> ExtractionConfig:
+    """Builds an ExtractionConfig from GRAPHMIND_EXTRACT_* overrides.
+
+    Args:
+        env: Environment mapping to read overrides from.
+
+    Returns:
+        config: Validated extraction configuration.
+    """
+    config = ExtractionConfig(
+        model=env.get("GRAPHMIND_EXTRACT_MODEL", DEFAULT_MODEL),
+        max_retries=int(env.get("GRAPHMIND_EXTRACT_MAX_RETRIES", "2")),
+        batch_size=int(env.get("GRAPHMIND_EXTRACT_BATCH_SIZE", "8")),
+        min_confidence=float(env.get("GRAPHMIND_EXTRACT_MIN_CONFIDENCE", "0.0")),
+        require_source_span=env.get("GRAPHMIND_EXTRACT_REQUIRE_SPAN", "false") == "true",
+    )
+    return validate_extraction_config(config)
+
+
+def with_config_overrides(config: ExtractionConfig, **overrides: Any) -> ExtractionConfig:
+    """Derives a new ExtractionConfig with selected fields replaced.
+
+    Args:
+        config: Base configuration to copy.
+        overrides: Field names and replacement values.
+
+    Returns:
+        config: New validated configuration with overrides applied.
+    """
+    from dataclasses import replace
+
+    return validate_extraction_config(replace(config, **overrides))
