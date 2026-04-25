@@ -11,6 +11,7 @@
  *  *   test: labels endpoint lists entity types
  *  *   test: unknown route returns JSON 404
  *  *   test: CORS header reflects the viewer origin
+ *  *   test: OPTIONS preflight returns 204
  */
 
 import assert from "node:assert/strict";
@@ -85,4 +86,10 @@ test("responses carry the configured CORS origin", async () => {
   const { app } = await makeApp();
   const response = await request(app).get("/health");
   assert.equal(response.headers["access-control-allow-origin"], "http://localhost:5173");
+});
+
+test("OPTIONS preflight returns 204", async () => {
+  const { app } = await makeApp();
+  const response = await request(app).options("/api/graph");
+  assert.equal(response.status, 204);
 });
