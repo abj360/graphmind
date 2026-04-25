@@ -4,6 +4,7 @@ test_triple_extractor.py --- unit tests for the LLM triple extractor
 
 Contains:
     PAYLOAD: canned LLM response used across tests
+    make_extractor(): builds an extractor with a scripted client
 """
 
 import json
@@ -28,3 +29,17 @@ PAYLOAD = json.dumps(
         }
     ]
 )
+
+
+def make_extractor(response: str = PAYLOAD, **overrides: object) -> TripleExtractor:
+    """Builds an extractor wired to a scripted fake client.
+
+    Args:
+        response: Single canned completion the client returns.
+        overrides: ExtractionConfig field overrides.
+
+    Returns:
+        extractor: Configured extractor ready for tests.
+    """
+    client = FakeLLMClient([response])
+    return TripleExtractor(client, ExtractionConfig(**overrides))
