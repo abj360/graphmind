@@ -14,6 +14,7 @@ Contains:
     validate_triple(): coerces one raw dict into a Triple
     confidence_stats(): computes ConfidenceStats for a batch
     filter_by_confidence(): drops triples below a threshold
+    validate_triples(): validates a batch, dropping bad items
 """
 
 from typing import Any
@@ -217,3 +218,22 @@ def filter_by_confidence(triples: list[Triple], threshold: float) -> list[Triple
         kept: Triples meeting or exceeding the confidence threshold.
     """
     return [triple for triple in triples if triple.confidence >= threshold]
+
+
+def validate_triples(raw_items: list[dict[str, Any]], source_doc_id: str) -> list[Triple]:
+    """Validates a batch of raw extractor payloads, dropping bad items.
+
+    Args:
+        raw_items: Unvalidated mappings from the LLM response parser.
+        source_doc_id: Document identifier stamped onto each triple.
+
+    Returns:
+        triples: Successfully validated triples, in input order.
+    """
+    validated: list[Triple] = []
+    for item in raw_items:
+        try:
+            validated.append(validate_triple(item, source_doc_id))
+        except ValueError:
+            continue
+    return validated
