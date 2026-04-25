@@ -15,6 +15,7 @@ Contains:
     confidence_stats(): computes ConfidenceStats for a batch
     filter_by_confidence(): drops triples below a threshold
     validate_triples(): validates a batch, dropping bad items
+    TripleValidationError: aggregates per-item validation failures
 """
 
 from typing import Any
@@ -237,3 +238,20 @@ def validate_triples(raw_items: list[dict[str, Any]], source_doc_id: str) -> lis
         except ValueError:
             continue
     return validated
+
+
+class TripleValidationError(ValueError):
+    """Reports one or more raw triples that failed schema validation.
+
+    Attributes:
+        errors: Human-readable failure descriptions, one per bad item.
+    """
+
+    def __init__(self, errors: list[str]) -> None:
+        """Creates an aggregated validation error.
+
+        Args:
+            errors: Failure descriptions collected during validation.
+        """
+        self.errors = errors
+        super().__init__(f"{len(errors)} triple(s) failed validation: {'; '.join(errors[:3])}")
