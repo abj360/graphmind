@@ -15,6 +15,7 @@ Contains:
     ReviewItem: one pending human merge decision
     MergeReviewQueue: human-in-the-loop merge decision queue
     MergeReviewQueue.submit(): enqueues a borderline candidate
+    MergeReviewQueue.approve(): accepts a pending merge
 """
 
 import json
@@ -175,3 +176,16 @@ class MergeReviewQueue:
         if item.item_id in self.decided:
             return
         self.pending_items.append(item)
+
+    def approve(self, item_id: str) -> ReviewItem:
+        """Accepts a pending merge and removes it from the queue.
+
+        Args:
+            item_id: Identifier of the item being approved.
+
+        Returns:
+            item: The approved review item.
+        """
+        item = self._take(item_id)
+        self.decided[item_id] = True
+        return item
