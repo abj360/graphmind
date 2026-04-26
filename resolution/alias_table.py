@@ -14,6 +14,7 @@ Contains:
     load_alias_table(): restores a table from JSON
     ReviewItem: one pending human merge decision
     MergeReviewQueue: human-in-the-loop merge decision queue
+    MergeReviewQueue.submit(): enqueues a borderline candidate
 """
 
 import json
@@ -162,3 +163,15 @@ class MergeReviewQueue:
 
     pending_items: list[ReviewItem] = field(default_factory=list)
     decided: dict[str, bool] = field(default_factory=dict)
+
+    def submit(self, item: ReviewItem) -> None:
+        """Enqueues a borderline merge candidate for review.
+
+        Args:
+            item: Candidate to review; duplicates by id are ignored.
+        """
+        if any(existing.item_id == item.item_id for existing in self.pending_items):
+            return
+        if item.item_id in self.decided:
+            return
+        self.pending_items.append(item)
