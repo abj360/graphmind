@@ -12,6 +12,10 @@ Contains:
     AliasTable.to_dict(): serializes the table
     save_alias_table(): persists the table as JSON
     load_alias_table(): restores a table from JSON
+    ReviewItem: one pending human merge decision
+    MergeReviewQueue: human-in-the-loop merge decision queue
+    MergeReviewQueue.submit(): enqueues a borderline candidate
+    MergeReviewQueue.approve(): accepts a pending merge
 """
 
 import json
@@ -128,3 +132,60 @@ def load_alias_table(path: Path) -> AliasTable:
     table = AliasTable()
     table.canonical_of = dict(json.loads(path.read_text(encoding="utf-8")))
     return table
+
+
+@dataclass(frozen=True)
+class ReviewItem:
+    """Represents one borderline merge awaiting human judgement.
+
+    Attributes:
+        item_id: Stable identifier of the review item.
+        canonical: Proposed canonical name.
+        alias: Proposed alias to fold in.
+        similarity: Embedding similarity that triggered the review.
+        context: Short note on where the pair was observed.
+    """
+
+    item_id: str
+    canonical: str
+    alias: str
+    similarity: float
+    context: str = ""
+
+
+@dataclass
+class MergeReviewQueue:
+    """Queues borderline merge candidates for human approval.
+
+    Attributes:
+        pending_items: Items awaiting a human decision, in arrival order.
+        decided: Record of approvals and rejections already made.
+    """
+
+    pending_items: list[ReviewItem] = field(default_factory=list)
+    decided: dict[str, bool] = field(default_factory=dict)
+
+    def submit(self, item: ReviewItem) -> None:
+        """Enqueues a borderline merge candidate for review.
+
+        Args:
+            item: Candidate to review; duplicates by id are ignored.
+        """
+        if any(existing.item_id == item.item_id for existing in self.pending_items):
+            return
+        if item.item_id in self.decided:
+            return
+        self.pending_items.append(item)
+
+    def approve(self, item_id: str) -> ReviewItem:
+        """Accepts a pending merge and removes it from the queue.
+
+        Args:
+            item_id: Identifier of the item being approved.
+
+        Returns:
+            item: The approved review item.
+        """
+        item = self._take(item_id)
+        self.decided[item_id] = True
+        return item
