@@ -13,6 +13,7 @@ Contains:
     save_alias_table(): persists the table as JSON
     load_alias_table(): restores a table from JSON
     ReviewItem: one pending human merge decision
+    MergeReviewQueue: human-in-the-loop merge decision queue
 """
 
 import json
@@ -148,3 +149,16 @@ class ReviewItem:
     alias: str
     similarity: float
     context: str = ""
+
+
+@dataclass
+class MergeReviewQueue:
+    """Queues borderline merge candidates for human approval.
+
+    Attributes:
+        pending_items: Items awaiting a human decision, in arrival order.
+        decided: Record of approvals and rejections already made.
+    """
+
+    pending_items: list[ReviewItem] = field(default_factory=list)
+    decided: dict[str, bool] = field(default_factory=dict)
