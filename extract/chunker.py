@@ -11,6 +11,12 @@ Contains:
     TextChunker._pack_sentences(): groups sentences under the size ceiling
     TextChunker._with_overlap(): applies trailing-context overlap
     TextChunker.chunk_many(): chunks several documents in order
+    TextChunker.from_env(): builds a chunker from environment overrides
+    count_chunks(): reports how many chunks a document yields
+    validate_config(): rejects nonsensical sizing combinations
+    estimate_tokens(): rough token estimate for a chunk
+    budget_batches(): groups chunks under a token budget
+    chunk_stats(): describes chunking output for a document
 """
 
 from dataclasses import dataclass
@@ -171,3 +177,110 @@ class TextChunker:
         for doc_id, text in documents:
             chunks.extend(self.chunk(doc_id, text))
         return chunks
+
+    @classmethod
+    def from_env(cls, env: dict[str, str]) -> "TextChunker":
+        """Builds a chunker from GRAPHMIND_CHUNK_* environment overrides.
+
+        Args:
+            env: Environment mapping to read sizing overrides from.
+
+        Returns:
+            chunker: Configured TextChunker instance.
+        """
+        config = ChunkConfig(
+            max_chars=int(env.get("GRAPHMIND_CHUNK_MAX_CHARS", "1200")),
+            overlap_chars=int(env.get("GRAPHMIND_CHUNK_OVERLAP_CHARS", "120")),
+            min_chunk_chars=int(env.get("GRAPHMIND_CHUNK_MIN_CHARS", "200")),
+        )
+        return cls(validate_config(config))
+
+
+def count_chunks(text: str, config: ChunkConfig | None = None) -> int:
+    """Reports how many chunks a document would be split into.
+
+    Args:
+        text: Source document text to measure.
+        config: Sizing overrides; defaults to ChunkConfig() when omitted.
+
+    Returns:
+        count: Number of chunks the chunker would produce.
+    """
+    return len(TextChunker(config).chunk("measure", text))
+
+
+def validate_config(config: ChunkConfig) -> ChunkConfig:
+    """Rejects chunk sizing combinations that cannot produce output.
+
+    Args:
+        config: Candidate sizing configuration.
+
+    Returns:
+        config: The same configuration, if valid.
+    """
+    if config.overlap_chars >= config.max_chars:
+        msg = f"overlap {config.overlap_chars} must be smaller than max {config.max_chars}"
+        raise ValueError(msg)
+    if config.min_chunk_chars > config.max_chars:
+        msg = f"min chunk {config.min_chunk_chars} exceeds max {config.max_chars}"
+        raise ValueError(msg)
+    return config
+
+
+def estimate_tokens(text: str) -> int:
+    """Estimates the token count of a chunk using the 4-chars-per-token heuristic.
+
+    Args:
+        text: Chunk text to estimate.
+
+    Returns:
+        tokens: Approximate token count, rounded up.
+    """
+    return max(1, -(-len(text) // 4))
+
+
+def budget_batches(chunks: list[TextChunk], token_budget: int) -> list[list[TextChunk]]:
+    """Groups chunks into batches whose estimated tokens stay under a budget.
+
+    Args:
+        chunks: Chunks to group, in order.
+        token_budget: Maximum estimated tokens allowed per batch.
+
+    Returns:
+        batches: Ordered groups of chunks, each within the token budget.
+    """
+    batches: list[list[TextChunk]] = []
+    current: list[TextChunk] = []
+    current_tokens = 0
+    for chunk in chunks:
+        tokens = estimate_tokens(chunk.text)
+        if current and current_tokens + tokens > token_budget:
+            batches.append(current)
+            current, current_tokens = [], 0
+        current.append(chunk)
+        current_tokens += tokens
+    if current:
+        batches.append(current)
+    return batches
+
+
+def chunk_stats(text: str, config: ChunkConfig | None = None) -> dict[str, int]:
+    """Describes the chunking output for a document.
+
+    Args:
+        text: Source document text to measure.
+        config: Sizing overrides; defaults to ChunkConfig() when omitted.
+
+    Returns:
+        stats: Chunk count plus min/mean/max chunk lengths.
+    """
+    chunks = TextChunker(config).chunk("measure", text)
+    if not chunks:
+        return {"chunks": 0, "min": 0, "mean": 0, "max": 0}
+    lengths = [len(chunk.text) for chunk in chunks]
+    return {
+        "chunks": len(chunks),
+        "min": min(lengths),
+        "mean": sum(lengths) // len(lengths),
+        "max": max(lengths),
+    }
