@@ -10,6 +10,7 @@
  *  *   sortByConfidence(): orders edges strongest first
  *  *   truncateLabel(): caps long labels with an ellipsis
  *  *   relatedTypes(): entity types neighboring the selection
+ *  *   panelTitle(): accessible title for the detail panel
  */
 
 /**
@@ -148,4 +149,17 @@ export function relatedTypes(node, edges, nodes) {
     }
   }
   return [...counts.entries()].sort((left, right) => right[1] - left[1]).map(([type]) => type);
+}
+
+/**
+ * Builds the accessible title for the detail panel.
+ *
+ * @param node - Selected node data, or null.
+ * @returns title - Panel title reflecting the current selection.
+ */
+export function panelTitle(node) {
+  if (!node) {
+    return "node details";
+  }
+  return `node details: ${node.label}`;
 }
