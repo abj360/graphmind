@@ -14,6 +14,7 @@ Contains:
     TextChunker.from_env(): builds a chunker from environment overrides
     count_chunks(): reports how many chunks a document yields
     validate_config(): rejects nonsensical sizing combinations
+    estimate_tokens(): rough token estimate for a chunk
 """
 
 from dataclasses import dataclass
@@ -222,3 +223,15 @@ def validate_config(config: ChunkConfig) -> ChunkConfig:
         msg = f"min chunk {config.min_chunk_chars} exceeds max {config.max_chars}"
         raise ValueError(msg)
     return config
+
+
+def estimate_tokens(text: str) -> int:
+    """Estimates the token count of a chunk using the 4-chars-per-token heuristic.
+
+    Args:
+        text: Chunk text to estimate.
+
+    Returns:
+        tokens: Approximate token count, rounded up.
+    """
+    return max(1, -(-len(text) // 4))
