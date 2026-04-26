@@ -15,6 +15,7 @@ Contains:
     count_chunks(): reports how many chunks a document yields
     validate_config(): rejects nonsensical sizing combinations
     estimate_tokens(): rough token estimate for a chunk
+    budget_batches(): groups chunks under a token budget
 """
 
 from dataclasses import dataclass
@@ -235,3 +236,28 @@ def estimate_tokens(text: str) -> int:
         tokens: Approximate token count, rounded up.
     """
     return max(1, -(-len(text) // 4))
+
+
+def budget_batches(chunks: list[TextChunk], token_budget: int) -> list[list[TextChunk]]:
+    """Groups chunks into batches whose estimated tokens stay under a budget.
+
+    Args:
+        chunks: Chunks to group, in order.
+        token_budget: Maximum estimated tokens allowed per batch.
+
+    Returns:
+        batches: Ordered groups of chunks, each within the token budget.
+    """
+    batches: list[list[TextChunk]] = []
+    current: list[TextChunk] = []
+    current_tokens = 0
+    for chunk in chunks:
+        tokens = estimate_tokens(chunk.text)
+        if current and current_tokens + tokens > token_budget:
+            batches.append(current)
+            current, current_tokens = [], 0
+        current.append(chunk)
+        current_tokens += tokens
+    if current:
+        batches.append(current)
+    return batches
