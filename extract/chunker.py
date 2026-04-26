@@ -16,6 +16,7 @@ Contains:
     validate_config(): rejects nonsensical sizing combinations
     estimate_tokens(): rough token estimate for a chunk
     budget_batches(): groups chunks under a token budget
+    chunk_stats(): describes chunking output for a document
 """
 
 from dataclasses import dataclass
@@ -261,3 +262,25 @@ def budget_batches(chunks: list[TextChunk], token_budget: int) -> list[list[Text
     if current:
         batches.append(current)
     return batches
+
+
+def chunk_stats(text: str, config: ChunkConfig | None = None) -> dict[str, int]:
+    """Describes the chunking output for a document.
+
+    Args:
+        text: Source document text to measure.
+        config: Sizing overrides; defaults to ChunkConfig() when omitted.
+
+    Returns:
+        stats: Chunk count plus min/mean/max chunk lengths.
+    """
+    chunks = TextChunker(config).chunk("measure", text)
+    if not chunks:
+        return {"chunks": 0, "min": 0, "mean": 0, "max": 0}
+    lengths = [len(chunk.text) for chunk in chunks]
+    return {
+        "chunks": len(chunks),
+        "min": min(lengths),
+        "mean": sum(lengths) // len(lengths),
+        "max": max(lengths),
+    }
