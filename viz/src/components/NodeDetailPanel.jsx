@@ -8,6 +8,7 @@
  *  *   confidenceBadge(): color hint for a confidence score
  *  *   groupByDirection(): splits incident edges by direction
  *  *   sortByConfidence(): orders edges strongest first
+ *  *   truncateLabel(): caps long labels with an ellipsis
  */
 
 /**
@@ -108,4 +109,18 @@ export function groupByDirection(edges, focus) {
  */
 export function sortByConfidence(edges) {
   return [...edges].sort((left, right) => (right.confidence ?? -1) - (left.confidence ?? -1));
+}
+
+/**
+ * Caps long labels with an ellipsis for narrow panels.
+ *
+ * @param label - Full label text.
+ * @param maxLength - Maximum characters before truncation.
+ * @returns label - Original or truncated label.
+ */
+export function truncateLabel(label, maxLength = 28) {
+  if (label.length <= maxLength) {
+    return label;
+  }
+  return `${label.slice(0, maxLength - 1)}…`;
 }
