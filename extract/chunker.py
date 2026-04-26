@@ -11,6 +11,9 @@ Contains:
     TextChunker._pack_sentences(): groups sentences under the size ceiling
     TextChunker._with_overlap(): applies trailing-context overlap
     TextChunker.chunk_many(): chunks several documents in order
+    TextChunker.from_env(): builds a chunker from environment overrides
+    count_chunks(): reports how many chunks a document yields
+    validate_config(): rejects nonsensical sizing combinations
 """
 
 from dataclasses import dataclass
@@ -171,3 +174,51 @@ class TextChunker:
         for doc_id, text in documents:
             chunks.extend(self.chunk(doc_id, text))
         return chunks
+
+    @classmethod
+    def from_env(cls, env: dict[str, str]) -> "TextChunker":
+        """Builds a chunker from GRAPHMIND_CHUNK_* environment overrides.
+
+        Args:
+            env: Environment mapping to read sizing overrides from.
+
+        Returns:
+            chunker: Configured TextChunker instance.
+        """
+        config = ChunkConfig(
+            max_chars=int(env.get("GRAPHMIND_CHUNK_MAX_CHARS", "1200")),
+            overlap_chars=int(env.get("GRAPHMIND_CHUNK_OVERLAP_CHARS", "120")),
+            min_chunk_chars=int(env.get("GRAPHMIND_CHUNK_MIN_CHARS", "200")),
+        )
+        return cls(validate_config(config))
+
+
+def count_chunks(text: str, config: ChunkConfig | None = None) -> int:
+    """Reports how many chunks a document would be split into.
+
+    Args:
+        text: Source document text to measure.
+        config: Sizing overrides; defaults to ChunkConfig() when omitted.
+
+    Returns:
+        count: Number of chunks the chunker would produce.
+    """
+    return len(TextChunker(config).chunk("measure", text))
+
+
+def validate_config(config: ChunkConfig) -> ChunkConfig:
+    """Rejects chunk sizing combinations that cannot produce output.
+
+    Args:
+        config: Candidate sizing configuration.
+
+    Returns:
+        config: The same configuration, if valid.
+    """
+    if config.overlap_chars >= config.max_chars:
+        msg = f"overlap {config.overlap_chars} must be smaller than max {config.max_chars}"
+        raise ValueError(msg)
+    if config.min_chunk_chars > config.max_chars:
+        msg = f"min chunk {config.min_chunk_chars} exceeds max {config.max_chars}"
+        raise ValueError(msg)
+    return config
