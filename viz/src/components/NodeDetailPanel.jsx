@@ -9,6 +9,7 @@
  *  *   groupByDirection(): splits incident edges by direction
  *  *   sortByConfidence(): orders edges strongest first
  *  *   truncateLabel(): caps long labels with an ellipsis
+ *  *   relatedTypes(): entity types neighboring the selection
  */
 
 /**
@@ -123,4 +124,28 @@ export function truncateLabel(label, maxLength = 28) {
     return label;
   }
   return `${label.slice(0, maxLength - 1)}…`;
+}
+
+/**
+ * Lists entity types neighboring the selected node, most frequent first.
+ *
+ * @param node - Selected node data.
+ * @param edges - Full edge list.
+ * @param nodes - Full node list for type lookup.
+ * @returns types - Neighboring entity types, deduplicated and sorted by count.
+ */
+export function relatedTypes(node, edges, nodes) {
+  if (!node) {
+    return [];
+  }
+  const typeOf = new Map(nodes.map((entry) => [entry.id, entry.type]));
+  const counts = new Map();
+  for (const edge of edges) {
+    const other = edge.source === node.id ? edge.target : edge.target === node.id ? edge.source : null;
+    if (other) {
+      const type = typeOf.get(other) ?? "CONCEPT";
+      counts.set(type, (counts.get(type) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()].sort((left, right) => right[1] - left[1]).map(([type]) => type);
 }
