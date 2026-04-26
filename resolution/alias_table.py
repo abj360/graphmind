@@ -12,6 +12,7 @@ Contains:
     AliasTable.to_dict(): serializes the table
     save_alias_table(): persists the table as JSON
     load_alias_table(): restores a table from JSON
+    ReviewItem: one pending human merge decision
 """
 
 import json
@@ -128,3 +129,22 @@ def load_alias_table(path: Path) -> AliasTable:
     table = AliasTable()
     table.canonical_of = dict(json.loads(path.read_text(encoding="utf-8")))
     return table
+
+
+@dataclass(frozen=True)
+class ReviewItem:
+    """Represents one borderline merge awaiting human judgement.
+
+    Attributes:
+        item_id: Stable identifier of the review item.
+        canonical: Proposed canonical name.
+        alias: Proposed alias to fold in.
+        similarity: Embedding similarity that triggered the review.
+        context: Short note on where the pair was observed.
+    """
+
+    item_id: str
+    canonical: str
+    alias: str
+    similarity: float
+    context: str = ""
