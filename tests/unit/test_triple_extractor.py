@@ -6,6 +6,7 @@ Contains:
     PAYLOAD: canned LLM response used across tests
     make_extractor(): builds an extractor with a scripted client
     test_extract_text_returns_validated_triples
+    test_extract_text_handles_prose_wrapped_json
 """
 
 import json
@@ -53,3 +54,10 @@ def test_extract_text_returns_validated_triples() -> None:
     assert len(triples) == 1
     assert triples[0].subject.name == "Alice"
     assert extractor.stats.calls_made == 1
+
+
+def test_extract_text_handles_prose_wrapped_json() -> None:
+    """Checks that JSON embedded in prose is still parsed."""
+    extractor = make_extractor(f"Here you go:\n{PAYLOAD}\nHope that helps.")
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert len(triples) == 1
