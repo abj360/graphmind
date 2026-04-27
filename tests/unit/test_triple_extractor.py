@@ -9,6 +9,7 @@ Contains:
     test_extract_text_handles_prose_wrapped_json
     test_extract_text_returns_empty_on_garbage
     test_invalid_items_are_dropped_silently
+    test_retries_transient_failures_then_succeeds
 """
 
 import json
@@ -81,3 +82,12 @@ def test_invalid_items_are_dropped_silently() -> None:
     )
     extractor = make_extractor(payload)
     assert len(extractor.extract_text("doc-1", "text")) == 1
+
+
+def test_retries_transient_failures_then_succeeds() -> None:
+    """Checks that transient client failures are retried successfully."""
+    client = FailingLLMClient(failures=2, inner=FakeLLMClient([PAYLOAD]))
+    extractor = TripleExtractor(client, ExtractionConfig(max_retries=2))
+    triples = extractor.extract_text("doc-1", "text")
+    assert len(triples) == 1
+    assert extractor.stats.retries == 2
