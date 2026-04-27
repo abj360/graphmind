@@ -5,6 +5,13 @@ test_triple_extractor.py --- unit tests for the LLM triple extractor
 Contains:
     PAYLOAD: canned LLM response used across tests
     make_extractor(): builds an extractor with a scripted client
+    test_extract_text_returns_validated_triples
+    test_extract_text_handles_prose_wrapped_json
+    test_extract_text_returns_empty_on_garbage
+    test_invalid_items_are_dropped_silently
+    test_retries_transient_failures_then_succeeds
+    test_raises_after_exhausting_retries
+    test_confidence_from_payload_is_clamped
 """
 
 import json
@@ -43,3 +50,75 @@ def make_extractor(response: str = PAYLOAD, **overrides: object) -> TripleExtrac
     """
     client = FakeLLMClient([response])
     return TripleExtractor(client, ExtractionConfig(**overrides))
+
+
+def test_extract_text_returns_validated_triples() -> None:
+    """Checks that a clean LLM response yields validated triples."""
+    extractor = make_extractor()
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert len(triples) == 1
+    assert triples[0].subject.name == "Alice"
+    assert extractor.stats.calls_made == 1
+
+
+def test_extract_text_handles_prose_wrapped_json() -> None:
+    """Checks that JSON embedded in prose is still parsed."""
+    extractor = make_extractor(f"Here you go:\n{PAYLOAD}\nHope that helps.")
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert len(triples) == 1
+
+
+def test_extract_text_returns_empty_on_garbage() -> None:
+    """Checks that unparseable responses yield no triples, not crashes."""
+    extractor = make_extractor("no json here at all")
+    assert extractor.extract_text("doc-1", "text") == []
+
+
+def test_invalid_items_are_dropped_silently() -> None:
+    """Checks that malformed array items are dropped, keeping valid ones."""
+    payload = json.dumps(
+        [
+            {"subject": {"name": "Alice"}, "predicate": "founded", "object": {"name": "Acme"}},
+            {"subject": {"name": ""}, "predicate": "x", "object": {"name": "y"}},
+        ]
+    )
+    extractor = make_extractor(payload)
+    assert len(extractor.extract_text("doc-1", "text")) == 1
+
+
+def test_retries_transient_failures_then_succeeds() -> None:
+    """Checks that transient client failures are retried successfully."""
+    client = FailingLLMClient(failures=2, inner=FakeLLMClient([PAYLOAD]))
+    extractor = TripleExtractor(client, ExtractionConfig(max_retries=2))
+    triples = extractor.extract_text("doc-1", "text")
+    assert len(triples) == 1
+    assert extractor.stats.retries == 2
+
+
+def test_raises_after_exhausting_retries() -> None:
+    """Checks that persistent client failure surfaces as ExtractionError."""
+    client = FailingLLMClient(failures=5, inner=FakeLLMClient([PAYLOAD]))
+    extractor = TripleExtractor(client, ExtractionConfig(max_retries=1))
+    try:
+        extractor.extract_text("doc-1", "text")
+        raised = False
+    except ExtractionError:
+        raised = True
+    assert raised
+
+
+def test_confidence_from_payload_is_clamped() -> None:
+    """Checks that out-of-range model confidence scores are clamped."""
+    payload = json.dumps(
+        [
+            {
+                "subject": {"name": "Alice"},
+                "predicate": "founded",
+                "object": {"name": "Acme"},
+                "confidence": 7.3,
+            }
+        ]
+    )
+    extractor = make_extractor(payload)
+    triples = extractor.extract_text("doc-1", "text")
+    assert triples[0].confidence == 1.0

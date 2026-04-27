@@ -7,6 +7,7 @@ Contains:
     FakeLLMClient: deterministic scripted client for tests
     FailingLLMClient: raises a configurable error for retry tests
     LangChainClient: adapts a LangChain chat model to LLMClient
+    build_default_client(): constructs the configured production client
 """
 
 from typing import Protocol, runtime_checkable
@@ -121,3 +122,18 @@ class LangChainClient:
         message = self.model.invoke(prompt)  # type: ignore[attr-defined]
         content = message.content
         return content if isinstance(content, str) else str(content)
+
+
+def build_default_client(model_name: str, api_key_env: str = "OPENAI_API_KEY") -> LLMClient:
+    """Constructs the production LLM client from environment configuration.
+
+    Args:
+        model_name: Provider model identifier, e.g. gpt-4o-mini.
+        api_key_env: Name of the environment variable holding the API key.
+
+    Returns:
+        client: LLMClient backed by a LangChain chat model.
+    """
+    from langchain_openai import ChatOpenAI  # local import: optional dependency
+
+    return LangChainClient(ChatOpenAI(model=model_name, api_key=api_key_env))
