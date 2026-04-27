@@ -13,6 +13,8 @@ Contains:
     StateStore.load(): restores persisted state
     StateStore.save(): persists current state atomically
     CdcPoller: watches a corpus directory for changes
+    CdcPoller.scan(): snapshots the current corpus state
+    CdcPoller.poll_once(): diffs state and emits change events
 """
 
 import hashlib
@@ -152,3 +154,39 @@ class CdcPoller:
         self.corpus_dir = corpus_dir
         self.config = config or PollerConfig()
         self.store = StateStore(self.config.state_path)
+
+    def scan(self) -> dict[str, dict[str, float | str]]:
+        """Snapshots the current checksum state of the corpus.
+
+        Returns:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        state: dict[str, dict[str, float | str]] = {}
+        for path in sorted(self.corpus_dir.glob(self.config.glob_pattern)):
+            if not path.is_file():
+                continue
+            doc_id = doc_id_for_path(path, self.corpus_dir)
+            state[doc_id] = {
+                "checksum": file_checksum(path),
+                "modified_at": path.stat().st_mtime,
+            }
+        return state
+
+    def poll_once(self) -> list[ChangeEvent]:
+        """Polls once, emitting events for new, changed, and deleted docs.
+
+        Returns:
+            events: Change events since the last persisted state.
+        """
+        previous = self.store.load()
+        current = self.scan()
+        events: list[ChangeEvent] = []
+        for doc_id, record in current.items():
+            old = previous.get(doc_id)
+            if old is None or old["checksum"] != record["checksum"]:
+                events.append(self._event(doc_id, ChangeKind.UPSERT, record))
+        for doc_id in previous:
+            if doc_id not in current:
+                events.append(self._event(doc_id, ChangeKind.DELETE, previous[doc_id]))
+        self.store.save(current)
+        return events
