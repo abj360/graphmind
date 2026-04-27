@@ -5,6 +5,7 @@ test_triple_extractor.py --- unit tests for the LLM triple extractor
 Contains:
     PAYLOAD: canned LLM response used across tests
     make_extractor(): builds an extractor with a scripted client
+    test_extract_text_returns_validated_triples
 """
 
 import json
@@ -43,3 +44,12 @@ def make_extractor(response: str = PAYLOAD, **overrides: object) -> TripleExtrac
     """
     client = FakeLLMClient([response])
     return TripleExtractor(client, ExtractionConfig(**overrides))
+
+
+def test_extract_text_returns_validated_triples() -> None:
+    """Checks that a clean LLM response yields validated triples."""
+    extractor = make_extractor()
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert len(triples) == 1
+    assert triples[0].subject.name == "Alice"
+    assert extractor.stats.calls_made == 1
