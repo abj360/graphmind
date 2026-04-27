@@ -14,6 +14,7 @@
  *  *   zIndexFor(): keeps edges below node labels
  *  *   visibleEdgeWidth(): scales width with confidence
  *  *   fitToContent(): recenters the canvas after load
+ *  *   layoutForSize(): picks a layout by graph size
  */
 
 import cytoscape from "cytoscape";
@@ -211,4 +212,20 @@ export function edgeWidthFor(confidence) {
 export function fitToContent(cy, padding = 40) {
   cy.fit(undefined, padding);
   cy.center();
+}
+
+/**
+ * Picks a layout name appropriate for the visible graph size.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @returns layout - Layout name: grid for tiny graphs, cose otherwise.
+ */
+export function layoutForSize(nodeCount) {
+  if (nodeCount <= 1) {
+    return "grid";
+  }
+  if (nodeCount > 1500) {
+    return "breadthfirst";
+  }
+  return "cose";
 }
