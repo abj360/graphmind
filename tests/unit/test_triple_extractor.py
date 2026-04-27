@@ -8,6 +8,7 @@ Contains:
     test_extract_text_returns_validated_triples
     test_extract_text_handles_prose_wrapped_json
     test_extract_text_returns_empty_on_garbage
+    test_invalid_items_are_dropped_silently
 """
 
 import json
@@ -68,3 +69,15 @@ def test_extract_text_returns_empty_on_garbage() -> None:
     """Checks that unparseable responses yield no triples, not crashes."""
     extractor = make_extractor("no json here at all")
     assert extractor.extract_text("doc-1", "text") == []
+
+
+def test_invalid_items_are_dropped_silently() -> None:
+    """Checks that malformed array items are dropped, keeping valid ones."""
+    payload = json.dumps(
+        [
+            {"subject": {"name": "Alice"}, "predicate": "founded", "object": {"name": "Acme"}},
+            {"subject": {"name": ""}, "predicate": "x", "object": {"name": "y"}},
+        ]
+    )
+    extractor = make_extractor(payload)
+    assert len(extractor.extract_text("doc-1", "text")) == 1
