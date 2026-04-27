@@ -15,6 +15,7 @@
  *  *   visibleEdgeWidth(): scales width with confidence
  *  *   fitToContent(): recenters the canvas after load
  *  *   layoutForSize(): picks a layout by graph size
+ *  *   clampZoom(): bounds the zoom level for readability
  */
 
 import cytoscape from "cytoscape";
@@ -228,4 +229,16 @@ export function layoutForSize(nodeCount) {
     return "breadthfirst";
   }
   return "cose";
+}
+
+/**
+ * Bounds the canvas zoom level for label readability.
+ *
+ * @param cy - Cytoscape instance to clamp.
+ */
+export function clampZoom(cy) {
+  const zoom = Math.min(Math.max(cy.zoom(), 0.2), 2.5);
+  if (zoom !== cy.zoom()) {
+    cy.zoom(zoom);
+  }
 }
