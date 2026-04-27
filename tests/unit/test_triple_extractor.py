@@ -7,6 +7,7 @@ Contains:
     make_extractor(): builds an extractor with a scripted client
     test_extract_text_returns_validated_triples
     test_extract_text_handles_prose_wrapped_json
+    test_extract_text_returns_empty_on_garbage
 """
 
 import json
@@ -61,3 +62,9 @@ def test_extract_text_handles_prose_wrapped_json() -> None:
     extractor = make_extractor(f"Here you go:\n{PAYLOAD}\nHope that helps.")
     triples = extractor.extract_text("doc-1", "Alice founded Acme.")
     assert len(triples) == 1
+
+
+def test_extract_text_returns_empty_on_garbage() -> None:
+    """Checks that unparseable responses yield no triples, not crashes."""
+    extractor = make_extractor("no json here at all")
+    assert extractor.extract_text("doc-1", "text") == []
