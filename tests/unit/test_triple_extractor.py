@@ -10,6 +10,7 @@ Contains:
     test_extract_text_returns_empty_on_garbage
     test_invalid_items_are_dropped_silently
     test_retries_transient_failures_then_succeeds
+    test_raises_after_exhausting_retries
 """
 
 import json
@@ -91,3 +92,15 @@ def test_retries_transient_failures_then_succeeds() -> None:
     triples = extractor.extract_text("doc-1", "text")
     assert len(triples) == 1
     assert extractor.stats.retries == 2
+
+
+def test_raises_after_exhausting_retries() -> None:
+    """Checks that persistent client failure surfaces as ExtractionError."""
+    client = FailingLLMClient(failures=5, inner=FakeLLMClient([PAYLOAD]))
+    extractor = TripleExtractor(client, ExtractionConfig(max_retries=1))
+    try:
+        extractor.extract_text("doc-1", "text")
+        raised = False
+    except ExtractionError:
+        raised = True
+    assert raised
