@@ -13,6 +13,7 @@ Contains:
     StateStore.load(): restores persisted state
     StateStore.save(): persists current state atomically
     CdcPoller: watches a corpus directory for changes
+    CdcPoller.scan(): snapshots the current corpus state
 """
 
 import hashlib
@@ -152,3 +153,20 @@ class CdcPoller:
         self.corpus_dir = corpus_dir
         self.config = config or PollerConfig()
         self.store = StateStore(self.config.state_path)
+
+    def scan(self) -> dict[str, dict[str, float | str]]:
+        """Snapshots the current checksum state of the corpus.
+
+        Returns:
+            state: Mapping of doc_id to checksum and modified_at records.
+        """
+        state: dict[str, dict[str, float | str]] = {}
+        for path in sorted(self.corpus_dir.glob(self.config.glob_pattern)):
+            if not path.is_file():
+                continue
+            doc_id = doc_id_for_path(path, self.corpus_dir)
+            state[doc_id] = {
+                "checksum": file_checksum(path),
+                "modified_at": path.stat().st_mtime,
+            }
+        return state
