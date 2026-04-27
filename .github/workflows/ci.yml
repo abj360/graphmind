@@ -128,3 +128,9 @@ jobs:
       - run: pip install pip-audit
       - run: pip install -e ".[dev]"
       - run: pip-audit
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck docker/*.sh
