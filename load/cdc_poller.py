@@ -14,6 +14,7 @@ Contains:
     StateStore.save(): persists current state atomically
     CdcPoller: watches a corpus directory for changes
     CdcPoller.scan(): snapshots the current corpus state
+    CdcPoller.poll_once(): diffs state and emits change events
 """
 
 import hashlib
@@ -170,3 +171,22 @@ class CdcPoller:
                 "modified_at": path.stat().st_mtime,
             }
         return state
+
+    def poll_once(self) -> list[ChangeEvent]:
+        """Polls once, emitting events for new, changed, and deleted docs.
+
+        Returns:
+            events: Change events since the last persisted state.
+        """
+        previous = self.store.load()
+        current = self.scan()
+        events: list[ChangeEvent] = []
+        for doc_id, record in current.items():
+            old = previous.get(doc_id)
+            if old is None or old["checksum"] != record["checksum"]:
+                events.append(self._event(doc_id, ChangeKind.UPSERT, record))
+        for doc_id in previous:
+            if doc_id not in current:
+                events.append(self._event(doc_id, ChangeKind.DELETE, previous[doc_id]))
+        self.store.save(current)
+        return events
