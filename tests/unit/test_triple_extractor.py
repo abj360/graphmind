@@ -11,6 +11,7 @@ Contains:
     test_invalid_items_are_dropped_silently
     test_retries_transient_failures_then_succeeds
     test_raises_after_exhausting_retries
+    test_confidence_from_payload_is_clamped
 """
 
 import json
@@ -104,3 +105,20 @@ def test_raises_after_exhausting_retries() -> None:
     except ExtractionError:
         raised = True
     assert raised
+
+
+def test_confidence_from_payload_is_clamped() -> None:
+    """Checks that out-of-range model confidence scores are clamped."""
+    payload = json.dumps(
+        [
+            {
+                "subject": {"name": "Alice"},
+                "predicate": "founded",
+                "object": {"name": "Acme"},
+                "confidence": 7.3,
+            }
+        ]
+    )
+    extractor = make_extractor(payload)
+    triples = extractor.extract_text("doc-1", "text")
+    assert triples[0].confidence == 1.0
