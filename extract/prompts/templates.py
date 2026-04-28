@@ -16,6 +16,7 @@ Contains:
     DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
     DOMAIN_HINTS: domain key to hint text mapping
     render_domain_hint(): looks up the hint for a domain
+    predicate_guidance(): suggests predicate phrasing per domain
 """
 
 from typing import TYPE_CHECKING
@@ -161,3 +162,20 @@ def render_domain_hint(domain: str) -> str:
         hint: Guidance sentence, or an empty string for unknown domains.
     """
     return DOMAIN_HINTS.get(domain, "")
+
+
+def predicate_guidance(domain: str) -> list[str]:
+    """Suggests common predicate phrasings for a domain.
+
+    Args:
+        domain: Domain key to suggest predicates for.
+
+    Returns:
+        predicates: Short predicate phrases typical for the domain.
+    """
+    suggestions = {
+        "technical": ["depends on", "ships with", "configures", "replaces"],
+        "news": ["acquired", "founded", "joined", "is based in"],
+        "biomedical": ["interacts with", "inhibits", "expresses", "mutates in"],
+    }
+    return suggestions.get(domain, ["relates to"])
