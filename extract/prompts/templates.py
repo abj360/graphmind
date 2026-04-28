@@ -15,6 +15,7 @@ Contains:
     DOMAIN_HINT_NEWS: extraction guidance for news prose
     DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
     DOMAIN_HINTS: domain key to hint text mapping
+    render_domain_hint(): looks up the hint for a domain
 """
 
 from typing import TYPE_CHECKING
@@ -148,3 +149,15 @@ DOMAIN_HINTS = {
     "news": DOMAIN_HINT_NEWS,
     "biomedical": DOMAIN_HINT_BIOMEDICAL,
 }
+
+
+def render_domain_hint(domain: str) -> str:
+    """Looks up the guidance hint for a domain key.
+
+    Args:
+        domain: Domain key such as technical, news, or biomedical.
+
+    Returns:
+        hint: Guidance sentence, or an empty string for unknown domains.
+    """
+    return DOMAIN_HINTS.get(domain, "")
