@@ -19,6 +19,7 @@ Contains:
     predicate_guidance(): suggests predicate phrasing per domain
     DEFAULT_FEW_SHOT_COUNT: examples included by default
     estimate_prompt_tokens(): rough token estimate for a prompt
+    validate_domain(): rejects unsupported domain keys
 """
 
 from typing import TYPE_CHECKING
@@ -196,3 +197,19 @@ def estimate_prompt_tokens(prompt: str) -> int:
         tokens: Approximate token count using the 4-chars heuristic.
     """
     return max(1, -(-len(prompt) // 4))
+
+
+def validate_domain(domain: str) -> str:
+    """Rejects domain keys that have no registered hint.
+
+    Args:
+        domain: Candidate domain key.
+
+    Returns:
+        domain: The same key, if registered.
+    """
+    if domain != "general" and domain not in DOMAIN_HINTS:
+        valid = ", ".join(sorted(["general", *DOMAIN_HINTS]))
+        msg = f"unknown domain {domain!r}; expected one of: {valid}"
+        raise ValueError(msg)
+    return domain
