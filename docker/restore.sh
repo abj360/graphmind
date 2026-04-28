@@ -10,3 +10,8 @@ BACKUP_DIR="${GRAPHMIND_BACKUP_DIR:-/backups}"
 log() {
     printf '[restore %s] %s\n' "$(date +%H:%M:%S)" "$1"
 }
+
+fail() {
+    log "ERROR: $1" >&2
+    exit 1
+}
