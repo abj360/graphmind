@@ -15,3 +15,8 @@ fail() {
     log "ERROR: $1" >&2
     exit 1
 }
+
+usage() {
+    printf 'usage: %s <archive.tar.gz|latest>\n' "$(basename "$0")" >&2
+    exit 64
+}
