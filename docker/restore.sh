@@ -20,3 +20,12 @@ usage() {
     printf 'usage: %s <archive.tar.gz|latest>\n' "$(basename "$0")" >&2
     exit 64
 }
+
+resolve_archive() {
+    local requested="$1"
+    if [ "$requested" = "latest" ]; then
+        ls -1t "${BACKUP_DIR}"/neo4j-*.tar.gz 2>/dev/null | head -n 1
+    else
+        printf '%s\n' "$requested"
+    fi
+}
