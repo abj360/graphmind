@@ -9,6 +9,7 @@ Contains:
     test_write_triples_applies_constraints_first
     test_batches_respect_configured_batch_size
     test_stats_count_written_rows
+    test_transient_failures_are_retried
 """
 
 from typing import Any
@@ -113,3 +114,10 @@ def test_stats_count_written_rows() -> None:
     assert stats.nodes_written == 3
     assert stats.relationships_written == 2
     assert stats.batches_written >= 2
+
+
+def test_transient_failures_are_retried() -> None:
+    """Checks that transient batch failures are retried and counted."""
+    loader, _ = make_loader(failures=1)
+    loader.write_triples([make_triple()])
+    assert loader.stats.retries == 1
