@@ -14,6 +14,12 @@ Contains:
     DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
     DOMAIN_HINT_NEWS: extraction guidance for news prose
     DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
+    DOMAIN_HINTS: domain key to hint text mapping
+    render_domain_hint(): looks up the hint for a domain
+    predicate_guidance(): suggests predicate phrasing per domain
+    DEFAULT_FEW_SHOT_COUNT: examples included by default
+    estimate_prompt_tokens(): rough token estimate for a prompt
+    validate_domain(): rejects unsupported domain keys
 """
 
 from typing import TYPE_CHECKING
@@ -141,3 +147,69 @@ DOMAIN_HINT_BIOMEDICAL = (
     "Prefer GENE, DISEASE, DRUG, and PATHWAY entity types. Only extract "
     "experimentally stated interactions, not background-knowledge ones."
 )
+
+DOMAIN_HINTS = {
+    "technical": DOMAIN_HINT_TECHNICAL,
+    "news": DOMAIN_HINT_NEWS,
+    "biomedical": DOMAIN_HINT_BIOMEDICAL,
+}
+
+
+def render_domain_hint(domain: str) -> str:
+    """Looks up the guidance hint for a domain key.
+
+    Args:
+        domain: Domain key such as technical, news, or biomedical.
+
+    Returns:
+        hint: Guidance sentence, or an empty string for unknown domains.
+    """
+    return DOMAIN_HINTS.get(domain, "")
+
+
+def predicate_guidance(domain: str) -> list[str]:
+    """Suggests common predicate phrasings for a domain.
+
+    Args:
+        domain: Domain key to suggest predicates for.
+
+    Returns:
+        predicates: Short predicate phrases typical for the domain.
+    """
+    suggestions = {
+        "technical": ["depends on", "ships with", "configures", "replaces"],
+        "news": ["acquired", "founded", "joined", "is based in"],
+        "biomedical": ["interacts with", "inhibits", "expresses", "mutates in"],
+    }
+    return suggestions.get(domain, ["relates to"])
+
+
+DEFAULT_FEW_SHOT_COUNT = 2
+
+
+def estimate_prompt_tokens(prompt: str) -> int:
+    """Estimates the token count of a rendered prompt.
+
+    Args:
+        prompt: Rendered prompt text to measure.
+
+    Returns:
+        tokens: Approximate token count using the 4-chars heuristic.
+    """
+    return max(1, -(-len(prompt) // 4))
+
+
+def validate_domain(domain: str) -> str:
+    """Rejects domain keys that have no registered hint.
+
+    Args:
+        domain: Candidate domain key.
+
+    Returns:
+        domain: The same key, if registered.
+    """
+    if domain != "general" and domain not in DOMAIN_HINTS:
+        valid = ", ".join(sorted(["general", *DOMAIN_HINTS]))
+        msg = f"unknown domain {domain!r}; expected one of: {valid}"
+        raise ValueError(msg)
+    return domain
