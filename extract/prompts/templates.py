@@ -17,6 +17,7 @@ Contains:
     DOMAIN_HINTS: domain key to hint text mapping
     render_domain_hint(): looks up the hint for a domain
     predicate_guidance(): suggests predicate phrasing per domain
+    DEFAULT_FEW_SHOT_COUNT: examples included by default
 """
 
 from typing import TYPE_CHECKING
@@ -179,3 +180,6 @@ def predicate_guidance(domain: str) -> list[str]:
         "biomedical": ["interacts with", "inhibits", "expresses", "mutates in"],
     }
     return suggestions.get(domain, ["relates to"])
+
+
+DEFAULT_FEW_SHOT_COUNT = 2
