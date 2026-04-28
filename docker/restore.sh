@@ -29,3 +29,11 @@ resolve_archive() {
         printf '%s\n' "$requested"
     fi
 }
+
+preflight() {
+    local archive="$1"
+    [ -f "$archive" ] || fail "archive not found: $archive"
+    tar -tzf "$archive" >/dev/null 2>&1 || fail "archive is corrupt: $archive"
+    tar -tzf "$archive" | grep -q 'nodes.txt' || fail "archive lacks nodes.txt"
+    tar -tzf "$archive" | grep -q 'relationships.txt' || fail "archive lacks relationships.txt"
+}
