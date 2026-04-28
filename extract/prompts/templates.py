@@ -18,6 +18,7 @@ Contains:
     render_domain_hint(): looks up the hint for a domain
     predicate_guidance(): suggests predicate phrasing per domain
     DEFAULT_FEW_SHOT_COUNT: examples included by default
+    estimate_prompt_tokens(): rough token estimate for a prompt
 """
 
 from typing import TYPE_CHECKING
@@ -183,3 +184,15 @@ def predicate_guidance(domain: str) -> list[str]:
 
 
 DEFAULT_FEW_SHOT_COUNT = 2
+
+
+def estimate_prompt_tokens(prompt: str) -> int:
+    """Estimates the token count of a rendered prompt.
+
+    Args:
+        prompt: Rendered prompt text to measure.
+
+    Returns:
+        tokens: Approximate token count using the 4-chars heuristic.
+    """
+    return max(1, -(-len(prompt) // 4))
