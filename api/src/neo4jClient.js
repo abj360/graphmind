@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   createDriver(): builds the shared driver
  *  *   runQuery(): executes a read query and unwraps records
+ *  *   closeDriver(): releases the shared driver
  */
 
 import neo4j from "neo4j-driver";
@@ -35,5 +36,16 @@ export async function runQuery(driver, query, params = {}, database = "neo4j") {
     return result.records;
   } finally {
     await session.close();
+  }
+}
+
+/**
+ * Releases the shared Neo4j driver, tolerating repeated calls.
+ *
+ * @param driver - Neo4j driver instance to close.
+ */
+export async function closeDriver(driver) {
+  if (driver) {
+    await driver.close();
   }
 }
