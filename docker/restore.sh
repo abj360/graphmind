@@ -37,3 +37,9 @@ preflight() {
     tar -tzf "$archive" | grep -q 'nodes.txt' || fail "archive lacks nodes.txt"
     tar -tzf "$archive" | grep -q 'relationships.txt' || fail "archive lacks relationships.txt"
 }
+
+confirm_destructive() {
+    if [ "${GRAPHMIND_RESTORE_CONFIRM:-}" != "yes" ]; then
+        fail "restore wipes current data; re-run with GRAPHMIND_RESTORE_CONFIRM=yes"
+    fi
+}
