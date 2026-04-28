@@ -14,6 +14,7 @@ Contains:
     DOMAIN_HINT_TECHNICAL: extraction guidance for technical docs
     DOMAIN_HINT_NEWS: extraction guidance for news prose
     DOMAIN_HINT_BIOMEDICAL: extraction guidance for biomedical text
+    DOMAIN_HINTS: domain key to hint text mapping
 """
 
 from typing import TYPE_CHECKING
@@ -141,3 +142,9 @@ DOMAIN_HINT_BIOMEDICAL = (
     "Prefer GENE, DISEASE, DRUG, and PATHWAY entity types. Only extract "
     "experimentally stated interactions, not background-knowledge ones."
 )
+
+DOMAIN_HINTS = {
+    "technical": DOMAIN_HINT_TECHNICAL,
+    "news": DOMAIN_HINT_NEWS,
+    "biomedical": DOMAIN_HINT_BIOMEDICAL,
+}
