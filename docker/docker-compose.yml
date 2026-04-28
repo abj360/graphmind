@@ -37,3 +37,12 @@ services:
     depends_on:
       neo4j:
         condition: service_healthy
+
+  viz:
+    build:
+      context: ..
+      dockerfile: docker/viz.Dockerfile
+    ports:
+      - "${VIZ_PORT:-5173}:80"
+    depends_on:
+      - api
