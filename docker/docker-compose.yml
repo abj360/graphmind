@@ -37,3 +37,24 @@ services:
     depends_on:
       neo4j:
         condition: service_healthy
+
+  viz:
+    build:
+      context: ..
+      dockerfile: docker/viz.Dockerfile
+    ports:
+      - "${VIZ_PORT:-5173}:80"
+    depends_on:
+      - api
+
+  backup:
+    build:
+      context: ..
+      dockerfile: docker/pipeline.Dockerfile
+    entrypoint: ["bash", "docker/backup.sh"]
+    env_file: ../.env
+    volumes:
+      - neo4j_data:/data:ro
+      - backup_data:/backups
+    profiles:
+      - tools
