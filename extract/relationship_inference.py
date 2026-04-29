@@ -13,6 +13,9 @@ Contains:
     RelationshipInferer._entity_types(): entity name to type map
     RelationshipInferer._score_bridge(): heuristic bridge scoring
     RelationshipInferer._share_tokens(): cheap name-overlap signal
+    RelationshipInferer._materialize(): candidates into triples
+    infer_bridges(): one-shot bridging convenience function
+    component_report(): describes graph connectivity
 """
 
 from dataclasses import dataclass
@@ -215,3 +218,59 @@ class RelationshipInferer:
         source_tokens = {token for token in source.split() if len(token) >= 4}
         target_tokens = {token for token in target.split() if len(token) >= 4}
         return bool(source_tokens & target_tokens)
+
+    def _materialize(self, candidates: list[BridgeCandidate]) -> list[Triple]:
+        """Converts scored bridge candidates into inferred triples.
+
+        Args:
+            candidates: Bridge candidates above the confidence floor.
+
+        Returns:
+            triples: Inferred triples flagged with inferred=True.
+        """
+        from extract.schema import EntityRef
+
+        bridges: list[Triple] = []
+        for candidate in candidates:
+            triple = Triple(
+                subject=EntityRef(name=candidate.source_name),
+                predicate=candidate.predicate,
+                object=EntityRef(name=candidate.target_name),
+                confidence=round(candidate.score, 4),
+                source_doc_id="__inference__",
+                inferred=True,
+            )
+            bridges.append(triple)
+        return bridges
+
+
+def infer_bridges(triples: list[Triple], config: InferenceConfig | None = None) -> list[Triple]:
+    """Infers bridging triples with a fresh RelationshipInferer.
+
+    Args:
+        triples: Extracted triples forming possibly disjoint subgraphs.
+        config: Inference overrides; defaults applied when omitted.
+
+    Returns:
+        bridges: Inferred triples marked with inferred=True.
+    """
+    return RelationshipInferer(config).infer(triples)
+
+
+def component_report(triples: list[Triple]) -> dict[str, int]:
+    """Describes the connectivity of the triple graph.
+
+    Args:
+        triples: Triples whose connectivity is summarized.
+
+    Returns:
+        report: Counts of components, entities, and largest component size.
+    """
+    inferer = RelationshipInferer()
+    components = inferer._connected_components(triples)
+    largest = max((len(component) for component in components), default=0)
+    return {
+        "components": len(components),
+        "entities": sum(len(component) for component in components),
+        "largest_component": largest,
+    }
