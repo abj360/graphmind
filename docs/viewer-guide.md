@@ -12,3 +12,11 @@ entities, colored by entity type; edges are relationships, labeled with
 their predicate when the graph is sparse enough for labels to stay
 readable. Drag nodes to pin them, scroll to zoom, drag the background
 to pan.
+
+## Layout behavior
+
+- Under ~300 nodes: physics layout (cose) with moderate repulsion.
+- Over ~1500 nodes: the viewer switches to a breadth-first layout to
+  keep rendering interactive.
+- After every data reload the canvas fits to content and clamps zoom
+  to a readable range.
