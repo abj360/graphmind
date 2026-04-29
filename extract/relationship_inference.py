@@ -15,6 +15,7 @@ Contains:
     RelationshipInferer._share_tokens(): cheap name-overlap signal
     RelationshipInferer._materialize(): candidates into triples
     infer_bridges(): one-shot bridging convenience function
+    component_report(): describes graph connectivity
 """
 
 from dataclasses import dataclass
@@ -254,3 +255,22 @@ def infer_bridges(triples: list[Triple], config: InferenceConfig | None = None) 
         bridges: Inferred triples marked with inferred=True.
     """
     return RelationshipInferer(config).infer(triples)
+
+
+def component_report(triples: list[Triple]) -> dict[str, int]:
+    """Describes the connectivity of the triple graph.
+
+    Args:
+        triples: Triples whose connectivity is summarized.
+
+    Returns:
+        report: Counts of components, entities, and largest component size.
+    """
+    inferer = RelationshipInferer()
+    components = inferer._connected_components(triples)
+    largest = max((len(component) for component in components), default=0)
+    return {
+        "components": len(components),
+        "entities": sum(len(component) for component in components),
+        "largest_component": largest,
+    }
