@@ -15,6 +15,7 @@ Contains:
     node_row(): builds one node row from entity parts
     relationship_row(): builds one relationship row from a triple
     estimate_write_seconds(): rough wall-clock write estimate
+    row_size_bytes(): approximates payload size of one row
 """
 
 from collections.abc import Iterator
@@ -197,3 +198,15 @@ def estimate_write_seconds(row_count: int, size: int, seconds_per_batch: float =
         estimate: Approximate total write duration in seconds.
     """
     return count_batches(row_count, size) * seconds_per_batch
+
+
+def row_size_bytes(row: dict[str, Any]) -> int:
+    """Approximates the serialized size of one row payload.
+
+    Args:
+        row: Row payload to measure.
+
+    Returns:
+        size: Approximate byte size of the serialized row.
+    """
+    return sum(len(str(key)) + len(str(value)) for key, value in row.items())
