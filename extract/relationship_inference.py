@@ -14,6 +14,7 @@ Contains:
     RelationshipInferer._score_bridge(): heuristic bridge scoring
     RelationshipInferer._share_tokens(): cheap name-overlap signal
     RelationshipInferer._materialize(): candidates into triples
+    infer_bridges(): one-shot bridging convenience function
 """
 
 from dataclasses import dataclass
@@ -240,3 +241,16 @@ class RelationshipInferer:
             )
             bridges.append(triple)
         return bridges
+
+
+def infer_bridges(triples: list[Triple], config: InferenceConfig | None = None) -> list[Triple]:
+    """Infers bridging triples with a fresh RelationshipInferer.
+
+    Args:
+        triples: Extracted triples forming possibly disjoint subgraphs.
+        config: Inference overrides; defaults applied when omitted.
+
+    Returns:
+        bridges: Inferred triples marked with inferred=True.
+    """
+    return RelationshipInferer(config).infer(triples)
