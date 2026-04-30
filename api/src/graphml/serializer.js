@@ -9,6 +9,7 @@
  *  *   serializeEdge(): renders one edge element
  *  *   toGraphML(): serializes a full view graph
  *  *   validateGraphInput(): rejects malformed view graphs
+ *  *   escapeXml(): escapes XML-special characters in text
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -87,4 +88,19 @@ export function validateGraphInput(graph) {
     }
   }
   return graph;
+}
+
+/**
+ * Escapes XML-special characters in arbitrary text.
+ *
+ * @param text - Raw text that may contain XML metacharacters.
+ * @returns escaped - Text safe to embed in XML attributes and content.
+ */
+export function escapeXml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
 }
