@@ -6,6 +6,7 @@
  *  *   GRAPHML_HEADER: document prolog and schema keys
  *  *   GRAPHML_FOOTER: document closing tags
  *  *   serializeNode(): renders one node element
+ *  *   serializeEdge(): renders one edge element
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -30,4 +31,23 @@ export function serializeNode(node) {
     `      <data key="type">${node.type}</data>`,
     `    </node>`,
   ].join("\n");
+}
+
+/**
+ * Renders one GraphML edge element.
+ *
+ * @param edge - View-graph edge with source, target, and predicate.
+ * @param index - Position used to build a stable edge id.
+ * @returns element - Indented GraphML edge element string.
+ */
+export function serializeEdge(edge, index) {
+  const lines = [
+    `    <edge id="e${index}" source="${edge.source}" target="${edge.target}">`,
+    `      <data key="predicate">${edge.predicate}</data>`,
+  ];
+  if (edge.confidence !== null && edge.confidence !== undefined) {
+    lines.push(`      <data key="confidence">${edge.confidence}</data>`);
+  }
+  lines.push("    </edge>");
+  return lines.join("\n");
 }
