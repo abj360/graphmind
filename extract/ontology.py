@@ -14,6 +14,7 @@ Contains:
     Ontology.to_dict(): serializes the rule set
     Ontology.coverage(): share of triples the ontology allows
     Ontology.summary(): counts rules by subject type
+    load_ontology(): reads an ontology from a JSON file
 """
 
 import json
@@ -202,3 +203,20 @@ class Ontology:
         for rule in self.rules:
             counts[rule.subject_type] = counts.get(rule.subject_type, 0) + 1
         return counts
+
+
+def load_ontology(path: Path, strict: bool = True) -> Ontology:
+    """Reads an ontology definition from a JSON file.
+
+    Args:
+        path: JSON file containing a list of rule mappings.
+        strict: Whether the loaded ontology rejects unmatched triples.
+
+    Returns:
+        ontology: Ontology parsed from the file.
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, list):
+        msg = f"ontology file {path} must contain a JSON array"
+        raise ValueError(msg)
+    return Ontology.from_dict(data, strict=strict)
