@@ -6,6 +6,9 @@ Contains:
     make_item(): concise review item factory
     test_add_and_resolve_alias
     test_unknown_name_resolves_to_itself
+    test_aliases_lists_registered_aliases
+    test_self_alias_is_not_registered
+    test_merge_remaps_aliases_to_survivor
 """
 
 import pytest
@@ -48,3 +51,27 @@ def test_unknown_name_resolves_to_itself() -> None:
     """Checks that unregistered names normalize but pass through."""
     table = AliasTable()
     assert table.canonical_for("Globex Inc") == "globex inc"
+
+
+def test_aliases_lists_registered_aliases() -> None:
+    """Checks that aliases() enumerates everything under a canonical."""
+    table = AliasTable()
+    table.add("Acme", "ACME Corp")
+    table.add("Acme", "Acme Incorporated")
+    assert table.aliases("Acme") == ["acme corp", "acme incorporated"]
+
+
+def test_self_alias_is_not_registered() -> None:
+    """Checks that aliasing a name to itself is a no-op."""
+    table = AliasTable()
+    table.add("Acme", "acme")
+    assert table.aliases("Acme") == []
+
+
+def test_merge_remaps_aliases_to_survivor() -> None:
+    """Checks that merging canonicals remaps all aliases to the survivor."""
+    table = AliasTable()
+    table.add("Acme", "ACME Corp")
+    table.merge("Acme Ltd", "Acme")
+    assert table.canonical_for("acme corp") == "acme ltd"
+    assert table.canonical_for("acme") == "acme ltd"
