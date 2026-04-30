@@ -8,6 +8,7 @@
  *  *   serializeNode(): renders one node element
  *  *   serializeEdge(): renders one edge element
  *  *   toGraphML(): serializes a full view graph
+ *  *   validateGraphInput(): rejects malformed view graphs
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -70,4 +71,20 @@ export function toGraphML(graph) {
     "  </graph>",
     GRAPHML_FOOTER,
   ].join("\n");
+}
+
+/**
+ * Rejects view graphs whose node/edge references are inconsistent.
+ *
+ * @param graph - { nodes, edges } payload to validate.
+ * @returns graph - The same graph, if valid.
+ */
+export function validateGraphInput(graph) {
+  const nodeIds = new Set(graph.nodes.map((node) => node.id));
+  for (const edge of graph.edges) {
+    if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
+      throw new Error(`edge references unknown endpoint: ${edge.id ?? `${edge.source}->${edge.target}`}`);
+    }
+  }
+  return graph;
 }
