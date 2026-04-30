@@ -6,6 +6,7 @@ Contains:
     make_item(): concise review item factory
     test_add_and_resolve_alias
     test_unknown_name_resolves_to_itself
+    test_aliases_lists_registered_aliases
 """
 
 import pytest
@@ -48,3 +49,11 @@ def test_unknown_name_resolves_to_itself() -> None:
     """Checks that unregistered names normalize but pass through."""
     table = AliasTable()
     assert table.canonical_for("Globex Inc") == "globex inc"
+
+
+def test_aliases_lists_registered_aliases() -> None:
+    """Checks that aliases() enumerates everything under a canonical."""
+    table = AliasTable()
+    table.add("Acme", "ACME Corp")
+    table.add("Acme", "Acme Incorporated")
+    assert table.aliases("Acme") == ["acme corp", "acme incorporated"]
