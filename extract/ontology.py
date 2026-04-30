@@ -15,6 +15,7 @@ Contains:
     Ontology.coverage(): share of triples the ontology allows
     Ontology.summary(): counts rules by subject type
     load_ontology(): reads an ontology from a JSON file
+    default_rules(): built-in starter rule set
 """
 
 import json
@@ -220,3 +221,23 @@ def load_ontology(path: Path, strict: bool = True) -> Ontology:
         msg = f"ontology file {path} must contain a JSON array"
         raise ValueError(msg)
     return Ontology.from_dict(data, strict=strict)
+
+
+def default_rules() -> set[OntologyRule]:
+    """Provides the built-in starter ontology rule set.
+
+    Returns:
+        rules: Seed rules covering common entity-type combinations.
+    """
+    return {
+        OntologyRule("PERSON", "founded", "ORG"),
+        OntologyRule("PERSON", "joined", "ORG"),
+        OntologyRule("PERSON", "works at", "ORG"),
+        OntologyRule("ORG", "acquired", "ORG"),
+        OntologyRule("ORG", "is based in", "GPE"),
+        OntologyRule("SOFTWARE", "depends on", "SOFTWARE"),
+        OntologyRule("SOFTWARE", "ships with", "SOFTWARE"),
+        OntologyRule("SOFTWARE", "configures", "SOFTWARE"),
+        OntologyRule("DRUG", "inhibits", "GENE"),
+        OntologyRule("GENE", "mutates in", "DISEASE"),
+    }
