@@ -7,6 +7,7 @@ Contains:
     test_add_and_resolve_alias
     test_unknown_name_resolves_to_itself
     test_aliases_lists_registered_aliases
+    test_self_alias_is_not_registered
 """
 
 import pytest
@@ -57,3 +58,10 @@ def test_aliases_lists_registered_aliases() -> None:
     table.add("Acme", "ACME Corp")
     table.add("Acme", "Acme Incorporated")
     assert table.aliases("Acme") == ["acme corp", "acme incorporated"]
+
+
+def test_self_alias_is_not_registered() -> None:
+    """Checks that aliasing a name to itself is a no-op."""
+    table = AliasTable()
+    table.add("Acme", "acme")
+    assert table.aliases("Acme") == []
