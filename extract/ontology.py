@@ -14,6 +14,8 @@ Contains:
     Ontology.to_dict(): serializes the rule set
     Ontology.coverage(): share of triples the ontology allows
     Ontology.summary(): counts rules by subject type
+    load_ontology(): reads an ontology from a JSON file
+    default_rules(): built-in starter rule set
 """
 
 import json
@@ -202,3 +204,40 @@ class Ontology:
         for rule in self.rules:
             counts[rule.subject_type] = counts.get(rule.subject_type, 0) + 1
         return counts
+
+
+def load_ontology(path: Path, strict: bool = True) -> Ontology:
+    """Reads an ontology definition from a JSON file.
+
+    Args:
+        path: JSON file containing a list of rule mappings.
+        strict: Whether the loaded ontology rejects unmatched triples.
+
+    Returns:
+        ontology: Ontology parsed from the file.
+    """
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, list):
+        msg = f"ontology file {path} must contain a JSON array"
+        raise ValueError(msg)
+    return Ontology.from_dict(data, strict=strict)
+
+
+def default_rules() -> set[OntologyRule]:
+    """Provides the built-in starter ontology rule set.
+
+    Returns:
+        rules: Seed rules covering common entity-type combinations.
+    """
+    return {
+        OntologyRule("PERSON", "founded", "ORG"),
+        OntologyRule("PERSON", "joined", "ORG"),
+        OntologyRule("PERSON", "works at", "ORG"),
+        OntologyRule("ORG", "acquired", "ORG"),
+        OntologyRule("ORG", "is based in", "GPE"),
+        OntologyRule("SOFTWARE", "depends on", "SOFTWARE"),
+        OntologyRule("SOFTWARE", "ships with", "SOFTWARE"),
+        OntologyRule("SOFTWARE", "configures", "SOFTWARE"),
+        OntologyRule("DRUG", "inhibits", "GENE"),
+        OntologyRule("GENE", "mutates in", "DISEASE"),
+    }
