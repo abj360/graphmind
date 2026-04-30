@@ -8,6 +8,7 @@ Contains:
     test_unknown_name_resolves_to_itself
     test_aliases_lists_registered_aliases
     test_self_alias_is_not_registered
+    test_merge_remaps_aliases_to_survivor
 """
 
 import pytest
@@ -65,3 +66,12 @@ def test_self_alias_is_not_registered() -> None:
     table = AliasTable()
     table.add("Acme", "acme")
     assert table.aliases("Acme") == []
+
+
+def test_merge_remaps_aliases_to_survivor() -> None:
+    """Checks that merging canonicals remaps all aliases to the survivor."""
+    table = AliasTable()
+    table.add("Acme", "ACME Corp")
+    table.merge("Acme Ltd", "Acme")
+    assert table.canonical_for("acme corp") == "acme ltd"
+    assert table.canonical_for("acme") == "acme ltd"
