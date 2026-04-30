@@ -7,6 +7,7 @@
  *  *   GRAPHML_FOOTER: document closing tags
  *  *   serializeNode(): renders one node element
  *  *   serializeEdge(): renders one edge element
+ *  *   toGraphML(): serializes a full view graph
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -50,4 +51,23 @@ export function serializeEdge(edge, index) {
   }
   lines.push("    </edge>");
   return lines.join("\n");
+}
+
+/**
+ * Serializes a view graph into a complete GraphML document.
+ *
+ * @param graph - { nodes, edges } payload as served by /api/graph.
+ * @returns document - Complete GraphML document string.
+ */
+export function toGraphML(graph) {
+  const nodeElements = graph.nodes.map((node) => serializeNode(node));
+  const edgeElements = graph.edges.map((edge, index) => serializeEdge(edge, index));
+  return [
+    GRAPHML_HEADER,
+    '  <graph id="graphmind" edgedefault="directed">',
+    ...nodeElements,
+    ...edgeElements,
+    "  </graph>",
+    GRAPHML_FOOTER,
+  ].join("\n");
 }
