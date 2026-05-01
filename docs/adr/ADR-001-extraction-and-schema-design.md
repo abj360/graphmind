@@ -92,3 +92,29 @@ same extractor serves domains with no rule set at all.
 Enforcement returns `(kept, violations)` rather than raising: a
 rejected triple is data (something the model saw that our schema
 forbids) and reviewers want the rejection list, not an exception.
+
+## Decision: inferred bridging edges are marked, capped, and scored
+
+Relationship inference bridges disconnected components so the graph is
+navigable end to end. Inferred triples:
+
+- are flagged `inferred=True` at the schema level,
+- carry a heuristic confidence capped at 0.95 — below most extracted
+  edges, deliberately,
+- are bounded per component pair (`candidate_limit`) so a hub-heavy
+  graph cannot explode combinatorially,
+- render dashed in the viewer so reviewers can tell them apart at a
+  glance.
+
+## Decision: entity resolution is embedding-based with a human review queue
+
+Naive string matching (the initial implementation) misses trivially
+different surface forms of the same entity — "Acme Corp" vs "Acme
+Corporation" — and produced a roughly 3x duplicate-node explosion on
+the first real corpus (fixed 2026-05-06). Resolution now embeds entity
+names and union-finds pairs above a cosine threshold.
+
+Crucially, the band between `review_floor` and `threshold` is not
+auto-merged: those pairs go to `MergeReviewQueue` for a human decision
+that lands in the alias table. Fully automatic merging of proper nouns
+is how you end up with two different people collapsed into one node.
