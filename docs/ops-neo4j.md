@@ -41,3 +41,11 @@ docker compose -f docker/docker-compose.yml run --rm backup
 
 Verify the archive pool weekly with `docker/verify_backup.sh` — a backup
 you have never verified is a rumor, not a backup.
+
+## Restore drill
+
+`docker/restore.sh <archive|latest>` wipes the current graph and replays
+an archive. It refuses to run without `GRAPHMIND_RESTORE_CONFIRM=yes`
+on purpose. Do a restore drill on a fresh checkout before you need one
+for real; the first restore you ever do should not be during an
+incident.
