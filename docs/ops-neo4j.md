@@ -41,3 +41,39 @@ docker compose -f docker/docker-compose.yml run --rm backup
 
 Verify the archive pool weekly with `docker/verify_backup.sh` — a backup
 you have never verified is a rumor, not a backup.
+
+## Restore drill
+
+`docker/restore.sh <archive|latest>` wipes the current graph and replays
+an archive. It refuses to run without `GRAPHMIND_RESTORE_CONFIRM=yes`
+on purpose. Do a restore drill on a fresh checkout before you need one
+for real; the first restore you ever do should not be during an
+incident.
+
+## When the graph looks wrong
+
+1. Check duplicate clusters on the metrics dashboard first — a sudden
+   jump means entity resolution regressed, not the loader.
+2. Spot-check one document: `MATCH ()-[r:RELATED {source_doc_id:
+   "path/to/doc.txt"}]->() RETURN r LIMIT 10`. If nothing comes back,
+   the document never made it through the loader — check the CDC state
+   file before suspecting extraction.
+3. If edges exist but look hallucinated, check the extraction stats for
+   dropped-low-confidence spikes, then the prompt config — see the
+   2026-05-20 citation-requirement fix for the canonical example.
+
+## Upgrades
+
+Neo4j 5 minor upgrades: bump the image tag in compose, recreate the
+container, let it migrate the store, confirm the constraint survived.
+Major upgrades get a full backup, a restore drill onto the new major
+version in a scratch environment, and only then the real move.
+
+## Bulk reloads
+
+A full rebuild from the corpus takes under 3 minutes via the CDC
+upsert path; a cold load of a large resolved file takes longer but is
+still bounded by batch size, not by RAM. For anything above a few
+hundred thousand relationships in one file, raise
+`GRAPHMIND_LOAD_BATCH_SIZE` to 1000 and watch the batch latency in the
+loader logs.
