@@ -14,6 +14,8 @@
  *  *   RegexToggle: switches between substring and regex modes
  *  *   SearchHelp: hint text for the active search mode
  *  *   isQueryEmpty(): shared empty-query check
+ *  *   highlightMatch(): wraps matched text in a marker class
+ *  *   recentSearches(): tiny in-memory recent-query list
  */
 
 /**
@@ -197,4 +199,47 @@ export function SearchHelp({ regexMode }) {
  */
 export function isQueryEmpty(query) {
   return query.trim().length === 0;
+}
+
+/**
+ * Wraps the matched portion of a label in a highlight marker.
+ *
+ * @param label - Full node label.
+ * @param query - Active raw query text.
+ * @returns parts - { before, match, after } segments for rendering.
+ */
+export function highlightMatch(label, query) {
+  const index = label.toLowerCase().indexOf(query.trim().toLowerCase());
+  if (!query.trim() || index < 0) {
+    return { before: label, match: "", after: "" };
+  }
+  return {
+    before: label.slice(0, index),
+    match: label.slice(index, index + query.trim().length),
+    after: label.slice(index + query.trim().length),
+  };
+}
+
+const RECENT_LIMIT = 5;
+
+/**
+ * Maintains a tiny in-memory list of recently used queries.
+ *
+ * @returns api - { list, push } recent-search state helpers.
+ */
+export function recentSearches() {
+  const items = [];
+  return {
+    list: () => [...items],
+    push: (query) => {
+      const normalized = query.trim();
+      if (!normalized || items[0] === normalized) {
+        return;
+      }
+      items.unshift(normalized);
+      if (items.length > RECENT_LIMIT) {
+        items.pop();
+      }
+    },
+  };
 }
