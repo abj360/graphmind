@@ -68,3 +68,12 @@ Neo4j 5 minor upgrades: bump the image tag in compose, recreate the
 container, let it migrate the store, confirm the constraint survived.
 Major upgrades get a full backup, a restore drill onto the new major
 version in a scratch environment, and only then the real move.
+
+## Bulk reloads
+
+A full rebuild from the corpus takes under 3 minutes via the CDC
+upsert path; a cold load of a large resolved file takes longer but is
+still bounded by batch size, not by RAM. For anything above a few
+hundred thousand relationships in one file, raise
+`GRAPHMIND_LOAD_BATCH_SIZE` to 1000 and watch the batch latency in the
+loader logs.
