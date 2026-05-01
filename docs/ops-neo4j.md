@@ -49,3 +49,15 @@ an archive. It refuses to run without `GRAPHMIND_RESTORE_CONFIRM=yes`
 on purpose. Do a restore drill on a fresh checkout before you need one
 for real; the first restore you ever do should not be during an
 incident.
+
+## When the graph looks wrong
+
+1. Check duplicate clusters on the metrics dashboard first — a sudden
+   jump means entity resolution regressed, not the loader.
+2. Spot-check one document: `MATCH ()-[r:RELATED {source_doc_id:
+   "path/to/doc.txt"}]->() RETURN r LIMIT 10`. If nothing comes back,
+   the document never made it through the loader — check the CDC state
+   file before suspecting extraction.
+3. If edges exist but look hallucinated, check the extraction stats for
+   dropped-low-confidence spikes, then the prompt config — see the
+   2026-05-20 citation-requirement fix for the canonical example.
