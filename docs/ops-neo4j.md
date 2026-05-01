@@ -61,3 +61,10 @@ incident.
 3. If edges exist but look hallucinated, check the extraction stats for
    dropped-low-confidence spikes, then the prompt config — see the
    2026-05-20 citation-requirement fix for the canonical example.
+
+## Upgrades
+
+Neo4j 5 minor upgrades: bump the image tag in compose, recreate the
+container, let it migrate the store, confirm the constraint survived.
+Major upgrades get a full backup, a restore drill onto the new major
+version in a scratch environment, and only then the real move.
