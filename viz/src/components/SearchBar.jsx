@@ -15,6 +15,7 @@
  *  *   SearchHelp: hint text for the active search mode
  *  *   isQueryEmpty(): shared empty-query check
  *  *   highlightMatch(): wraps matched text in a marker class
+ *  *   recentSearches(): tiny in-memory recent-query list
  */
 
 /**
@@ -216,5 +217,29 @@ export function highlightMatch(label, query) {
     before: label.slice(0, index),
     match: label.slice(index, index + query.trim().length),
     after: label.slice(index + query.trim().length),
+  };
+}
+
+const RECENT_LIMIT = 5;
+
+/**
+ * Maintains a tiny in-memory list of recently used queries.
+ *
+ * @returns api - { list, push } recent-search state helpers.
+ */
+export function recentSearches() {
+  const items = [];
+  return {
+    list: () => [...items],
+    push: (query) => {
+      const normalized = query.trim();
+      if (!normalized || items[0] === normalized) {
+        return;
+      }
+      items.unshift(normalized);
+      if (items.length > RECENT_LIMIT) {
+        items.pop();
+      }
+    },
   };
 }
