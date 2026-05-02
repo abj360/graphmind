@@ -12,6 +12,7 @@ Contains:
     test_retries_transient_failures_then_succeeds
     test_raises_after_exhausting_retries
     test_confidence_from_payload_is_clamped
+    test_min_confidence_floor_drops_weak_triples
 """
 
 import json
@@ -122,3 +123,27 @@ def test_confidence_from_payload_is_clamped() -> None:
     extractor = make_extractor(payload)
     triples = extractor.extract_text("doc-1", "text")
     assert triples[0].confidence == 1.0
+
+
+def test_min_confidence_floor_drops_weak_triples() -> None:
+    """Checks that triples below min_confidence are dropped and counted."""
+    payload = json.dumps(
+        [
+            {
+                "subject": {"name": "A"},
+                "predicate": "p",
+                "object": {"name": "B"},
+                "confidence": 0.2,
+            },
+            {
+                "subject": {"name": "C"},
+                "predicate": "p",
+                "object": {"name": "D"},
+                "confidence": 0.9,
+            },
+        ]
+    )
+    extractor = make_extractor(payload, min_confidence=0.5)
+    triples = extractor.extract_text("doc-1", "text")
+    assert len(triples) == 1
+    assert extractor.stats.dropped_low_confidence == 1
