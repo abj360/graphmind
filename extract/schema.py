@@ -17,6 +17,7 @@ Contains:
     validate_triples(): validates a batch, dropping bad items
     TripleValidationError: aggregates per-item validation failures
     validate_triples_strict(): raises on any invalid item
+    dedupe_triples(): drops exact duplicate triples
 """
 
 from typing import Any
@@ -278,3 +279,20 @@ def validate_triples_strict(raw_items: list[dict[str, Any]], source_doc_id: str)
     if errors:
         raise TripleValidationError(errors)
     return triples
+
+
+def dedupe_triples(triples: list[Triple]) -> list[Triple]:
+    """Removes duplicate triples, keeping the highest-confidence copy.
+
+    Args:
+        triples: Triples that may contain semantic duplicates.
+
+    Returns:
+        deduped: One triple per identity key, ordered by first appearance.
+    """
+    best_by_key: dict[tuple[str, str, str], Triple] = {}
+    for triple in triples:
+        existing = best_by_key.get(triple.key())
+        if existing is None or triple.confidence > existing.confidence:
+            best_by_key[triple.key()] = triple
+    return list(best_by_key.values())
