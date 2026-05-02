@@ -3,6 +3,7 @@
 test_schema.py --- unit tests for triple schema validation
 
 Contains:
+    test_validate_triple_accepts_wellformed_payload
 """
 
 import pytest
@@ -19,3 +20,16 @@ from extract.schema import (
     validate_triples_strict,
 )
 from tests.unit.factories import make_triple
+
+
+def test_validate_triple_accepts_wellformed_payload() -> None:
+    """Checks that a well-formed raw payload validates into a Triple."""
+    raw = {
+        "subject": {"name": "Alice", "entity_type": "PERSON"},
+        "predicate": "founded",
+        "object": {"name": "Acme", "entity_type": "ORG"},
+        "confidence": 0.9,
+    }
+    triple = validate_triple(raw, "doc-1")
+    assert triple.subject.name == "Alice"
+    assert triple.source_doc_id == "doc-1"
