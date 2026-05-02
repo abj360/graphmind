@@ -16,6 +16,8 @@ Contains:
     filter_by_confidence(): drops triples below a threshold
     validate_triples(): validates a batch, dropping bad items
     TripleValidationError: aggregates per-item validation failures
+    validate_triples_strict(): raises on any invalid item
+    dedupe_triples(): drops exact duplicate triples
 """
 
 from typing import Any
@@ -255,3 +257,42 @@ class TripleValidationError(ValueError):
         """
         self.errors = errors
         super().__init__(f"{len(errors)} triple(s) failed validation: {'; '.join(errors[:3])}")
+
+
+def validate_triples_strict(raw_items: list[dict[str, Any]], source_doc_id: str) -> list[Triple]:
+    """Validates a batch and raises if any item fails validation.
+
+    Args:
+        raw_items: Unvalidated mappings from the LLM response parser.
+        source_doc_id: Document identifier stamped onto each triple.
+
+    Returns:
+        triples: All items as validated triples, in input order.
+    """
+    triples: list[Triple] = []
+    errors: list[str] = []
+    for index, item in enumerate(raw_items):
+        try:
+            triples.append(validate_triple(item, source_doc_id))
+        except ValueError as exc:
+            errors.append(f"item {index}: {exc}")
+    if errors:
+        raise TripleValidationError(errors)
+    return triples
+
+
+def dedupe_triples(triples: list[Triple]) -> list[Triple]:
+    """Removes duplicate triples, keeping the highest-confidence copy.
+
+    Args:
+        triples: Triples that may contain semantic duplicates.
+
+    Returns:
+        deduped: One triple per identity key, ordered by first appearance.
+    """
+    best_by_key: dict[tuple[str, str, str], Triple] = {}
+    for triple in triples:
+        existing = best_by_key.get(triple.key())
+        if existing is None or triple.confidence > existing.confidence:
+            best_by_key[triple.key()] = triple
+    return list(best_by_key.values())
