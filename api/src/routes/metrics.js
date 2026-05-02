@@ -6,6 +6,7 @@
  *  *   NODE_STATS_QUERY: node counts by entity type
  *  *   EDGE_STATS_QUERY: edge counts and predicate spread
  *  *   DUPLICATE_CANDIDATES_QUERY: same-name entity clusters
+ *  *   toNumber(): unwraps neo4j integer values
  */
 
 import { Router } from "express";
@@ -30,3 +31,16 @@ WHERE size(variants) > 1
 RETURN folded, variants
 LIMIT 100
 `.trim();
+
+/**
+ * Unwraps a Neo4j integer value into a plain number.
+ *
+ * @param value - Neo4j Integer or plain number.
+ * @returns unwrapped - Plain JavaScript number.
+ */
+function toNumber(value) {
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  return typeof value.toNumber === "function" ? value.toNumber() : Number(value);
+}
