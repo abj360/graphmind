@@ -245,3 +245,11 @@ expansion cost stops paying for itself.
 3. retrieval-core fetches the passage, attaches it as a citation.
 4. Answer: "Alice founded Acme", with the passage quoted and the edge
    confidence shown to reviewers on demand.
+
+## Worked example: "what does the export service depend on?"
+
+1. Linker anchors `export service` (SOFTWARE).
+2. One-hop expansion returns `depends on` edges to `neo4j`, `express`,
+   and an inferred `associated with` edge to `graph viewer`.
+3. The inferred edge is excluded from the headline answer but listed
+   under "possibly related" — the hedge is the feature.
