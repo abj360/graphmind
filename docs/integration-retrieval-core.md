@@ -219,3 +219,37 @@ migrate the data, then update the consumer — in that order.
 - Watch the duplicate-cluster count on the viewer's metrics dashboard:
   a rising trend means resolution thresholds need attention before the
   graph path's answers get weird.
+
+## Entity linking contract
+
+The linker (retrieval-core side) turns query text into anchor names:
+
+- Exact match first: the query's capitalized spans are looked up against
+  `:Entity.name` directly.
+- Alias match second: the alias table (`resolution/alias_table.py`) is
+  consulted so "ACME Corp" anchors to the same node as "Acme
+  Corporation".
+- No embedding match on the query path: anchor candidates that need
+  embedding search are too uncertain to expand from and are better
+  served by the primary path.
+
+The linker returns at most three anchors; more than that and the
+expansion cost stops paying for itself.
+
+## Worked example: "who founded Acme?"
+
+1. Linker anchors `Acme` to the canonical node `acme`.
+2. Anchor query runs with a predicate hint (`founded`); the returned
+   edge `(alice)-[founded]->(acme)` has confidence 0.97 and
+   `source_doc_id = docs/news-041.txt`.
+3. retrieval-core fetches the passage, attaches it as a citation.
+4. Answer: "Alice founded Acme", with the passage quoted and the edge
+   confidence shown to reviewers on demand.
+
+## Worked example: "what does the export service depend on?"
+
+1. Linker anchors `export service` (SOFTWARE).
+2. One-hop expansion returns `depends on` edges to `neo4j`, `express`,
+   and an inferred `associated with` edge to `graph viewer`.
+3. The inferred edge is excluded from the headline answer but listed
+   under "possibly related" — the hedge is the feature.
