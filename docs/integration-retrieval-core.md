@@ -219,3 +219,19 @@ migrate the data, then update the consumer — in that order.
 - Watch the duplicate-cluster count on the viewer's metrics dashboard:
   a rising trend means resolution thresholds need attention before the
   graph path's answers get weird.
+
+## Entity linking contract
+
+The linker (retrieval-core side) turns query text into anchor names:
+
+- Exact match first: the query's capitalized spans are looked up against
+  `:Entity.name` directly.
+- Alias match second: the alias table (`resolution/alias_table.py`) is
+  consulted so "ACME Corp" anchors to the same node as "Acme
+  Corporation".
+- No embedding match on the query path: anchor candidates that need
+  embedding search are too uncertain to expand from and are better
+  served by the primary path.
+
+The linker returns at most three anchors; more than that and the
+expansion cost stops paying for itself.
