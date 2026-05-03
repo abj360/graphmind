@@ -235,3 +235,13 @@ The linker (retrieval-core side) turns query text into anchor names:
 
 The linker returns at most three anchors; more than that and the
 expansion cost stops paying for itself.
+
+## Worked example: "who founded Acme?"
+
+1. Linker anchors `Acme` to the canonical node `acme`.
+2. Anchor query runs with a predicate hint (`founded`); the returned
+   edge `(alice)-[founded]->(acme)` has confidence 0.97 and
+   `source_doc_id = docs/news-041.txt`.
+3. retrieval-core fetches the passage, attaches it as a citation.
+4. Answer: "Alice founded Acme", with the passage quoted and the edge
+   confidence shown to reviewers on demand.
