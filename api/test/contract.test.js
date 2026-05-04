@@ -16,6 +16,7 @@
  *  *   test: metrics endpoint lists duplicate clusters
  *  *   test: graphml export returns xml content type
  *  *   test: graphml export sets a download filename
+ *  *   test: graph endpoint surfaces driver failure as 500
  */
 
 import assert from "node:assert/strict";
@@ -143,4 +144,24 @@ test("GET /api/export/graphml sets a dated download filename", async () => {
   const { app } = await makeApp({ "MATCH (n:Entity)": [] });
   const response = await request(app).get("/api/export/graphml");
   assert.match(response.headers["content-disposition"], /graphmind-\d{4}-\d{2}-\d{2}\.graphml/);
+});
+
+test("driver failure surfaces as a JSON 500", async () => {
+  const { createApp } = await import("../src/app.js");
+  const { fakeConfig } = await import("./helpers.js");
+  const driver = {
+    session() {
+      return {
+        run: async () => {
+          throw new Error("connection refused");
+        },
+        close: async () => {},
+      };
+    },
+    close: async () => {},
+  };
+  const app = createApp(driver, fakeConfig());
+  const response = await request(app).get("/api/graph");
+  assert.equal(response.status, 500);
+  assert.match(response.body.error, /connection refused/);
 });
