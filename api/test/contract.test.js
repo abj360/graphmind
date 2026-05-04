@@ -13,6 +13,7 @@
  *  *   test: CORS header reflects the viewer origin
  *  *   test: OPTIONS preflight returns 204
  *  *   test: metrics endpoint shapes the payload
+ *  *   test: metrics endpoint lists duplicate clusters
  */
 
 import assert from "node:assert/strict";
@@ -113,4 +114,15 @@ test("GET /api/metrics/dedup shapes the metrics payload", async () => {
   assert.equal(response.body.nodes.total, 12);
   assert.equal(response.body.edges.distinctPredicates, 5);
   assert.equal(response.body.duplicates.clusters, 0);
+});
+
+test("GET /api/metrics/dedup lists duplicate clusters", async () => {
+  const { app } = await makeApp({
+    "toLower(n.name) AS folded": [
+      { get: (key) => (key === "folded" ? "acme" : ["Acme", "ACME"]) },
+    ],
+  });
+  const response = await request(app).get("/api/metrics/dedup");
+  assert.equal(response.body.duplicates.clusters, 1);
+  assert.deepEqual(response.body.duplicates.examples[0].variants, ["Acme", "ACME"]);
 });
