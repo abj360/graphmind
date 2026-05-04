@@ -12,6 +12,7 @@
  *  *   test: unknown route returns JSON 404
  *  *   test: CORS header reflects the viewer origin
  *  *   test: OPTIONS preflight returns 204
+ *  *   test: metrics endpoint shapes the payload
  */
 
 import assert from "node:assert/strict";
@@ -92,4 +93,24 @@ test("OPTIONS preflight returns 204", async () => {
   const { app } = await makeApp();
   const response = await request(app).options("/api/graph");
   assert.equal(response.status, 204);
+});
+
+test("GET /api/metrics/dedup shapes the metrics payload", async () => {
+  const { app } = await makeApp({
+    "count(n) AS total": [{ get: (key) => (key === "total" ? { toNumber: () => 12 } : ["ORG"]) }],
+    "count(r) AS total": [
+      {
+        get: (key) =>
+          ({ total: { toNumber: () => 9 }, predicates: { toNumber: () => 5 }, meanConfidence: 0.8 })[
+            key
+          ],
+      },
+    ],
+    "toLower(n.name) AS folded": [],
+  });
+  const response = await request(app).get("/api/metrics/dedup");
+  assert.equal(response.status, 200);
+  assert.equal(response.body.nodes.total, 12);
+  assert.equal(response.body.edges.distinctPredicates, 5);
+  assert.equal(response.body.duplicates.clusters, 0);
 });
