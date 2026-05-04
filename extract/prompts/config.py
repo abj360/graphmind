@@ -10,6 +10,7 @@ Contains:
     write_prompt_config(): persists a config back to TOML
     with_domain(): derives a config pinned to a domain
     describe_prompt_config(): one-line config summary
+    config_from_dict(): builds a config from a plain mapping
 """
 
 import tomllib
@@ -130,4 +131,24 @@ def describe_prompt_config(config: PromptConfig) -> str:
         f"domain={config.domain} few_shot={config.few_shot_count} "
         f"citations={config.require_citations} "
         f"max_predicate_tokens={config.max_predicate_tokens}"
+    )
+
+
+def config_from_dict(data: dict[str, Any]) -> PromptConfig:  # Any: raw parsed config
+    """Builds a validated prompt config from a plain mapping.
+
+    Args:
+        data: Mapping with optional prompt configuration keys.
+
+    Returns:
+        config: Validated prompt configuration.
+    """
+    return validate_prompt_config(
+        PromptConfig(
+            domain=str(data.get("domain", "general")),
+            few_shot_count=int(data.get("few_shot_count", 2)),
+            require_citations=bool(data.get("require_citations", False)),
+            max_predicate_tokens=int(data.get("max_predicate_tokens", 5)),
+            extra_instructions=tuple(data.get("extra_instructions", ())),
+        )
     )
