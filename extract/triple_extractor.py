@@ -28,6 +28,13 @@ Contains:
     validate_extraction_config(): rejects inconsistent tunables
     extraction_config_from_env(): builds config from environment
     with_config_overrides(): derives a config with selected changes
+    COST_PER_1K_TOKENS: nominal cost model constants
+    estimate_extraction_cost(): rough dollar cost of a pass
+    redact_prompt_for_logging(): truncates prompts for safe logs
+    normalize_document_text(): cleans whitespace before prompting
+    build_extractor_from_env(): wires a production extractor
+    format_stats_summary(): one-line stats rendering
+    build_arg_parser(): CLI argument parser for extraction
 """
 
 import json
@@ -460,3 +467,102 @@ def with_config_overrides(config: ExtractionConfig, **overrides: Any) -> Extract
     from dataclasses import replace
 
     return validate_extraction_config(replace(config, **overrides))
+
+
+COST_PER_1K_INPUT_TOKENS = 0.00015
+COST_PER_1K_OUTPUT_TOKENS = 0.0006
+
+
+def estimate_extraction_cost(total_chars: int, config: ExtractionConfig) -> float:
+    """Estimates the dollar cost of extracting from a character volume.
+
+    Args:
+        total_chars: Total source characters to process.
+        config: Extraction configuration influencing batching overhead.
+
+    Returns:
+        cost: Approximate dollar cost of the full extraction pass.
+    """
+    input_tokens = total_chars / 4
+    prompt_overhead_tokens = 400 * (input_tokens / (config.batch_token_budget or 6_000) + 1)
+    output_tokens = input_tokens * 0.3
+    cost = (input_tokens + prompt_overhead_tokens) / 1000 * COST_PER_1K_INPUT_TOKENS
+    return cost + output_tokens / 1000 * COST_PER_1K_OUTPUT_TOKENS
+
+
+def redact_prompt_for_logging(prompt: str, max_length: int = 200) -> str:
+    """Truncates a rendered prompt so logs stay readable and small.
+
+    Args:
+        prompt: Rendered prompt about to be logged.
+        max_length: Maximum characters kept before the ellipsis.
+
+    Returns:
+        redacted: Prompt truncated to max_length with an ellipsis marker.
+    """
+    if len(prompt) <= max_length:
+        return prompt
+    return prompt[:max_length] + "...[truncated]"
+
+
+def normalize_document_text(text: str) -> str:
+    """Collapses pathological whitespace before text reaches the prompt.
+
+    Args:
+        text: Raw document text, possibly with noisy spacing.
+
+    Returns:
+        normalized: Text with collapsed blank lines and trailing spaces.
+    """
+    lines = [line.rstrip() for line in text.splitlines()]
+    collapsed = "\n".join(lines)
+    while "\n\n\n" in collapsed:
+        collapsed = collapsed.replace("\n\n\n", "\n\n")
+    return collapsed.strip()
+
+
+def build_extractor_from_env(env: dict[str, str]) -> TripleExtractor:
+    """Wires a production TripleExtractor from environment configuration.
+
+    Args:
+        env: Environment mapping carrying model and provider settings.
+
+    Returns:
+        extractor: Fully wired extractor with a LangChain-backed client.
+    """
+    from extract.llm_client import build_default_client
+
+    config = extraction_config_from_env(env)
+    client = build_default_client(config.model)
+    return TripleExtractor(client, config)
+
+
+def format_stats_summary(stats: ExtractionStats) -> str:
+    """Renders extraction stats as a single log-friendly line.
+
+    Args:
+        stats: Counters to summarize.
+
+    Returns:
+        summary: One-line rendering of calls, triples, and drops.
+    """
+    return (
+        f"calls={stats.calls_made} triples={stats.triples_extracted} "
+        f"retries={stats.retries} dropped_low_conf={stats.dropped_low_confidence} "
+        f"dropped_missing_span={stats.dropped_missing_span}"
+    )
+
+
+def build_arg_parser() -> "argparse.ArgumentParser":
+    """Builds the command-line argument parser for the extraction CLI.
+
+    Returns:
+        parser: Configured ArgumentParser for corpus extraction runs.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Extract SPO triples from a corpus")
+    parser.add_argument("--corpus", required=True, help="directory of .txt documents")
+    parser.add_argument("--out", default="out/triples.jsonl", help="output JSONL path")
+    parser.add_argument("--batch-size", type=int, default=8, help="chunks per batch")
+    return parser
