@@ -33,6 +33,7 @@ Contains:
     redact_prompt_for_logging(): truncates prompts for safe logs
     normalize_document_text(): cleans whitespace before prompting
     build_extractor_from_env(): wires a production extractor
+    format_stats_summary(): one-line stats rendering
 """
 
 import json
@@ -533,3 +534,19 @@ def build_extractor_from_env(env: dict[str, str]) -> TripleExtractor:
     config = extraction_config_from_env(env)
     client = build_default_client(config.model)
     return TripleExtractor(client, config)
+
+
+def format_stats_summary(stats: ExtractionStats) -> str:
+    """Renders extraction stats as a single log-friendly line.
+
+    Args:
+        stats: Counters to summarize.
+
+    Returns:
+        summary: One-line rendering of calls, triples, and drops.
+    """
+    return (
+        f"calls={stats.calls_made} triples={stats.triples_extracted} "
+        f"retries={stats.retries} dropped_low_conf={stats.dropped_low_confidence} "
+        f"dropped_missing_span={stats.dropped_missing_span}"
+    )
