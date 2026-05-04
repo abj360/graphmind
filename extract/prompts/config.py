@@ -9,6 +9,7 @@ Contains:
     validate_prompt_config(): rejects inconsistent prompt settings
     write_prompt_config(): persists a config back to TOML
     with_domain(): derives a config pinned to a domain
+    describe_prompt_config(): one-line config summary
 """
 
 import tomllib
@@ -114,3 +115,19 @@ def with_domain(config: PromptConfig, domain: str) -> PromptConfig:
     from dataclasses import replace
 
     return replace(config, domain=domain)
+
+
+def describe_prompt_config(config: PromptConfig) -> str:
+    """Renders a prompt configuration as a log-friendly one-liner.
+
+    Args:
+        config: Configuration to summarize.
+
+    Returns:
+        summary: One-line rendering of the prompt knobs.
+    """
+    return (
+        f"domain={config.domain} few_shot={config.few_shot_count} "
+        f"citations={config.require_citations} "
+        f"max_predicate_tokens={config.max_predicate_tokens}"
+    )
