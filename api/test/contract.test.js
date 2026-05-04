@@ -12,6 +12,12 @@
  *  *   test: unknown route returns JSON 404
  *  *   test: CORS header reflects the viewer origin
  *  *   test: OPTIONS preflight returns 204
+ *  *   test: metrics endpoint shapes the payload
+ *  *   test: metrics endpoint lists duplicate clusters
+ *  *   test: graphml export returns xml content type
+ *  *   test: graphml export sets a download filename
+ *  *   test: graph endpoint surfaces driver failure as 500
+ *  *   test: graph edges carry confidence and inferred flags
  */
 
 import assert from "node:assert/strict";
@@ -92,4 +98,80 @@ test("OPTIONS preflight returns 204", async () => {
   const { app } = await makeApp();
   const response = await request(app).options("/api/graph");
   assert.equal(response.status, 204);
+});
+
+test("GET /api/metrics/dedup shapes the metrics payload", async () => {
+  const { app } = await makeApp({
+    "count(n) AS total": [{ get: (key) => (key === "total" ? { toNumber: () => 12 } : ["ORG"]) }],
+    "count(r) AS total": [
+      {
+        get: (key) =>
+          ({ total: { toNumber: () => 9 }, predicates: { toNumber: () => 5 }, meanConfidence: 0.8 })[
+            key
+          ],
+      },
+    ],
+    "toLower(n.name) AS folded": [],
+  });
+  const response = await request(app).get("/api/metrics/dedup");
+  assert.equal(response.status, 200);
+  assert.equal(response.body.nodes.total, 12);
+  assert.equal(response.body.edges.distinctPredicates, 5);
+  assert.equal(response.body.duplicates.clusters, 0);
+});
+
+test("GET /api/metrics/dedup lists duplicate clusters", async () => {
+  const { app } = await makeApp({
+    "toLower(n.name) AS folded": [
+      { get: (key) => (key === "folded" ? "acme" : ["Acme", "ACME"]) },
+    ],
+  });
+  const response = await request(app).get("/api/metrics/dedup");
+  assert.equal(response.body.duplicates.clusters, 1);
+  assert.deepEqual(response.body.duplicates.examples[0].variants, ["Acme", "ACME"]);
+});
+
+test("GET /api/export/graphml returns GraphML with the right content type", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [fakeRecord("Alice", "founded", "Acme")],
+  });
+  const response = await request(app).get("/api/export/graphml");
+  assert.equal(response.status, 200);
+  assert.match(response.headers["content-type"], /graphml\+xml/);
+  assert.match(response.text, /<graph id="graphmind"/);
+});
+
+test("GET /api/export/graphml sets a dated download filename", async () => {
+  const { app } = await makeApp({ "MATCH (n:Entity)": [] });
+  const response = await request(app).get("/api/export/graphml");
+  assert.match(response.headers["content-disposition"], /graphmind-\d{4}-\d{2}-\d{2}\.graphml/);
+});
+
+test("driver failure surfaces as a JSON 500", async () => {
+  const { createApp } = await import("../src/app.js");
+  const { fakeConfig } = await import("./helpers.js");
+  const driver = {
+    session() {
+      return {
+        run: async () => {
+          throw new Error("connection refused");
+        },
+        close: async () => {},
+      };
+    },
+    close: async () => {},
+  };
+  const app = createApp(driver, fakeConfig());
+  const response = await request(app).get("/api/graph");
+  assert.equal(response.status, 500);
+  assert.match(response.body.error, /connection refused/);
+});
+
+test("graph edges carry confidence and inferred flags", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [fakeRecord("Alice", "founded", "Acme", { confidence: 0.7 })],
+  });
+  const response = await request(app).get("/api/graph");
+  assert.equal(response.body.edges[0].confidence, 0.7);
+  assert.equal(response.body.edges[0].inferred, false);
 });
