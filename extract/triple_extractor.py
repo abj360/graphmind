@@ -34,6 +34,7 @@ Contains:
     normalize_document_text(): cleans whitespace before prompting
     build_extractor_from_env(): wires a production extractor
     format_stats_summary(): one-line stats rendering
+    build_arg_parser(): CLI argument parser for extraction
 """
 
 import json
@@ -550,3 +551,18 @@ def format_stats_summary(stats: ExtractionStats) -> str:
         f"retries={stats.retries} dropped_low_conf={stats.dropped_low_confidence} "
         f"dropped_missing_span={stats.dropped_missing_span}"
     )
+
+
+def build_arg_parser() -> "argparse.ArgumentParser":
+    """Builds the command-line argument parser for the extraction CLI.
+
+    Returns:
+        parser: Configured ArgumentParser for corpus extraction runs.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Extract SPO triples from a corpus")
+    parser.add_argument("--corpus", required=True, help="directory of .txt documents")
+    parser.add_argument("--out", default="out/triples.jsonl", help="output JSONL path")
+    parser.add_argument("--batch-size", type=int, default=8, help="chunks per batch")
+    return parser
