@@ -17,6 +17,7 @@
  *  *   test: graphml export returns xml content type
  *  *   test: graphml export sets a download filename
  *  *   test: graph endpoint surfaces driver failure as 500
+ *  *   test: graph edges carry confidence and inferred flags
  */
 
 import assert from "node:assert/strict";
@@ -164,4 +165,13 @@ test("driver failure surfaces as a JSON 500", async () => {
   const response = await request(app).get("/api/graph");
   assert.equal(response.status, 500);
   assert.match(response.body.error, /connection refused/);
+});
+
+test("graph edges carry confidence and inferred flags", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [fakeRecord("Alice", "founded", "Acme", { confidence: 0.7 })],
+  });
+  const response = await request(app).get("/api/graph");
+  assert.equal(response.body.edges[0].confidence, 0.7);
+  assert.equal(response.body.edges[0].inferred, false);
 });
