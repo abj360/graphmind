@@ -11,6 +11,7 @@ Contains:
     with_domain(): derives a config pinned to a domain
     describe_prompt_config(): one-line config summary
     config_from_dict(): builds a config from a plain mapping
+    merge_configs(): overlays one config onto another
 """
 
 import tomllib
@@ -152,3 +153,24 @@ def config_from_dict(data: dict[str, Any]) -> PromptConfig:  # Any: raw parsed c
             extra_instructions=tuple(data.get("extra_instructions", ())),
         )
     )
+
+
+def merge_configs(base: PromptConfig, override: PromptConfig) -> PromptConfig:
+    """Overlays a non-default config onto a base config.
+
+    Args:
+        base: Configuration providing fallback values.
+        override: Configuration whose non-default fields win.
+
+    Returns:
+        config: Merged configuration, validated.
+    """
+    from dataclasses import replace
+
+    default = PromptConfig()
+    changes = {
+        field: getattr(override, field)
+        for field in ("domain", "few_shot_count", "require_citations", "max_predicate_tokens")
+        if getattr(override, field) != getattr(default, field)
+    }
+    return validate_prompt_config(replace(base, **changes))
