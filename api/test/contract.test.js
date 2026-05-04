@@ -15,6 +15,7 @@
  *  *   test: metrics endpoint shapes the payload
  *  *   test: metrics endpoint lists duplicate clusters
  *  *   test: graphml export returns xml content type
+ *  *   test: graphml export sets a download filename
  */
 
 import assert from "node:assert/strict";
@@ -136,4 +137,10 @@ test("GET /api/export/graphml returns GraphML with the right content type", asyn
   assert.equal(response.status, 200);
   assert.match(response.headers["content-type"], /graphml\+xml/);
   assert.match(response.text, /<graph id="graphmind"/);
+});
+
+test("GET /api/export/graphml sets a dated download filename", async () => {
+  const { app } = await makeApp({ "MATCH (n:Entity)": [] });
+  const response = await request(app).get("/api/export/graphml");
+  assert.match(response.headers["content-disposition"], /graphmind-\d{4}-\d{2}-\d{2}\.graphml/);
 });
