@@ -12,6 +12,7 @@ Contains:
     describe_prompt_config(): one-line config summary
     config_from_dict(): builds a config from a plain mapping
     merge_configs(): overlays one config onto another
+    diff_configs(): fields that differ between two configs
 """
 
 import tomllib
@@ -174,3 +175,20 @@ def merge_configs(base: PromptConfig, override: PromptConfig) -> PromptConfig:
         if getattr(override, field) != getattr(default, field)
     }
     return validate_prompt_config(replace(base, **changes))
+
+
+def diff_configs(left: PromptConfig, right: PromptConfig) -> dict[str, tuple[object, object]]:
+    """Reports the fields on which two prompt configs differ.
+
+    Args:
+        left: First configuration.
+        right: Second configuration.
+
+    Returns:
+        diff: Mapping of field name to (left, right) values that differ.
+    """
+    diff: dict[str, tuple[object, object]] = {}
+    for field in ("domain", "few_shot_count", "require_citations", "max_predicate_tokens"):
+        if getattr(left, field) != getattr(right, field):
+            diff[field] = (getattr(left, field), getattr(right, field))
+    return diff
