@@ -28,6 +28,10 @@ Contains:
     validate_extraction_config(): rejects inconsistent tunables
     extraction_config_from_env(): builds config from environment
     with_config_overrides(): derives a config with selected changes
+    COST_PER_1K_TOKENS: nominal cost model constants
+    estimate_extraction_cost(): rough dollar cost of a pass
+    redact_prompt_for_logging(): truncates prompts for safe logs
+    normalize_document_text(): cleans whitespace before prompting
 """
 
 import json
@@ -460,3 +464,55 @@ def with_config_overrides(config: ExtractionConfig, **overrides: Any) -> Extract
     from dataclasses import replace
 
     return validate_extraction_config(replace(config, **overrides))
+
+
+COST_PER_1K_INPUT_TOKENS = 0.00015
+COST_PER_1K_OUTPUT_TOKENS = 0.0006
+
+
+def estimate_extraction_cost(total_chars: int, config: ExtractionConfig) -> float:
+    """Estimates the dollar cost of extracting from a character volume.
+
+    Args:
+        total_chars: Total source characters to process.
+        config: Extraction configuration influencing batching overhead.
+
+    Returns:
+        cost: Approximate dollar cost of the full extraction pass.
+    """
+    input_tokens = total_chars / 4
+    prompt_overhead_tokens = 400 * (input_tokens / (config.batch_token_budget or 6_000) + 1)
+    output_tokens = input_tokens * 0.3
+    cost = (input_tokens + prompt_overhead_tokens) / 1000 * COST_PER_1K_INPUT_TOKENS
+    return cost + output_tokens / 1000 * COST_PER_1K_OUTPUT_TOKENS
+
+
+def redact_prompt_for_logging(prompt: str, max_length: int = 200) -> str:
+    """Truncates a rendered prompt so logs stay readable and small.
+
+    Args:
+        prompt: Rendered prompt about to be logged.
+        max_length: Maximum characters kept before the ellipsis.
+
+    Returns:
+        redacted: Prompt truncated to max_length with an ellipsis marker.
+    """
+    if len(prompt) <= max_length:
+        return prompt
+    return prompt[:max_length] + "...[truncated]"
+
+
+def normalize_document_text(text: str) -> str:
+    """Collapses pathological whitespace before text reaches the prompt.
+
+    Args:
+        text: Raw document text, possibly with noisy spacing.
+
+    Returns:
+        normalized: Text with collapsed blank lines and trailing spaces.
+    """
+    lines = [line.rstrip() for line in text.splitlines()]
+    collapsed = "\n".join(lines)
+    while "\n\n\n" in collapsed:
+        collapsed = collapsed.replace("\n\n\n", "\n\n")
+    return collapsed.strip()
