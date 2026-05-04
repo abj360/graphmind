@@ -18,6 +18,7 @@ Contains:
     token_overlap_score(): jaccard-style overlap of two names
     explain_match(): debug helper for merge decisions
     suffix_aware_merge(): attempted suffix-insensitive match
+    NaiveStats: counters for the naive resolution pass
 """
 
 import re
@@ -257,3 +258,16 @@ def suffix_aware_merge(names: list[str]) -> list[list[str]]:
     for name in names:
         groups.setdefault(strip_company_suffixes(name), []).append(name)
     return list(groups.values())
+
+
+@dataclass(frozen=True)
+class NaiveStats:
+    """Counts entities processed by the naive resolver.
+
+    Attributes:
+        mentions: Total entity mentions seen.
+        distinct: Distinct normalized names produced.
+    """
+
+    mentions: int
+    distinct: int
