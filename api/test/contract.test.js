@@ -14,6 +14,7 @@
  *  *   test: OPTIONS preflight returns 204
  *  *   test: metrics endpoint shapes the payload
  *  *   test: metrics endpoint lists duplicate clusters
+ *  *   test: graphml export returns xml content type
  */
 
 import assert from "node:assert/strict";
@@ -125,4 +126,14 @@ test("GET /api/metrics/dedup lists duplicate clusters", async () => {
   const response = await request(app).get("/api/metrics/dedup");
   assert.equal(response.body.duplicates.clusters, 1);
   assert.deepEqual(response.body.duplicates.examples[0].variants, ["Acme", "ACME"]);
+});
+
+test("GET /api/export/graphml returns GraphML with the right content type", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [fakeRecord("Alice", "founded", "Acme")],
+  });
+  const response = await request(app).get("/api/export/graphml");
+  assert.equal(response.status, 200);
+  assert.match(response.headers["content-type"], /graphml\+xml/);
+  assert.match(response.text, /<graph id="graphmind"/);
 });
