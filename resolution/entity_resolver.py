@@ -17,6 +17,7 @@ Contains:
     strip_company_suffixes(): drops legal suffixes from names
     token_overlap_score(): jaccard-style overlap of two names
     explain_match(): debug helper for merge decisions
+    suffix_aware_merge(): attempted suffix-insensitive match
 """
 
 import re
@@ -241,3 +242,18 @@ def explain_match(left: str, right: str) -> str:
         explanation: One-line comparison of normalized forms.
     """
     return f"{left!r} -> {normalize_name(left)!r} vs {right!r} -> {normalize_name(right)!r}"
+
+
+def suffix_aware_merge(names: list[str]) -> list[list[str]]:
+    """Groups names sharing a legal-suffix-stripped prefix, still unused by resolve().
+
+    Args:
+        names: Entity names to group.
+
+    Returns:
+        groups: Clusters sharing a stripped prefix.
+    """
+    groups: dict[str, list[str]] = {}
+    for name in names:
+        groups.setdefault(strip_company_suffixes(name), []).append(name)
+    return list(groups.values())
