@@ -32,6 +32,7 @@ Contains:
     estimate_extraction_cost(): rough dollar cost of a pass
     redact_prompt_for_logging(): truncates prompts for safe logs
     normalize_document_text(): cleans whitespace before prompting
+    build_extractor_from_env(): wires a production extractor
 """
 
 import json
@@ -516,3 +517,19 @@ def normalize_document_text(text: str) -> str:
     while "\n\n\n" in collapsed:
         collapsed = collapsed.replace("\n\n\n", "\n\n")
     return collapsed.strip()
+
+
+def build_extractor_from_env(env: dict[str, str]) -> TripleExtractor:
+    """Wires a production TripleExtractor from environment configuration.
+
+    Args:
+        env: Environment mapping carrying model and provider settings.
+
+    Returns:
+        extractor: Fully wired extractor with a LangChain-backed client.
+    """
+    from extract.llm_client import build_default_client
+
+    config = extraction_config_from_env(env)
+    client = build_default_client(config.model)
+    return TripleExtractor(client, config)
