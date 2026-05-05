@@ -7,6 +7,7 @@ Contains:
     test_empty_text_yields_no_chunks
     test_short_text_yields_single_chunk
     test_long_text_is_split_under_ceiling
+    test_chunks_cover_the_whole_document
 """
 
 import pytest
@@ -47,3 +48,9 @@ def test_long_text_is_split_under_ceiling() -> None:
     assert len(chunks) > 1
     for chunk in chunks:
         assert len(chunk.text) <= config.max_chars + config.overlap_chars
+
+
+def test_chunks_cover_the_whole_document() -> None:
+    """Checks that chunk end offsets reach the end of the document."""
+    chunks = TextChunker().chunk("doc-1", LOREM)
+    assert chunks[-1].end == len(LOREM)
