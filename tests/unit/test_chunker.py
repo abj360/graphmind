@@ -8,6 +8,7 @@ Contains:
     test_short_text_yields_single_chunk
     test_long_text_is_split_under_ceiling
     test_chunks_cover_the_whole_document
+    test_overlap_carries_trailing_context
 """
 
 import pytest
@@ -54,3 +55,11 @@ def test_chunks_cover_the_whole_document() -> None:
     """Checks that chunk end offsets reach the end of the document."""
     chunks = TextChunker().chunk("doc-1", LOREM)
     assert chunks[-1].end == len(LOREM)
+
+
+def test_overlap_carries_trailing_context() -> None:
+    """Checks that non-initial chunks start before their window start."""
+    config = ChunkConfig(max_chars=250, overlap_chars=60, min_chunk_chars=40)
+    chunks = TextChunker(config).chunk("doc-1", LOREM)
+    assert len(chunks) > 1
+    assert chunks[1].start < chunks[0].end
