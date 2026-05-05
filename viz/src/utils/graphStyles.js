@@ -10,6 +10,7 @@
  *  *   buildTypeSelectors(): per-type color override selectors
  *  *   buildEdgeStyle(): cytoscape edge style block
  *  *   buildInferredEdgeStyle(): dashed style for inferred edges
+ *  *   buildSelfLoopStyle(): curved style for self-loop edges
  */
 
 export const GRAPH_LAYOUT = {
@@ -109,6 +110,22 @@ export function buildInferredEdgeStyle() {
       "line-style": "dashed",
       "line-color": "#dee2e6",
       "target-arrow-color": "#dee2e6",
+    },
+  };
+}
+
+/**
+ * Builds the loop curve style override for self-loop edges.
+ *
+ * @returns style - Cytoscape style definition for self-loops.
+ */
+export function buildSelfLoopStyle() {
+  return {
+    selector: "edge:loop",
+    style: {
+      "curve-style": "bezier",
+      "loop-direction": "0deg",
+      "loop-sweep": "45deg",
     },
   };
 }
