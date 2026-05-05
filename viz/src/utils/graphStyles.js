@@ -12,6 +12,7 @@
  *  *   buildInferredEdgeStyle(): dashed style for inferred edges
  *  *   buildSelfLoopStyle(): curved style for self-loop edges
  *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
+ *  *   buildFullStylesheet(): composes every style block
  */
 
 export const GRAPH_LAYOUT = {
@@ -149,4 +150,20 @@ export function buildParallelEdgeStyles(maxParallel = 4) {
     });
   }
   return styles;
+}
+
+/**
+ * Composes the full Cytoscape stylesheet from every style block.
+ *
+ * @returns stylesheet - Complete style list for the viewer.
+ */
+export function buildFullStylesheet() {
+  return [
+    buildNodeStyle(),
+    ...buildTypeSelectors(),
+    buildEdgeStyle(),
+    buildInferredEdgeStyle(),
+    buildSelfLoopStyle(),
+    ...buildParallelEdgeStyles(),
+  ];
 }
