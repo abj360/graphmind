@@ -7,6 +7,7 @@
  *  *   fetchJson(): GET helper with error unwrapping
  *  *   fetchGraph(): loads the view graph
  *  *   fetchLabels(): loads entity type counts
+ *  *   fetchDedupMetrics(): loads the dedup metrics payload
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -49,4 +50,13 @@ export function fetchGraph(limit = 500) {
  */
 export function fetchLabels() {
   return fetchJson("/api/graph/labels");
+}
+
+/**
+ * Loads the node/edge dedup metrics for the dashboard.
+ *
+ * @returns metrics - Metrics payload from /api/metrics/dedup.
+ */
+export function fetchDedupMetrics() {
+  return fetchJson("/api/metrics/dedup");
 }
