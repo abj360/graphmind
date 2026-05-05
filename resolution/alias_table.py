@@ -16,6 +16,7 @@ Contains:
     MergeReviewQueue: human-in-the-loop merge decision queue
     MergeReviewQueue.submit(): enqueues a borderline candidate
     MergeReviewQueue.approve(): accepts a pending merge
+    MergeReviewQueue.reject(): declines a pending merge
 """
 
 import json
@@ -188,4 +189,17 @@ class MergeReviewQueue:
         """
         item = self._take(item_id)
         self.decided[item_id] = True
+        return item
+
+    def reject(self, item_id: str) -> ReviewItem:
+        """Declines a pending merge and removes it from the queue.
+
+        Args:
+            item_id: Identifier of the item being rejected.
+
+        Returns:
+            item: The rejected review item.
+        """
+        item = self._take(item_id)
+        self.decided[item_id] = False
         return item
