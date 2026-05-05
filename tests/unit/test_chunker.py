@@ -4,6 +4,7 @@ test_chunker.py --- unit tests for the text chunker
 
 Contains:
     LOREM: reusable long document text
+    test_empty_text_yields_no_chunks
 """
 
 import pytest
@@ -23,3 +24,8 @@ LOREM = (
     "Acme later expanded into consulting. It opened an office in York. "
     "Revenue doubled within two years. The team hired forty engineers."
 ) * 6
+
+
+def test_empty_text_yields_no_chunks() -> None:
+    """Checks that blank input produces zero chunks."""
+    assert TextChunker().chunk("doc-1", "   ") == []
