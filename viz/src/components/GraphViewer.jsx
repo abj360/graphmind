@@ -16,6 +16,7 @@
  *  *   fitToContent(): recenters the canvas after load
  *  *   layoutForSize(): picks a layout by graph size
  *  *   clampZoom(): bounds the zoom level for readability
+ *  *   edgeTooltipFor(): full tooltip text for one edge
  */
 
 import cytoscape from "cytoscape";
@@ -241,4 +242,21 @@ export function clampZoom(cy) {
   if (zoom !== cy.zoom()) {
     cy.zoom(zoom);
   }
+}
+
+/**
+ * Builds the full tooltip text for one edge.
+ *
+ * @param edge - Edge data with predicate, confidence, and inferred flag.
+ * @returns tooltip - Multi-part descriptive tooltip string.
+ */
+export function edgeTooltipFor(edge) {
+  const parts = [`${edge.source} —${edge.predicate}→ ${edge.target}`];
+  if (typeof edge.confidence === "number") {
+    parts.push(`confidence ${edge.confidence.toFixed(2)}`);
+  }
+  if (edge.inferred) {
+    parts.push("inferred");
+  }
+  return parts.join(" · ");
 }
