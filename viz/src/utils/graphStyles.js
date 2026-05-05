@@ -9,6 +9,7 @@
  *  *   buildNodeStyle(): cytoscape node style block
  *  *   buildTypeSelectors(): per-type color override selectors
  *  *   buildEdgeStyle(): cytoscape edge style block
+ *  *   buildInferredEdgeStyle(): dashed style for inferred edges
  */
 
 export const GRAPH_LAYOUT = {
@@ -92,6 +93,22 @@ export function buildEdgeStyle() {
       "target-arrow-color": "#adb5bd",
       width: 2,
       opacity: 0.85,
+    },
+  };
+}
+
+/**
+ * Builds the dashed style override for inferred edges.
+ *
+ * @returns style - Cytoscape style definition for inferred edges.
+ */
+export function buildInferredEdgeStyle() {
+  return {
+    selector: "edge[inferred]",
+    style: {
+      "line-style": "dashed",
+      "line-color": "#dee2e6",
+      "target-arrow-color": "#dee2e6",
     },
   };
 }
