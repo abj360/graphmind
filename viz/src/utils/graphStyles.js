@@ -13,6 +13,7 @@
  *  *   buildSelfLoopStyle(): curved style for self-loop edges
  *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
  *  *   buildFullStylesheet(): composes every style block
+ *  *   buildSelectedNodeStyle(): highlight for the selected node
  */
 
 export const GRAPH_LAYOUT = {
@@ -166,4 +167,19 @@ export function buildFullStylesheet() {
     buildSelfLoopStyle(),
     ...buildParallelEdgeStyles(),
   ];
+}
+
+/**
+ * Builds the highlight style for the currently selected node.
+ *
+ * @returns style - Cytoscape style definition for the selected node.
+ */
+export function buildSelectedNodeStyle() {
+  return {
+    selector: "node:selected",
+    style: {
+      "border-width": 3,
+      "border-color": "#e9c46a",
+    },
+  };
 }
