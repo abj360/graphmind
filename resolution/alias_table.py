@@ -17,6 +17,7 @@ Contains:
     MergeReviewQueue.submit(): enqueues a borderline candidate
     MergeReviewQueue.approve(): accepts a pending merge
     MergeReviewQueue.reject(): declines a pending merge
+    MergeReviewQueue._take(): pops an item by id
 """
 
 import json
@@ -203,3 +204,18 @@ class MergeReviewQueue:
         item = self._take(item_id)
         self.decided[item_id] = False
         return item
+
+    def _take(self, item_id: str) -> ReviewItem:
+        """Pops a pending item from the queue by identifier.
+
+        Args:
+            item_id: Identifier of the item to remove.
+
+        Returns:
+            item: The removed review item.
+        """
+        for index, item in enumerate(self.pending_items):
+            if item.item_id == item_id:
+                return self.pending_items.pop(index)
+        msg = f"no pending review item with id {item_id!r}"
+        raise KeyError(msg)
