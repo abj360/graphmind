@@ -11,6 +11,7 @@
  *  *   buildEdgeStyle(): cytoscape edge style block
  *  *   buildInferredEdgeStyle(): dashed style for inferred edges
  *  *   buildSelfLoopStyle(): curved style for self-loop edges
+ *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
  */
 
 export const GRAPH_LAYOUT = {
@@ -128,4 +129,24 @@ export function buildSelfLoopStyle() {
       "loop-sweep": "45deg",
     },
   };
+}
+
+/**
+ * Builds fanned curve overrides for parallel edge groups.
+ *
+ * @param maxParallel - Largest parallel group size to cover.
+ * @returns styles - One style entry per parallel index.
+ */
+export function buildParallelEdgeStyles(maxParallel = 4) {
+  const styles = [];
+  for (let index = 1; index <= maxParallel; index += 1) {
+    styles.push({
+      selector: `edge[parallelIndex = ${index}]`,
+      style: {
+        "curve-style": "bezier",
+        "control-point-step-size": 24 * index,
+      },
+    });
+  }
+  return styles;
 }
