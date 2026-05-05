@@ -9,6 +9,11 @@
  *  *   buildNodeStyle(): cytoscape node style block
  *  *   buildTypeSelectors(): per-type color override selectors
  *  *   buildEdgeStyle(): cytoscape edge style block
+ *  *   buildInferredEdgeStyle(): dashed style for inferred edges
+ *  *   buildSelfLoopStyle(): curved style for self-loop edges
+ *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
+ *  *   buildFullStylesheet(): composes every style block
+ *  *   buildSelectedNodeStyle(): highlight for the selected node
  */
 
 export const GRAPH_LAYOUT = {
@@ -92,6 +97,89 @@ export function buildEdgeStyle() {
       "target-arrow-color": "#adb5bd",
       width: 2,
       opacity: 0.85,
+    },
+  };
+}
+
+/**
+ * Builds the dashed style override for inferred edges.
+ *
+ * @returns style - Cytoscape style definition for inferred edges.
+ */
+export function buildInferredEdgeStyle() {
+  return {
+    selector: "edge[inferred]",
+    style: {
+      "line-style": "dashed",
+      "line-color": "#dee2e6",
+      "target-arrow-color": "#dee2e6",
+    },
+  };
+}
+
+/**
+ * Builds the loop curve style override for self-loop edges.
+ *
+ * @returns style - Cytoscape style definition for self-loops.
+ */
+export function buildSelfLoopStyle() {
+  return {
+    selector: "edge:loop",
+    style: {
+      "curve-style": "bezier",
+      "loop-direction": "0deg",
+      "loop-sweep": "45deg",
+    },
+  };
+}
+
+/**
+ * Builds fanned curve overrides for parallel edge groups.
+ *
+ * @param maxParallel - Largest parallel group size to cover.
+ * @returns styles - One style entry per parallel index.
+ */
+export function buildParallelEdgeStyles(maxParallel = 4) {
+  const styles = [];
+  for (let index = 1; index <= maxParallel; index += 1) {
+    styles.push({
+      selector: `edge[parallelIndex = ${index}]`,
+      style: {
+        "curve-style": "bezier",
+        "control-point-step-size": 24 * index,
+      },
+    });
+  }
+  return styles;
+}
+
+/**
+ * Composes the full Cytoscape stylesheet from every style block.
+ *
+ * @returns stylesheet - Complete style list for the viewer.
+ */
+export function buildFullStylesheet() {
+  return [
+    buildNodeStyle(),
+    ...buildTypeSelectors(),
+    buildEdgeStyle(),
+    buildInferredEdgeStyle(),
+    buildSelfLoopStyle(),
+    ...buildParallelEdgeStyles(),
+  ];
+}
+
+/**
+ * Builds the highlight style for the currently selected node.
+ *
+ * @returns style - Cytoscape style definition for the selected node.
+ */
+export function buildSelectedNodeStyle() {
+  return {
+    selector: "node:selected",
+    style: {
+      "border-width": 3,
+      "border-color": "#e9c46a",
     },
   };
 }
