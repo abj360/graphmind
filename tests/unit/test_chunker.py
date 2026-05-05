@@ -6,6 +6,7 @@ Contains:
     LOREM: reusable long document text
     test_empty_text_yields_no_chunks
     test_short_text_yields_single_chunk
+    test_long_text_is_split_under_ceiling
 """
 
 import pytest
@@ -37,3 +38,12 @@ def test_short_text_yields_single_chunk() -> None:
     chunks = TextChunker().chunk("doc-1", "Alice founded Acme.")
     assert len(chunks) == 1
     assert chunks[0].doc_id == "doc-1"
+
+
+def test_long_text_is_split_under_ceiling() -> None:
+    """Checks that long text splits into chunks under the size ceiling."""
+    config = ChunkConfig(max_chars=300, overlap_chars=30, min_chunk_chars=50)
+    chunks = TextChunker(config).chunk("doc-1", LOREM)
+    assert len(chunks) > 1
+    for chunk in chunks:
+        assert len(chunk.text) <= config.max_chars + config.overlap_chars
