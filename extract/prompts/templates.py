@@ -20,6 +20,7 @@ Contains:
     DEFAULT_FEW_SHOT_COUNT: examples included by default
     estimate_prompt_tokens(): rough token estimate for a prompt
     validate_domain(): rejects unsupported domain keys
+    list_available_domains(): reports registered domain keys
 """
 
 from typing import TYPE_CHECKING
@@ -213,3 +214,12 @@ def validate_domain(domain: str) -> str:
         msg = f"unknown domain {domain!r}; expected one of: {valid}"
         raise ValueError(msg)
     return domain
+
+
+def list_available_domains() -> list[str]:
+    """Reports the domain keys with registered extraction hints.
+
+    Returns:
+        domains: Sorted list of usable domain keys.
+    """
+    return sorted(DOMAIN_HINTS)
