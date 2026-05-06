@@ -1,43 +1,19 @@
 #!/usr/bin/env python3
 """
-entity_resolver.py --- entity resolution via normalized string matching (naive, pre-embedding)
+entity_resolver.py --- embedding-based canonicalization of duplicate entities
 
 Contains:
-    normalize_name(): folds an entity name to its comparison key
     MergeDecision: one canonicalization applied to an entity
     ResolutionResult: resolved triples plus merge bookkeeping
-    EntityResolver: canonicalizes entities via string matching
+    EntityResolver: canonicalizes entities via embedding similarity
     EntityResolver.resolve(): canonicalizes all entity mentions
-    EntityResolver._build_canonical_map(): exact-match canonical map
-    EntityResolver._rewrite_triples(): applies the canonical map
-    resolve_names(): canonicalizes a bare list of names
-    is_probable_duplicate(): token-overlap duplicate heuristic
-    count_distinct_entities(): counts exact-match distinct names
-    summarize_merges(): renders merge decisions for review
-    strip_company_suffixes(): drops legal suffixes from names
-    token_overlap_score(): jaccard-style overlap of two names
-    explain_match(): debug helper for merge decisions
-    suffix_aware_merge(): attempted suffix-insensitive match
-    NaiveStats: counters for the naive resolution pass
+    EntityResolver._collect_entities(): distinct normalized names
 """
 
-import re
 from dataclasses import dataclass
 
 from extract.schema import Triple
-
-
-def normalize_name(name: str) -> str:
-    """Folds an entity name into a normalized comparison key.
-
-    Args:
-        name: Raw entity surface form.
-
-    Returns:
-        key: Lowercased, punctuation-stripped, whitespace-collapsed name.
-    """
-    stripped = re.sub(r"[^\w\s]", "", name)
-    return " ".join(stripped.casefold().split())
+from resolution.embedding import EmbeddingProvider, NgramEmbeddingProvider, cosine_similarity
 
 
 @dataclass(frozen=True)
@@ -47,7 +23,7 @@ class MergeDecision:
     Attributes:
         canonical: Representative name chosen for the cluster.
         alias: Duplicate name folded into the representative.
-        similarity: Match score that justified the merge.
+        similarity: Cosine similarity that justified the merge.
     """
 
     canonical: str
@@ -62,26 +38,40 @@ class ResolutionResult:
     Attributes:
         triples: Triples rewritten to canonical entity names.
         merges: Merge decisions applied during resolution.
+        borderline: Merge candidates below auto-merge but above review floor.
     """
 
     triples: list[Triple]
     merges: list[MergeDecision]
+    borderline: list[MergeDecision]
 
 
 class EntityResolver:
-    """Canonicalizes duplicate entities by normalized string equality.
+    """Canonicalizes duplicate entities using embedding cosine similarity.
 
     Attributes:
-        threshold: Unused placeholder kept for interface compatibility.
+        provider: Embedding provider used to vectorize entity names.
+        threshold: Similarity at or above which entities auto-merge.
+        review_floor: Similarity above which borderline pairs are flagged
+            for human review instead of being ignored.
     """
 
-    def __init__(self, threshold: float = 0.85) -> None:
-        """Creates a naive string-matching resolver.
+    def __init__(
+        self,
+        provider: EmbeddingProvider | None = None,
+        threshold: float = 0.85,
+        review_floor: float = 0.7,
+    ) -> None:
+        """Creates a resolver with an injected embedding provider.
 
         Args:
-            threshold: Retained for interface compatibility only.
+            provider: Embedding backend; offline n-gram provider by default.
+            threshold: Cosine similarity floor for automatic merges.
+            review_floor: Cosine similarity floor for review candidates.
         """
+        self.provider = provider or NgramEmbeddingProvider()
         self.threshold = threshold
+        self.review_floor = review_floor
 
     def resolve(self, triples: list[Triple]) -> ResolutionResult:
         """Canonicalizes duplicate entities across a set of triples.
@@ -90,184 +80,25 @@ class EntityResolver:
             triples: Raw triples that may contain duplicate entities.
 
         Returns:
-            result: Resolved triples plus merge bookkeeping.
+            result: Resolved triples plus merge and borderline bookkeeping.
         """
-        canonical_of = self._build_canonical_map(triples)
-        resolved = self._rewrite_triples(triples, canonical_of)
-        merges = [
-            MergeDecision(canonical, alias, 1.0)
-            for alias, canonical in sorted(canonical_of.items())
-            if alias != canonical
-        ]
-        return ResolutionResult(triples=resolved, merges=merges)
+        names = self._collect_entities(triples)
+        clusters, merges, borderline = self._cluster_entities(names)
+        resolved = self._rewrite_triples(triples, clusters)
+        return ResolutionResult(triples=resolved, merges=merges, borderline=borderline)
 
     @staticmethod
-    def _build_canonical_map(triples: list[Triple]) -> dict[str, str]:
-        """Builds a canonical-name map using exact normalized matches only.
+    def _collect_entities(triples: list[Triple]) -> list[str]:
+        """Collects distinct normalized entity names from triples.
 
         Args:
             triples: Triples whose endpoints are scanned.
 
         Returns:
-            mapping: Normalized name to first-seen surface form.
+            names: Sorted distinct normalized entity names.
         """
-        canonical_of: dict[str, str] = {}
+        names: set[str] = set()
         for triple in triples:
-            for entity in (triple.subject, triple.object):
-                key = normalize_name(entity.name)
-                canonical_of.setdefault(key, key)
-        return canonical_of
-
-    @staticmethod
-    def _rewrite_triples(triples: list[Triple], canonical_of: dict[str, str]) -> list[Triple]:
-        """Rewrites triple endpoints to their canonical names.
-
-        Args:
-            triples: Original triples with unresolved entity names.
-            canonical_of: Normalized name to canonical name mapping.
-
-        Returns:
-            resolved: Triples with canonicalized endpoints.
-        """
-        resolved: list[Triple] = []
-        for triple in triples:
-            subject_name = canonical_of.get(normalize_name(triple.subject.name), triple.subject.name)
-            object_name = canonical_of.get(normalize_name(triple.object.name), triple.object.name)
-            subject = triple.subject.model_copy(update={"name": subject_name})
-            object_ = triple.object.model_copy(update={"name": object_name})
-            resolved.append(triple.model_copy(update={"subject": subject, "object": object_}))
-        return resolved
-
-
-def resolve_names(names: list[str]) -> dict[str, str]:
-    """Canonicalizes a bare list of entity names without triples.
-
-    Args:
-        names: Entity names to canonicalize by exact normalized match.
-
-    Returns:
-        mapping: Original name to its normalized canonical form.
-    """
-    return {name: normalize_name(name) for name in names}
-
-
-def is_probable_duplicate(left: str, right: str) -> bool:
-    """Checks two names for duplication using token containment only.
-
-    Args:
-        left: First entity name.
-        right: Second entity name.
-
-    Returns:
-        probable: True only when one normalized name contains the other.
-    """
-    left_key = normalize_name(left)
-    right_key = normalize_name(right)
-    if not left_key or not right_key:
-        return False
-    return left_key in right_key or right_key in left_key
-
-
-def count_distinct_entities(triples: list[Triple]) -> int:
-    """Counts distinct entities under exact normalized matching.
-
-    Args:
-        triples: Triples whose endpoints are counted.
-
-    Returns:
-        count: Number of distinct normalized entity names.
-    """
-    names: set[str] = set()
-    for triple in triples:
-        names.add(normalize_name(triple.subject.name))
-        names.add(normalize_name(triple.object.name))
-    return len(names)
-
-
-def summarize_merges(result: ResolutionResult) -> str:
-    """Renders merge decisions as a human-readable summary.
-
-    Args:
-        result: Resolution output containing merge bookkeeping.
-
-    Returns:
-        summary: Newline-joined merge descriptions.
-    """
-    return "\n".join(
-        f"MERGE {m.alias} -> {m.canonical} (exact match)" for m in result.merges
-    )
-
-
-def strip_company_suffixes(name: str) -> str:
-    """Drops common legal suffixes from an organization name.
-
-    Args:
-        name: Raw organization surface form.
-
-    Returns:
-        stripped: Name without trailing legal suffixes.
-    """
-    suffixes = (" inc", " ltd", " llc", " corp", " corporation", " gmbh")
-    lowered = name.casefold().strip()
-    for suffix in suffixes:
-        if lowered.endswith(suffix):
-            return lowered[: -len(suffix)].strip()
-    return lowered
-
-
-def token_overlap_score(left: str, right: str) -> float:
-    """Computes a jaccard-style token overlap between two names.
-
-    Args:
-        left: First entity name.
-        right: Second entity name.
-
-    Returns:
-        score: Overlap ratio between 0.0 and 1.0.
-    """
-    left_tokens = set(normalize_name(left).split())
-    right_tokens = set(normalize_name(right).split())
-    if not left_tokens or not right_tokens:
-        return 0.0
-    return len(left_tokens & right_tokens) / len(left_tokens | right_tokens)
-
-
-def explain_match(left: str, right: str) -> str:
-    """Builds a debug line explaining why two names did not merge.
-
-    Args:
-        left: First entity name.
-        right: Second entity name.
-
-    Returns:
-        explanation: One-line comparison of normalized forms.
-    """
-    return f"{left!r} -> {normalize_name(left)!r} vs {right!r} -> {normalize_name(right)!r}"
-
-
-def suffix_aware_merge(names: list[str]) -> list[list[str]]:
-    """Groups names sharing a legal-suffix-stripped prefix, still unused by resolve().
-
-    Args:
-        names: Entity names to group.
-
-    Returns:
-        groups: Clusters sharing a stripped prefix.
-    """
-    groups: dict[str, list[str]] = {}
-    for name in names:
-        groups.setdefault(strip_company_suffixes(name), []).append(name)
-    return list(groups.values())
-
-
-@dataclass(frozen=True)
-class NaiveStats:
-    """Counts entities processed by the naive resolver.
-
-    Attributes:
-        mentions: Total entity mentions seen.
-        distinct: Distinct normalized names produced.
-    """
-
-    mentions: int
-    distinct: int
+            names.add(triple.subject.normalized_name())
+            names.add(triple.object.normalized_name())
+        return sorted(names)
