@@ -21,6 +21,7 @@ Contains:
     estimate_prompt_tokens(): rough token estimate for a prompt
     validate_domain(): rejects unsupported domain keys
     list_available_domains(): reports registered domain keys
+    select_examples(): chooses worked examples for a config
 """
 
 from typing import TYPE_CHECKING
@@ -223,3 +224,17 @@ def list_available_domains() -> list[str]:
         domains: Sorted list of usable domain keys.
     """
     return sorted(DOMAIN_HINTS)
+
+
+def select_examples(config: "PromptConfig") -> list[dict[str, object]]:
+    """Chooses worked examples matching the configured domain and count.
+
+    Args:
+        config: Prompt configuration carrying domain and few-shot count.
+
+    Returns:
+        examples: Matching examples, capped at the configured count.
+    """
+    matching = [ex for ex in FEW_SHOT_EXAMPLES if ex["domain"] == config.domain]
+    pool = matching or FEW_SHOT_EXAMPLES
+    return pool[: max(0, config.few_shot_count)]
