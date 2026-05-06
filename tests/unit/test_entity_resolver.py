@@ -7,7 +7,13 @@ Contains:
     test_similar_names_merge_with_ngram_embeddings
 """
 
-from resolution.entity_resolver import EntityResolver, resolve_names, summarize_merges
+from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
+from resolution.entity_resolver import (
+    EntityResolver,
+    duplicate_rate,
+    resolve_names,
+    summarize_merges,
+)
 from tests.unit.factories import make_triple
 
 
@@ -19,8 +25,8 @@ def test_exact_duplicates_merge() -> None:
     assert len(subjects) == 1
 
 
-def test_naive_matching_does_not_merge_suffix_variants() -> None:
-    """Documents that plain string matching misses suffix variants."""
+def test_similar_names_merge_with_ngram_embeddings() -> None:
+    """Checks that near-identical names merge under embedding similarity."""
     triples = [make_triple("Acme Corp"), make_triple("Acme Corporation", "acquired", "ByteWorks")]
-    result = EntityResolver().resolve(triples)
-    assert not result.merges
+    result = EntityResolver(threshold=0.7).resolve(triples)
+    assert result.merges
