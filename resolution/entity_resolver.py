@@ -6,6 +6,8 @@ Contains:
     MergeDecision: one canonicalization applied to an entity
     ResolutionResult: resolved triples plus merge bookkeeping
     EntityResolver: canonicalizes entities via embedding similarity
+    EntityResolver.resolve(): canonicalizes all entity mentions
+    EntityResolver._collect_entities(): distinct normalized names
 """
 
 from dataclasses import dataclass
@@ -70,3 +72,33 @@ class EntityResolver:
         self.provider = provider or NgramEmbeddingProvider()
         self.threshold = threshold
         self.review_floor = review_floor
+
+    def resolve(self, triples: list[Triple]) -> ResolutionResult:
+        """Canonicalizes duplicate entities across a set of triples.
+
+        Args:
+            triples: Raw triples that may contain duplicate entities.
+
+        Returns:
+            result: Resolved triples plus merge and borderline bookkeeping.
+        """
+        names = self._collect_entities(triples)
+        clusters, merges, borderline = self._cluster_entities(names)
+        resolved = self._rewrite_triples(triples, clusters)
+        return ResolutionResult(triples=resolved, merges=merges, borderline=borderline)
+
+    @staticmethod
+    def _collect_entities(triples: list[Triple]) -> list[str]:
+        """Collects distinct normalized entity names from triples.
+
+        Args:
+            triples: Triples whose endpoints are scanned.
+
+        Returns:
+            names: Sorted distinct normalized entity names.
+        """
+        names: set[str] = set()
+        for triple in triples:
+            names.add(triple.subject.normalized_name())
+            names.add(triple.object.normalized_name())
+        return sorted(names)
