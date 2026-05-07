@@ -6,6 +6,7 @@
  *  *   imports + router factory
  *  *   GRAPH_QUERY: nodes and relationships for the viewer
  *  *   toViewGraph(): maps records into viewer-friendly JSON
+ *  *   parseLimit(): validates the limit query parameter
  */
 
 import { Router } from "express";
@@ -59,4 +60,18 @@ export function toViewGraph(records) {
     }
   }
   return { nodes: [...nodes.values()], edges: [...edges.values()] };
+}
+
+/**
+ * Validates the limit query parameter, clamping to a safe range.
+ *
+ * @param raw - Raw query string value.
+ * @returns limit - Integer between 1 and 5000, default 500.
+ */
+export function parseLimit(raw) {
+  const parsed = Number.parseInt(raw ?? "", 10);
+  if (Number.isNaN(parsed)) {
+    return 500;
+  }
+  return Math.min(Math.max(parsed, 1), 5000);
 }
