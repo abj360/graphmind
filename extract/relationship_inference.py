@@ -17,6 +17,7 @@ Contains:
     infer_bridges(): one-shot bridging convenience function
     component_report(): describes graph connectivity
     merge_inferred(): combines extracted and inferred triples
+    format_bridge_report(): renders inferred bridges for review
 """
 
 from dataclasses import dataclass
@@ -294,3 +295,21 @@ def merge_inferred(extracted: list[Triple], inferred: list[Triple]) -> list[Trip
             combined.append(triple)
             seen.add(triple.key())
     return combined
+
+
+def format_bridge_report(bridges: list[Triple]) -> str:
+    """Renders inferred bridges as a reviewable text report.
+
+    Args:
+        bridges: Inferred triples to describe.
+
+    Returns:
+        report: Newline-joined bridge descriptions with scores.
+    """
+    lines = []
+    for triple in bridges:
+        lines.append(
+            f"BRIDGE {triple.subject.name} -[{triple.predicate}]-> "
+            f"{triple.object.name} (score={triple.confidence:.2f})"
+        )
+    return "\n".join(lines)
