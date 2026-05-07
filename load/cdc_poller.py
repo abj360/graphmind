@@ -16,6 +16,7 @@ Contains:
     CdcPoller.scan(): snapshots the current corpus state
     CdcPoller.poll_once(): diffs state and emits change events
     CdcPoller._event(): builds one change event
+    CdcPoller.run(): blocking polling loop
 """
 
 import hashlib
@@ -210,3 +211,19 @@ class CdcPoller:
             checksum=str(record["checksum"]),
             modified_at=float(record["modified_at"]),
         )
+
+    def run(self, max_iterations: int | None = None) -> None:
+        """Runs the blocking polling loop, emitting events each interval.
+
+        Args:
+            max_iterations: Optional cap on loop iterations for tests.
+        """
+        iteration = 0
+        while max_iterations is None or iteration < max_iterations:
+            events = self.poll_once()
+            for event in events:
+                logger.info("cdc %s %s", event.kind, event.doc_id)
+            iteration += 1
+            if max_iterations is not None and iteration >= max_iterations:
+                break
+            time.sleep(self.config.interval_seconds)
