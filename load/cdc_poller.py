@@ -18,6 +18,7 @@ Contains:
     CdcPoller._event(): builds one change event
     CdcPoller.run(): blocking polling loop
     apply_events(): routes events to extraction and loading
+    filter_upserts(): keeps only upsert events
 """
 
 import hashlib
@@ -249,3 +250,15 @@ def apply_events(
         else:
             delete(event.doc_id)
     return len(events)
+
+
+def filter_upserts(events: list[ChangeEvent]) -> list[ChangeEvent]:
+    """Keeps only upsert events from a change event batch.
+
+    Args:
+        events: Mixed change events.
+
+    Returns:
+        upserts: Events of kind upsert, in original order.
+    """
+    return [event for event in events if event.kind == ChangeKind.UPSERT]
