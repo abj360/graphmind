@@ -19,6 +19,7 @@ Contains:
     CdcPoller.run(): blocking polling loop
     apply_events(): routes events to extraction and loading
     filter_upserts(): keeps only upsert events
+    summarize_events(): counts events by kind
 """
 
 import hashlib
@@ -262,3 +263,18 @@ def filter_upserts(events: list[ChangeEvent]) -> list[ChangeEvent]:
         upserts: Events of kind upsert, in original order.
     """
     return [event for event in events if event.kind == ChangeKind.UPSERT]
+
+
+def summarize_events(events: list[ChangeEvent]) -> dict[str, int]:
+    """Counts change events by kind.
+
+    Args:
+        events: Change events to summarize.
+
+    Returns:
+        counts: Mapping of change kind to event count.
+    """
+    counts = {ChangeKind.UPSERT: 0, ChangeKind.DELETE: 0}
+    for event in events:
+        counts[event.kind] = counts.get(event.kind, 0) + 1
+    return counts
