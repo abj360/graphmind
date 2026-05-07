@@ -20,6 +20,7 @@ Contains:
     apply_events(): routes events to extraction and loading
     filter_upserts(): keeps only upsert events
     summarize_events(): counts events by kind
+    main(): CLI entrypoint for the CDC poller
 """
 
 import hashlib
@@ -278,3 +279,28 @@ def summarize_events(events: list[ChangeEvent]) -> dict[str, int]:
     for event in events:
         counts[event.kind] = counts.get(event.kind, 0) + 1
     return counts
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Runs the CDC poller CLI against a corpus directory.
+
+    Args:
+        argv: Command-line arguments; sys.argv when omitted.
+
+    Returns:
+        exit_code: 0 on success, nonzero on failure.
+    """
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Poll a corpus directory for changes")
+    parser.add_argument("--corpus", default=os.environ.get("GRAPHMIND_CORPUS_DIR", "/data/docs"))
+    parser.add_argument("--once", action="store_true", help="poll once and exit")
+    args = parser.parse_args(argv)
+    poller = CdcPoller(Path(args.corpus))
+    if args.once:
+        for event in poller.poll_once():
+            logger.info("cdc %s %s", event.kind, event.doc_id)
+        return 0
+    poller.run()
+    return 0
