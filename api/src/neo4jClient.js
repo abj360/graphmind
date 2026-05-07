@@ -6,6 +6,7 @@
  *  *   createDriver(): builds the shared driver
  *  *   runQuery(): executes a read query and unwraps records
  *  *   closeDriver(): releases the shared driver
+ *  *   verifyConnectivity(): fails fast when Neo4j is down
  */
 
 import neo4j from "neo4j-driver";
@@ -47,5 +48,20 @@ export async function runQuery(driver, query, params = {}, database = "neo4j") {
 export async function closeDriver(driver) {
   if (driver) {
     await driver.close();
+  }
+}
+
+/**
+ * Verifies Neo4j connectivity, failing fast when unreachable.
+ *
+ * @param driver - Neo4j driver instance.
+ * @returns ok - True when the instance answers a trivial query.
+ */
+export async function verifyConnectivity(driver) {
+  try {
+    await driver.verifyConnectivity();
+    return true;
+  } catch (error) {
+    throw new Error(`neo4j unreachable: ${error.message}`);
   }
 }
