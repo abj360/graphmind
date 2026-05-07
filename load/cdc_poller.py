@@ -15,6 +15,7 @@ Contains:
     CdcPoller: watches a corpus directory for changes
     CdcPoller.scan(): snapshots the current corpus state
     CdcPoller.poll_once(): diffs state and emits change events
+    CdcPoller._event(): builds one change event
 """
 
 import hashlib
@@ -190,3 +191,22 @@ class CdcPoller:
                 events.append(self._event(doc_id, ChangeKind.DELETE, previous[doc_id]))
         self.store.save(current)
         return events
+
+    def _event(self, doc_id: str, kind: str, record: dict[str, float | str]) -> ChangeEvent:
+        """Builds one change event from a state record.
+
+        Args:
+            doc_id: Document identifier the event concerns.
+            kind: ChangeKind value, upsert or delete.
+            record: State record carrying checksum and modified_at.
+
+        Returns:
+            event: Immutable change event.
+        """
+        return ChangeEvent(
+            doc_id=doc_id,
+            kind=kind,
+            path=self.corpus_dir / doc_id,
+            checksum=str(record["checksum"]),
+            modified_at=float(record["modified_at"]),
+        )
