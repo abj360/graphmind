@@ -20,3 +20,10 @@ to pan.
   keep rendering interactive.
 - After every data reload the canvas fits to content and clamps zoom
   to a readable range.
+
+## Search and filters
+
+The header search filters the visible graph by entity label or type,
+case-insensitively. Only matching nodes and their induced edges stay
+visible — the underlying graph is untouched, so clearing the search
+restores everything instantly.
