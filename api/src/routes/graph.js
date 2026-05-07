@@ -7,6 +7,7 @@
  *  *   GRAPH_QUERY: nodes and relationships for the viewer
  *  *   toViewGraph(): maps records into viewer-friendly JSON
  *  *   parseLimit(): validates the limit query parameter
+ *  *   graphRouter(): serves the graph JSON endpoint
  */
 
 import { Router } from "express";
@@ -74,4 +75,27 @@ export function parseLimit(raw) {
     return 500;
   }
   return Math.min(Math.max(parsed, 1), 5000);
+}
+
+/**
+ * Builds the router serving graph JSON to the viewer.
+ *
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ * @returns router - Express router with the graph endpoint mounted.
+ */
+export function graphRouter(driver, config) {
+  const router = Router();
+
+  router.get("/graph", async (request, response, next) => {
+    try {
+      const limit = parseLimit(request.query.limit);
+      const records = await runQuery(driver, GRAPH_QUERY, { limit }, config.neo4jDatabase);
+      response.json(toViewGraph(records));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return router;
 }
