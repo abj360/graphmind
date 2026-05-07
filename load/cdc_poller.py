@@ -17,6 +17,7 @@ Contains:
     CdcPoller.poll_once(): diffs state and emits change events
     CdcPoller._event(): builds one change event
     CdcPoller.run(): blocking polling loop
+    apply_events(): routes events to extraction and loading
 """
 
 import hashlib
@@ -227,3 +228,24 @@ class CdcPoller:
             if max_iterations is not None and iteration >= max_iterations:
                 break
             time.sleep(self.config.interval_seconds)
+
+
+def apply_events(
+    events: list[ChangeEvent], reextract: Callable[[str], None], delete: Callable[[str], None]
+) -> int:
+    """Routes change events to re-extraction and deletion callables.
+
+    Args:
+        events: Change events to apply.
+        reextract: Callable invoked with each upserted doc_id.
+        delete: Callable invoked with each deleted doc_id.
+
+    Returns:
+        applied: Number of events routed.
+    """
+    for event in events:
+        if event.kind == ChangeKind.UPSERT:
+            reextract(event.doc_id)
+        else:
+            delete(event.doc_id)
+    return len(events)
