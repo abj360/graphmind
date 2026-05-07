@@ -16,6 +16,7 @@ Contains:
     RelationshipInferer._materialize(): candidates into triples
     infer_bridges(): one-shot bridging convenience function
     component_report(): describes graph connectivity
+    merge_inferred(): combines extracted and inferred triples
 """
 
 from dataclasses import dataclass
@@ -274,3 +275,22 @@ def component_report(triples: list[Triple]) -> dict[str, int]:
         "entities": sum(len(component) for component in components),
         "largest_component": largest,
     }
+
+
+def merge_inferred(extracted: list[Triple], inferred: list[Triple]) -> list[Triple]:
+    """Combines extracted and inferred triples without duplicating edges.
+
+    Args:
+        extracted: Original extracted triples.
+        inferred: Inferred bridging triples to merge in.
+
+    Returns:
+        combined: Union of both sets, extracted versions winning conflicts.
+    """
+    seen = {triple.key() for triple in extracted}
+    combined = list(extracted)
+    for triple in inferred:
+        if triple.key() not in seen:
+            combined.append(triple)
+            seen.add(triple.key())
+    return combined
