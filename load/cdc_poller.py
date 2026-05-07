@@ -15,6 +15,12 @@ Contains:
     CdcPoller: watches a corpus directory for changes
     CdcPoller.scan(): snapshots the current corpus state
     CdcPoller.poll_once(): diffs state and emits change events
+    CdcPoller._event(): builds one change event
+    CdcPoller.run(): blocking polling loop
+    apply_events(): routes events to extraction and loading
+    filter_upserts(): keeps only upsert events
+    summarize_events(): counts events by kind
+    main(): CLI entrypoint for the CDC poller
 """
 
 import hashlib
@@ -190,3 +196,111 @@ class CdcPoller:
                 events.append(self._event(doc_id, ChangeKind.DELETE, previous[doc_id]))
         self.store.save(current)
         return events
+
+    def _event(self, doc_id: str, kind: str, record: dict[str, float | str]) -> ChangeEvent:
+        """Builds one change event from a state record.
+
+        Args:
+            doc_id: Document identifier the event concerns.
+            kind: ChangeKind value, upsert or delete.
+            record: State record carrying checksum and modified_at.
+
+        Returns:
+            event: Immutable change event.
+        """
+        return ChangeEvent(
+            doc_id=doc_id,
+            kind=kind,
+            path=self.corpus_dir / doc_id,
+            checksum=str(record["checksum"]),
+            modified_at=float(record["modified_at"]),
+        )
+
+    def run(self, max_iterations: int | None = None) -> None:
+        """Runs the blocking polling loop, emitting events each interval.
+
+        Args:
+            max_iterations: Optional cap on loop iterations for tests.
+        """
+        iteration = 0
+        while max_iterations is None or iteration < max_iterations:
+            events = self.poll_once()
+            for event in events:
+                logger.info("cdc %s %s", event.kind, event.doc_id)
+            iteration += 1
+            if max_iterations is not None and iteration >= max_iterations:
+                break
+            time.sleep(self.config.interval_seconds)
+
+
+def apply_events(
+    events: list[ChangeEvent], reextract: Callable[[str], None], delete: Callable[[str], None]
+) -> int:
+    """Routes change events to re-extraction and deletion callables.
+
+    Args:
+        events: Change events to apply.
+        reextract: Callable invoked with each upserted doc_id.
+        delete: Callable invoked with each deleted doc_id.
+
+    Returns:
+        applied: Number of events routed.
+    """
+    for event in events:
+        if event.kind == ChangeKind.UPSERT:
+            reextract(event.doc_id)
+        else:
+            delete(event.doc_id)
+    return len(events)
+
+
+def filter_upserts(events: list[ChangeEvent]) -> list[ChangeEvent]:
+    """Keeps only upsert events from a change event batch.
+
+    Args:
+        events: Mixed change events.
+
+    Returns:
+        upserts: Events of kind upsert, in original order.
+    """
+    return [event for event in events if event.kind == ChangeKind.UPSERT]
+
+
+def summarize_events(events: list[ChangeEvent]) -> dict[str, int]:
+    """Counts change events by kind.
+
+    Args:
+        events: Change events to summarize.
+
+    Returns:
+        counts: Mapping of change kind to event count.
+    """
+    counts = {ChangeKind.UPSERT: 0, ChangeKind.DELETE: 0}
+    for event in events:
+        counts[event.kind] = counts.get(event.kind, 0) + 1
+    return counts
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Runs the CDC poller CLI against a corpus directory.
+
+    Args:
+        argv: Command-line arguments; sys.argv when omitted.
+
+    Returns:
+        exit_code: 0 on success, nonzero on failure.
+    """
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Poll a corpus directory for changes")
+    parser.add_argument("--corpus", default=os.environ.get("GRAPHMIND_CORPUS_DIR", "/data/docs"))
+    parser.add_argument("--once", action="store_true", help="poll once and exit")
+    args = parser.parse_args(argv)
+    poller = CdcPoller(Path(args.corpus))
+    if args.once:
+        for event in poller.poll_once():
+            logger.info("cdc %s %s", event.kind, event.doc_id)
+        return 0
+    poller.run()
+    return 0
