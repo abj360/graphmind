@@ -16,6 +16,8 @@ Contains:
     RelationshipInferer._materialize(): candidates into triples
     infer_bridges(): one-shot bridging convenience function
     component_report(): describes graph connectivity
+    merge_inferred(): combines extracted and inferred triples
+    format_bridge_report(): renders inferred bridges for review
 """
 
 from dataclasses import dataclass
@@ -274,3 +276,40 @@ def component_report(triples: list[Triple]) -> dict[str, int]:
         "entities": sum(len(component) for component in components),
         "largest_component": largest,
     }
+
+
+def merge_inferred(extracted: list[Triple], inferred: list[Triple]) -> list[Triple]:
+    """Combines extracted and inferred triples without duplicating edges.
+
+    Args:
+        extracted: Original extracted triples.
+        inferred: Inferred bridging triples to merge in.
+
+    Returns:
+        combined: Union of both sets, extracted versions winning conflicts.
+    """
+    seen = {triple.key() for triple in extracted}
+    combined = list(extracted)
+    for triple in inferred:
+        if triple.key() not in seen:
+            combined.append(triple)
+            seen.add(triple.key())
+    return combined
+
+
+def format_bridge_report(bridges: list[Triple]) -> str:
+    """Renders inferred bridges as a reviewable text report.
+
+    Args:
+        bridges: Inferred triples to describe.
+
+    Returns:
+        report: Newline-joined bridge descriptions with scores.
+    """
+    lines = []
+    for triple in bridges:
+        lines.append(
+            f"BRIDGE {triple.subject.name} -[{triple.predicate}]-> "
+            f"{triple.object.name} (score={triple.confidence:.2f})"
+        )
+    return "\n".join(lines)
