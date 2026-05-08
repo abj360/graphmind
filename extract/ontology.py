@@ -16,6 +16,10 @@ Contains:
     Ontology.summary(): counts rules by subject type
     load_ontology(): reads an ontology from a JSON file
     default_rules(): built-in starter rule set
+    load_default_ontology(): ontology from the built-in rules
+    infer_rules(): mines candidate rules from trusted triples
+    format_violations(): renders violations for review
+    diff_ontologies(): rules present in one but not the other
 """
 
 import json
@@ -241,3 +245,59 @@ def default_rules() -> set[OntologyRule]:
         OntologyRule("DRUG", "inhibits", "GENE"),
         OntologyRule("GENE", "mutates in", "DISEASE"),
     }
+
+
+def load_default_ontology(strict: bool = True) -> Ontology:
+    """Builds the default ontology from the built-in rule set.
+
+    Args:
+        strict: Whether the ontology rejects unmatched triples.
+
+    Returns:
+        ontology: Ontology seeded with the default rules.
+    """
+    return Ontology(default_rules(), strict=strict)
+
+
+def infer_rules(triples: list[Triple]) -> set[OntologyRule]:
+    """Mines candidate ontology rules from a set of trusted triples.
+
+    Args:
+        triples: Trusted triples whose type patterns become rules.
+
+    Returns:
+        rules: Distinct observed (type, predicate, type) patterns.
+    """
+    return {OntologyRule(t.subject.entity_type, t.predicate, t.object.entity_type) for t in triples}
+
+
+def format_violations(violations: list[OntologyViolation]) -> str:
+    """Renders ontology violations as a reviewable text report.
+
+    Args:
+        violations: Rejected triples and their reasons.
+
+    Returns:
+        report: Newline-joined human-readable violation lines.
+    """
+    lines = []
+    for violation in violations:
+        triple = violation.triple
+        lines.append(
+            f"REJECT {triple.subject.name} -[{triple.predicate}]-> "
+            f"{triple.object.name}: {violation.reason}"
+        )
+    return "\n".join(lines)
+
+
+def diff_ontologies(left: Ontology, right: Ontology) -> set[OntologyRule]:
+    """Computes the rules present in left but absent from right.
+
+    Args:
+        left: Ontology to subtract from.
+        right: Ontology whose rules are removed.
+
+    Returns:
+        rules: Rules unique to the left ontology.
+    """
+    return set(left.rules) - set(right.rules)
