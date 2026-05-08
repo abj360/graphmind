@@ -16,6 +16,7 @@ Contains:
     Ontology.summary(): counts rules by subject type
     load_ontology(): reads an ontology from a JSON file
     default_rules(): built-in starter rule set
+    load_default_ontology(): ontology from the built-in rules
 """
 
 import json
@@ -241,3 +242,15 @@ def default_rules() -> set[OntologyRule]:
         OntologyRule("DRUG", "inhibits", "GENE"),
         OntologyRule("GENE", "mutates in", "DISEASE"),
     }
+
+
+def load_default_ontology(strict: bool = True) -> Ontology:
+    """Builds the default ontology from the built-in rule set.
+
+    Args:
+        strict: Whether the ontology rejects unmatched triples.
+
+    Returns:
+        ontology: Ontology seeded with the default rules.
+    """
+    return Ontology(default_rules(), strict=strict)
