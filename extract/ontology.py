@@ -19,6 +19,7 @@ Contains:
     load_default_ontology(): ontology from the built-in rules
     infer_rules(): mines candidate rules from trusted triples
     format_violations(): renders violations for review
+    diff_ontologies(): rules present in one but not the other
 """
 
 import json
@@ -287,3 +288,16 @@ def format_violations(violations: list[OntologyViolation]) -> str:
             f"{triple.object.name}: {violation.reason}"
         )
     return "\n".join(lines)
+
+
+def diff_ontologies(left: Ontology, right: Ontology) -> set[OntologyRule]:
+    """Computes the rules present in left but absent from right.
+
+    Args:
+        left: Ontology to subtract from.
+        right: Ontology whose rules are removed.
+
+    Returns:
+        rules: Rules unique to the left ontology.
+    """
+    return set(left.rules) - set(right.rules)
