@@ -18,6 +18,7 @@ Contains:
     default_rules(): built-in starter rule set
     load_default_ontology(): ontology from the built-in rules
     infer_rules(): mines candidate rules from trusted triples
+    format_violations(): renders violations for review
 """
 
 import json
@@ -267,3 +268,22 @@ def infer_rules(triples: list[Triple]) -> set[OntologyRule]:
         rules: Distinct observed (type, predicate, type) patterns.
     """
     return {OntologyRule(t.subject.entity_type, t.predicate, t.object.entity_type) for t in triples}
+
+
+def format_violations(violations: list[OntologyViolation]) -> str:
+    """Renders ontology violations as a reviewable text report.
+
+    Args:
+        violations: Rejected triples and their reasons.
+
+    Returns:
+        report: Newline-joined human-readable violation lines.
+    """
+    lines = []
+    for violation in violations:
+        triple = violation.triple
+        lines.append(
+            f"REJECT {triple.subject.name} -[{triple.predicate}]-> "
+            f"{triple.object.name}: {violation.reason}"
+        )
+    return "\n".join(lines)
