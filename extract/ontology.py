@@ -17,6 +17,7 @@ Contains:
     load_ontology(): reads an ontology from a JSON file
     default_rules(): built-in starter rule set
     load_default_ontology(): ontology from the built-in rules
+    infer_rules(): mines candidate rules from trusted triples
 """
 
 import json
@@ -254,3 +255,15 @@ def load_default_ontology(strict: bool = True) -> Ontology:
         ontology: Ontology seeded with the default rules.
     """
     return Ontology(default_rules(), strict=strict)
+
+
+def infer_rules(triples: list[Triple]) -> set[OntologyRule]:
+    """Mines candidate ontology rules from a set of trusted triples.
+
+    Args:
+        triples: Trusted triples whose type patterns become rules.
+
+    Returns:
+        rules: Distinct observed (type, predicate, type) patterns.
+    """
+    return {OntologyRule(t.subject.entity_type, t.predicate, t.object.entity_type) for t in triples}
