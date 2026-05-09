@@ -14,6 +14,7 @@ Contains:
     test_self_loop_triples_are_skipped
     test_node_rows_are_deduplicated
     test_relationship_rows_carry_confidence_and_inference
+    test_batched_slices_rows_exactly
 """
 
 from typing import Any
@@ -160,3 +161,10 @@ def test_relationship_rows_carry_confidence_and_inference() -> None:
     rows = writer.relationship_rows([make_triple(confidence=0.7)])
     assert rows[0]["confidence"] == 0.7
     assert rows[0]["inferred"] is False
+
+
+def test_batched_slices_rows_exactly() -> None:
+    """Checks that batched() slices rows into exact fixed-size groups."""
+    rows = [{"i": i} for i in range(7)]
+    batches = list(batched(rows, 3))
+    assert [len(batch) for batch in batches] == [3, 3, 1]
