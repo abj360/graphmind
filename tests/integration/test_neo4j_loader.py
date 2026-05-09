@@ -11,6 +11,7 @@ Contains:
     test_stats_count_written_rows
     test_transient_failures_are_retried
     test_persistent_failure_raises_load_error
+    test_self_loop_triples_are_skipped
 """
 
 from typing import Any
@@ -133,3 +134,11 @@ def test_persistent_failure_raises_load_error() -> None:
     except LoadError:
         raised = True
     assert raised
+
+
+def test_self_loop_triples_are_skipped() -> None:
+    """Checks that self-loop triples never reach the relationship query."""
+    loader, driver = make_loader(batch_size=10)
+    loader.write_triples([make_triple("Acme", "owns", "acme")])
+    rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
+    assert rel_queries == []
