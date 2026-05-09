@@ -12,6 +12,7 @@ Contains:
     test_transient_failures_are_retried
     test_persistent_failure_raises_load_error
     test_self_loop_triples_are_skipped
+    test_node_rows_are_deduplicated
 """
 
 from typing import Any
@@ -142,3 +143,11 @@ def test_self_loop_triples_are_skipped() -> None:
     loader.write_triples([make_triple("Acme", "owns", "acme")])
     rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
     assert rel_queries == []
+
+
+def test_node_rows_are_deduplicated() -> None:
+    """Checks that repeated entities produce a single node row."""
+    writer = BatchWriter(batch_size=10)
+    triples = [make_triple(), make_triple("Alice", "joined", "Acme")]
+    rows = writer.node_rows(triples)
+    assert len(rows) == 2
