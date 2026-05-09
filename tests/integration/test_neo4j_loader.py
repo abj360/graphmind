@@ -10,6 +10,11 @@ Contains:
     test_batches_respect_configured_batch_size
     test_stats_count_written_rows
     test_transient_failures_are_retried
+    test_persistent_failure_raises_load_error
+    test_self_loop_triples_are_skipped
+    test_node_rows_are_deduplicated
+    test_relationship_rows_carry_confidence_and_inference
+    test_batched_slices_rows_exactly
 """
 
 from typing import Any
@@ -121,3 +126,45 @@ def test_transient_failures_are_retried() -> None:
     loader, _ = make_loader(failures=1)
     loader.write_triples([make_triple()])
     assert loader.stats.retries == 1
+
+
+def test_persistent_failure_raises_load_error() -> None:
+    """Checks that persistent batch failure surfaces as LoadError."""
+    loader, _ = make_loader(failures=99)
+    try:
+        loader.write_triples([make_triple()])
+        raised = False
+    except LoadError:
+        raised = True
+    assert raised
+
+
+def test_self_loop_triples_are_skipped() -> None:
+    """Checks that self-loop triples never reach the relationship query."""
+    loader, driver = make_loader(batch_size=10)
+    loader.write_triples([make_triple("Acme", "owns", "acme")])
+    rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
+    assert rel_queries == []
+
+
+def test_node_rows_are_deduplicated() -> None:
+    """Checks that repeated entities produce a single node row."""
+    writer = BatchWriter(batch_size=10)
+    triples = [make_triple(), make_triple("Alice", "joined", "Acme")]
+    rows = writer.node_rows(triples)
+    assert len(rows) == 2
+
+
+def test_relationship_rows_carry_confidence_and_inference() -> None:
+    """Checks that relationship rows carry confidence and inferred flags."""
+    writer = BatchWriter(batch_size=10)
+    rows = writer.relationship_rows([make_triple(confidence=0.7)])
+    assert rows[0]["confidence"] == 0.7
+    assert rows[0]["inferred"] is False
+
+
+def test_batched_slices_rows_exactly() -> None:
+    """Checks that batched() slices rows into exact fixed-size groups."""
+    rows = [{"i": i} for i in range(7)]
+    batches = list(batched(rows, 3))
+    assert [len(batch) for batch in batches] == [3, 3, 1]
