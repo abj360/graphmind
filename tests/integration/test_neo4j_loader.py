@@ -10,6 +10,7 @@ Contains:
     test_batches_respect_configured_batch_size
     test_stats_count_written_rows
     test_transient_failures_are_retried
+    test_persistent_failure_raises_load_error
 """
 
 from typing import Any
@@ -121,3 +122,14 @@ def test_transient_failures_are_retried() -> None:
     loader, _ = make_loader(failures=1)
     loader.write_triples([make_triple()])
     assert loader.stats.retries == 1
+
+
+def test_persistent_failure_raises_load_error() -> None:
+    """Checks that persistent batch failure surfaces as LoadError."""
+    loader, _ = make_loader(failures=99)
+    try:
+        loader.write_triples([make_triple()])
+        raised = False
+    except LoadError:
+        raised = True
+    assert raised
