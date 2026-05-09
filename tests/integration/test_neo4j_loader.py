@@ -13,6 +13,7 @@ Contains:
     test_persistent_failure_raises_load_error
     test_self_loop_triples_are_skipped
     test_node_rows_are_deduplicated
+    test_relationship_rows_carry_confidence_and_inference
 """
 
 from typing import Any
@@ -151,3 +152,11 @@ def test_node_rows_are_deduplicated() -> None:
     triples = [make_triple(), make_triple("Alice", "joined", "Acme")]
     rows = writer.node_rows(triples)
     assert len(rows) == 2
+
+
+def test_relationship_rows_carry_confidence_and_inference() -> None:
+    """Checks that relationship rows carry confidence and inferred flags."""
+    writer = BatchWriter(batch_size=10)
+    rows = writer.relationship_rows([make_triple(confidence=0.7)])
+    assert rows[0]["confidence"] == 0.7
+    assert rows[0]["inferred"] is False
