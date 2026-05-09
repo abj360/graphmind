@@ -118,3 +118,16 @@ Crucially, the band between `review_floor` and `threshold` is not
 auto-merged: those pairs go to `MergeReviewQueue` for a human decision
 that lands in the alias table. Fully automatic merging of proper nouns
 is how you end up with two different people collapsed into one node.
+
+## Consequences: costs we accepted
+
+- Five stages means five places to instrument; `ExtractionStats`,
+  `LoadStats`, and the resolution report exist precisely so no stage is
+  a black box.
+- The prompt-as-data split means prompt regressions are config changes,
+  not code changes — including the 2026-05-20 fix where prompts had to
+  start *requiring* source-span citations because the extractor was
+  hallucinating relationships not present in the text. That class of
+  bug is why `require_source_span` exists as a first-class switch.
+- Frozen pydantic models mean more `replace()` calls than mutation;
+  measured overhead is irrelevant next to LLM latency.
