@@ -43,3 +43,33 @@ confirm_destructive() {
         fail "restore wipes current data; re-run with GRAPHMIND_RESTORE_CONFIRM=yes"
     fi
 }
+
+wipe_graph() {
+    log "wiping current graph contents"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH (n) DETACH DELETE n"
+}
+
+replay_dump() {
+    local staging="$1"
+    log "replay is manual for plain-format dumps; see docs for cypher ingestion"
+    cat "${staging}/nodes.txt" "${staging}/relationships.txt" >/dev/null
+}
+
+main() {
+    [ $# -eq 1 ] || usage
+    local archive staging
+    archive="$(resolve_archive "$1")"
+    [ -n "$archive" ] || fail "no archives found in ${BACKUP_DIR}"
+    log "restoring from ${archive}"
+    preflight "$archive"
+    confirm_destructive
+    staging="$(mktemp -d)"
+    trap 'rm -rf "$staging"' EXIT
+    tar -xzf "$archive" -C "$staging"
+    wipe_graph
+    replay_dump "$staging"
+    log "restore complete"
+}
+
+main "$@"
