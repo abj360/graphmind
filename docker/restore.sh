@@ -49,3 +49,9 @@ wipe_graph() {
     cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
         "MATCH (n) DETACH DELETE n"
 }
+
+replay_dump() {
+    local staging="$1"
+    log "replay is manual for plain-format dumps; see docs for cypher ingestion"
+    cat "${staging}/nodes.txt" "${staging}/relationships.txt" >/dev/null
+}
