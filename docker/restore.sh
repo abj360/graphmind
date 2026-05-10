@@ -55,3 +55,21 @@ replay_dump() {
     log "replay is manual for plain-format dumps; see docs for cypher ingestion"
     cat "${staging}/nodes.txt" "${staging}/relationships.txt" >/dev/null
 }
+
+main() {
+    [ $# -eq 1 ] || usage
+    local archive staging
+    archive="$(resolve_archive "$1")"
+    [ -n "$archive" ] || fail "no archives found in ${BACKUP_DIR}"
+    log "restoring from ${archive}"
+    preflight "$archive"
+    confirm_destructive
+    staging="$(mktemp -d)"
+    trap 'rm -rf "$staging"' EXIT
+    tar -xzf "$archive" -C "$staging"
+    wipe_graph
+    replay_dump "$staging"
+    log "restore complete"
+}
+
+main "$@"
