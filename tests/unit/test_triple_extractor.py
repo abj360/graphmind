@@ -13,6 +13,7 @@ Contains:
     test_raises_after_exhausting_retries
     test_confidence_from_payload_is_clamped
     test_min_confidence_floor_drops_weak_triples
+    test_calibrate_confidence_discounts_missing_span
 """
 
 import json
@@ -147,3 +148,9 @@ def test_min_confidence_floor_drops_weak_triples() -> None:
     triples = extractor.extract_text("doc-1", "text")
     assert len(triples) == 1
     assert extractor.stats.dropped_low_confidence == 1
+
+
+def test_calibrate_confidence_discounts_missing_span() -> None:
+    """Checks that calibration discounts scores lacking a citation."""
+    assert calibrate_confidence(1.0, has_span=False) == 0.8
+    assert calibrate_confidence(0.5, has_span=True) == 0.5
