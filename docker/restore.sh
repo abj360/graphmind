@@ -43,3 +43,9 @@ confirm_destructive() {
         fail "restore wipes current data; re-run with GRAPHMIND_RESTORE_CONFIRM=yes"
     fi
 }
+
+wipe_graph() {
+    log "wiping current graph contents"
+    cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
+        "MATCH (n) DETACH DELETE n"
+}
