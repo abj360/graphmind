@@ -22,6 +22,10 @@ Contains:
     validate_domain(): rejects unsupported domain keys
     list_available_domains(): reports registered domain keys
     select_examples(): chooses worked examples for a config
+    summarize_template(): one-line description of the template set
+    TEMPLATE_VERSION: semantic version of the prompt set
+    CITATION_REQUIREMENT: mandatory source-span citation block
+    CITATION_FEW_SHOT_EXAMPLE: worked example with citations
 """
 
 from typing import TYPE_CHECKING
@@ -238,3 +242,39 @@ def select_examples(config: "PromptConfig") -> list[dict[str, object]]:
     matching = [ex for ex in FEW_SHOT_EXAMPLES if ex["domain"] == config.domain]
     pool = matching or FEW_SHOT_EXAMPLES
     return pool[: max(0, config.few_shot_count)]
+
+
+def summarize_template() -> str:
+    """Describes the active template set in one log-friendly line.
+
+    Returns:
+        summary: Count of rules, examples, and domains in the template set.
+    """
+    return (
+        f"rules={len(EXTRACTION_RULES)} examples={len(FEW_SHOT_EXAMPLES)} "
+        f"domains={len(DOMAIN_HINTS)}"
+    )
+
+
+TEMPLATE_VERSION = "1.3.0"
+
+CITATION_REQUIREMENT = (
+    "For every triple you emit, you must also emit a source_span object "
+    "with start and end character offsets and the verbatim text of the "
+    "passage that states the relationship. If you cannot point to the exact "
+    "passage, do not emit the triple."
+)
+
+CITATION_FEW_SHOT_EXAMPLE: dict[str, object] = {
+    "domain": "technical",
+    "input": "Kafka Connect ships with RabbitMQ.",
+    "output": [
+        {
+            "subject": {"name": "Kafka Connect", "entity_type": "SOFTWARE"},
+            "predicate": "ships with",
+            "object": {"name": "RabbitMQ", "entity_type": "SOFTWARE"},
+            "confidence": 0.95,
+            "source_span": {"start": 0, "end": 35, "text": "Kafka Connect ships with RabbitMQ."},
+        }
+    ],
+}
