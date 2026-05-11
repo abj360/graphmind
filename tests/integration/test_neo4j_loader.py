@@ -18,6 +18,7 @@ Contains:
     test_count_batches_rounds_up
     test_batch_writer_rejects_zero_batch_size
     test_estimate_write_seconds_scales_with_batches
+    test_close_marks_driver_closed
 """
 
 from typing import Any
@@ -192,3 +193,10 @@ def test_batch_writer_rejects_zero_batch_size() -> None:
 def test_estimate_write_seconds_scales_with_batches() -> None:
     """Checks that the write estimate scales linearly with batches."""
     assert estimate_write_seconds(10, 5, 0.1) == estimate_write_seconds(5, 5, 0.1) * 2
+
+
+def test_close_marks_driver_closed() -> None:
+    """Checks that closing the loader closes the driver."""
+    loader, driver = make_loader()
+    loader.close()
+    assert driver.closed
