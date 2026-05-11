@@ -9,6 +9,7 @@
  *  *   toNumber(): unwraps neo4j integer values
  *  *   buildMetricsPayload(): shapes the dashboard payload
  *  *   metricsRouter(): serves the metrics endpoint
+ *  *   EMPTY_PAYLOAD: response when the graph is empty
  */
 
 import { Router } from "express";
@@ -98,4 +99,23 @@ export function metricsRouter(driver, config) {
   });
 
   return router;
+}
+
+const EMPTY_PAYLOAD = {
+  nodes: { total: 0, types: [] },
+  edges: { total: 0, distinctPredicates: 0, meanConfidence: null },
+  duplicates: { clusters: 0, examples: [] },
+};
+
+/**
+ * Guards the metrics payload against an empty graph.
+ *
+ * @param payload - Payload produced by buildMetricsPayload().
+ * @returns payload - The payload, or EMPTY_PAYLOAD-shaped totals.
+ */
+export function withEmptyGuard(payload) {
+  if (payload.nodes.total === 0 && payload.edges.total === 0) {
+    return { ...EMPTY_PAYLOAD, duplicates: payload.duplicates };
+  }
+  return payload;
 }
