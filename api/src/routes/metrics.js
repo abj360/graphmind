@@ -7,6 +7,7 @@
  *  *   EDGE_STATS_QUERY: edge counts and predicate spread
  *  *   DUPLICATE_CANDIDATES_QUERY: same-name entity clusters
  *  *   toNumber(): unwraps neo4j integer values
+ *  *   buildMetricsPayload(): shapes the dashboard payload
  */
 
 import { Router } from "express";
@@ -43,4 +44,31 @@ function toNumber(value) {
     return 0;
   }
   return typeof value.toNumber === "function" ? value.toNumber() : Number(value);
+}
+
+/**
+ * Shapes raw query results into the dashboard metrics payload.
+ *
+ * @param nodeRecord - Record from NODE_STATS_QUERY.
+ * @param edgeRecord - Record from EDGE_STATS_QUERY.
+ * @param duplicateRecords - Records from DUPLICATE_CANDIDATES_QUERY.
+ * @returns payload - Metrics JSON served to the dashboard.
+ */
+export function buildMetricsPayload(nodeRecord, edgeRecord, duplicateRecords) {
+  const duplicates = duplicateRecords.map((record) => ({
+    folded: record.get("folded"),
+    variants: record.get("variants"),
+  }));
+  return {
+    nodes: { total: toNumber(nodeRecord?.get("total")), types: nodeRecord?.get("types") ?? [] },
+    edges: {
+      total: toNumber(edgeRecord?.get("total")),
+      distinctPredicates: toNumber(edgeRecord?.get("predicates")),
+      meanConfidence: edgeRecord?.get("meanConfidence") ?? null,
+    },
+    duplicates: {
+      clusters: duplicates.length,
+      examples: duplicates.slice(0, 10),
+    },
+  };
 }
