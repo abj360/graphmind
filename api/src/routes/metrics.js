@@ -8,6 +8,7 @@
  *  *   DUPLICATE_CANDIDATES_QUERY: same-name entity clusters
  *  *   toNumber(): unwraps neo4j integer values
  *  *   buildMetricsPayload(): shapes the dashboard payload
+ *  *   metricsRouter(): serves the metrics endpoint
  */
 
 import { Router } from "express";
@@ -71,4 +72,30 @@ export function buildMetricsPayload(nodeRecord, edgeRecord, duplicateRecords) {
       examples: duplicates.slice(0, 10),
     },
   };
+}
+
+/**
+ * Builds the router serving dedup metrics to the dashboard.
+ *
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ * @returns router - Express router with the metrics endpoint mounted.
+ */
+export function metricsRouter(driver, config) {
+  const router = Router();
+
+  router.get("/metrics/dedup", async (_request, response, next) => {
+    try {
+      const [nodeRecords, edgeRecords, duplicateRecords] = await Promise.all([
+        runQuery(driver, NODE_STATS_QUERY, {}, config.neo4jDatabase),
+        runQuery(driver, EDGE_STATS_QUERY, {}, config.neo4jDatabase),
+        runQuery(driver, DUPLICATE_CANDIDATES_QUERY, {}, config.neo4jDatabase),
+      ]);
+      response.json(buildMetricsPayload(nodeRecords[0], edgeRecords[0], duplicateRecords));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return router;
 }
