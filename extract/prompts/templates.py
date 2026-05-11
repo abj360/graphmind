@@ -24,6 +24,7 @@ Contains:
     select_examples(): chooses worked examples for a config
     summarize_template(): one-line description of the template set
     TEMPLATE_VERSION: semantic version of the prompt set
+    CITATION_REQUIREMENT: mandatory source-span citation block
 """
 
 from typing import TYPE_CHECKING
@@ -255,3 +256,10 @@ def summarize_template() -> str:
 
 
 TEMPLATE_VERSION = "1.3.0"
+
+CITATION_REQUIREMENT = (
+    "For every triple you emit, you must also emit a source_span object "
+    "with start and end character offsets and the verbatim text of the "
+    "passage that states the relationship. If you cannot point to the exact "
+    "passage, do not emit the triple."
+)
