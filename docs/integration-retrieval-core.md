@@ -253,3 +253,17 @@ expansion cost stops paying for itself.
    and an inferred `associated with` edge to `graph viewer`.
 3. The inferred edge is excluded from the headline answer but listed
    under "possibly related" — the hedge is the feature.
+
+## Freshness expectations
+
+The CDC poller keeps the graph within one polling interval of the
+corpus (default 5s) plus extraction latency (seconds per changed
+document). retrieval-core should therefore assume:
+
+- New documents are queryable in the graph within roughly a minute.
+- Deleted documents' edges disappear on the same schedule.
+- A full rebuild (disaster recovery) takes under 3 minutes on the
+  reference corpus via the upsert-only path.
+
+If retrieval-core observes graph answers contradicting freshly ingested
+documents, check the CDC state file before assuming an extraction bug.
