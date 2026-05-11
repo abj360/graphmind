@@ -25,6 +25,7 @@ Contains:
     summarize_template(): one-line description of the template set
     TEMPLATE_VERSION: semantic version of the prompt set
     CITATION_REQUIREMENT: mandatory source-span citation block
+    CITATION_FEW_SHOT_EXAMPLE: worked example with citations
 """
 
 from typing import TYPE_CHECKING
@@ -263,3 +264,17 @@ CITATION_REQUIREMENT = (
     "passage that states the relationship. If you cannot point to the exact "
     "passage, do not emit the triple."
 )
+
+CITATION_FEW_SHOT_EXAMPLE: dict[str, object] = {
+    "domain": "technical",
+    "input": "Kafka Connect ships with RabbitMQ.",
+    "output": [
+        {
+            "subject": {"name": "Kafka Connect", "entity_type": "SOFTWARE"},
+            "predicate": "ships with",
+            "object": {"name": "RabbitMQ", "entity_type": "SOFTWARE"},
+            "confidence": 0.95,
+            "source_span": {"start": 0, "end": 35, "text": "Kafka Connect ships with RabbitMQ."},
+        }
+    ],
+}
