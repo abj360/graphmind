@@ -16,6 +16,7 @@ Contains:
     test_relationship_rows_carry_confidence_and_inference
     test_batched_slices_rows_exactly
     test_count_batches_rounds_up
+    test_batch_writer_rejects_zero_batch_size
 """
 
 from typing import Any
@@ -175,3 +176,13 @@ def test_count_batches_rounds_up() -> None:
     """Checks that batch counting rounds up partial batches."""
     assert count_batches(7, 3) == 3
     assert count_batches(0, 3) == 0
+
+
+def test_batch_writer_rejects_zero_batch_size() -> None:
+    """Checks that a zero batch size is rejected at construction."""
+    try:
+        BatchWriter(batch_size=0)
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised
