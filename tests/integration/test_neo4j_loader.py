@@ -15,6 +15,10 @@ Contains:
     test_node_rows_are_deduplicated
     test_relationship_rows_carry_confidence_and_inference
     test_batched_slices_rows_exactly
+    test_count_batches_rounds_up
+    test_batch_writer_rejects_zero_batch_size
+    test_estimate_write_seconds_scales_with_batches
+    test_close_marks_driver_closed
 """
 
 from typing import Any
@@ -168,3 +172,31 @@ def test_batched_slices_rows_exactly() -> None:
     rows = [{"i": i} for i in range(7)]
     batches = list(batched(rows, 3))
     assert [len(batch) for batch in batches] == [3, 3, 1]
+
+
+def test_count_batches_rounds_up() -> None:
+    """Checks that batch counting rounds up partial batches."""
+    assert count_batches(7, 3) == 3
+    assert count_batches(0, 3) == 0
+
+
+def test_batch_writer_rejects_zero_batch_size() -> None:
+    """Checks that a zero batch size is rejected at construction."""
+    try:
+        BatchWriter(batch_size=0)
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised
+
+
+def test_estimate_write_seconds_scales_with_batches() -> None:
+    """Checks that the write estimate scales linearly with batches."""
+    assert estimate_write_seconds(10, 5, 0.1) == estimate_write_seconds(5, 5, 0.1) * 2
+
+
+def test_close_marks_driver_closed() -> None:
+    """Checks that closing the loader closes the driver."""
+    loader, driver = make_loader()
+    loader.close()
+    assert driver.closed
