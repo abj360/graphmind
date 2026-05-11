@@ -15,6 +15,7 @@ Contains:
     test_node_rows_are_deduplicated
     test_relationship_rows_carry_confidence_and_inference
     test_batched_slices_rows_exactly
+    test_count_batches_rounds_up
 """
 
 from typing import Any
@@ -168,3 +169,9 @@ def test_batched_slices_rows_exactly() -> None:
     rows = [{"i": i} for i in range(7)]
     batches = list(batched(rows, 3))
     assert [len(batch) for batch in batches] == [3, 3, 1]
+
+
+def test_count_batches_rounds_up() -> None:
+    """Checks that batch counting rounds up partial batches."""
+    assert count_batches(7, 3) == 3
+    assert count_batches(0, 3) == 0
