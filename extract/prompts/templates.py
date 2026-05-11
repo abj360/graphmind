@@ -22,6 +22,7 @@ Contains:
     validate_domain(): rejects unsupported domain keys
     list_available_domains(): reports registered domain keys
     select_examples(): chooses worked examples for a config
+    summarize_template(): one-line description of the template set
 """
 
 from typing import TYPE_CHECKING
@@ -238,3 +239,15 @@ def select_examples(config: "PromptConfig") -> list[dict[str, object]]:
     matching = [ex for ex in FEW_SHOT_EXAMPLES if ex["domain"] == config.domain]
     pool = matching or FEW_SHOT_EXAMPLES
     return pool[: max(0, config.few_shot_count)]
+
+
+def summarize_template() -> str:
+    """Describes the active template set in one log-friendly line.
+
+    Returns:
+        summary: Count of rules, examples, and domains in the template set.
+    """
+    return (
+        f"rules={len(EXTRACTION_RULES)} examples={len(FEW_SHOT_EXAMPLES)} "
+        f"domains={len(DOMAIN_HINTS)}"
+    )
