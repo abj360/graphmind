@@ -314,3 +314,9 @@ button {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   z-index: 1;
 }
+
+.app-canvas {
+  background:
+    radial-gradient(circle at 1px 1px, #1c2940 1px, transparent 0) 0 0 / 24px 24px,
+    #0f1620;
+}
