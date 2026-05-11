@@ -23,6 +23,7 @@ Contains:
     list_available_domains(): reports registered domain keys
     select_examples(): chooses worked examples for a config
     summarize_template(): one-line description of the template set
+    TEMPLATE_VERSION: semantic version of the prompt set
 """
 
 from typing import TYPE_CHECKING
@@ -251,3 +252,6 @@ def summarize_template() -> str:
         f"rules={len(EXTRACTION_RULES)} examples={len(FEW_SHOT_EXAMPLES)} "
         f"domains={len(DOMAIN_HINTS)}"
     )
+
+
+TEMPLATE_VERSION = "1.3.0"
