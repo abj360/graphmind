@@ -10,6 +10,7 @@ Contains:
     test_chunks_cover_the_whole_document
     test_overlap_carries_trailing_context
     test_sentence_spans_finds_boundaries
+    test_chunk_many_preserves_document_order
 """
 
 import pytest
@@ -70,3 +71,9 @@ def test_sentence_spans_finds_boundaries() -> None:
     """Checks that sentence segmentation finds period boundaries."""
     spans = sentence_spans("One. Two! Three?")
     assert len(spans) == 3
+
+
+def test_chunk_many_preserves_document_order() -> None:
+    """Checks that chunk_many concatenates documents in input order."""
+    chunks = TextChunker().chunk_many([("a", "Alpha text."), ("b", "Beta text.")])
+    assert [chunk.doc_id for chunk in chunks] == ["a", "b"]
