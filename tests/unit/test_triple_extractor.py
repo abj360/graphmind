@@ -15,6 +15,7 @@ Contains:
     test_min_confidence_floor_drops_weak_triples
     test_calibrate_confidence_discounts_missing_span
     test_merge_extraction_stats_accumulates
+    test_require_source_span_drops_uncited_triples
 """
 
 import json
@@ -165,3 +166,11 @@ def test_merge_extraction_stats_accumulates() -> None:
     assert target.calls_made == 4
     assert target.triples_extracted == 2
     assert target.dropped_low_confidence == 4
+
+
+def test_require_source_span_drops_uncited_triples() -> None:
+    """Checks that require_source_span drops triples without citations."""
+    extractor = make_extractor(PAYLOAD, require_source_span=True)
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert triples == []
+    assert extractor.stats.dropped_missing_span == 1
