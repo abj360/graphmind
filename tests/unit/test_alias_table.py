@@ -10,6 +10,7 @@ Contains:
     test_self_alias_is_not_registered
     test_merge_remaps_aliases_to_survivor
     test_merge_same_canonical_is_noop
+    test_save_and_load_alias_table
 """
 
 import pytest
@@ -84,3 +85,12 @@ def test_merge_same_canonical_is_noop() -> None:
     table.add("Acme", "ACME Corp")
     table.merge("Acme", "acme")
     assert table.canonical_for("acme corp") == "acme"
+
+
+def test_save_and_load_alias_table(tmp_path) -> None:
+    """Checks that JSON persistence round-trips the table."""
+    path = tmp_path / "aliases.json"
+    table = AliasTable()
+    table.add("Acme", "ACME Corp")
+    save_alias_table(table, path)
+    assert load_alias_table(path).canonical_for("acme corp") == "acme"
