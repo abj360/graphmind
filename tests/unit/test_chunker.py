@@ -11,6 +11,7 @@ Contains:
     test_overlap_carries_trailing_context
     test_sentence_spans_finds_boundaries
     test_chunk_many_preserves_document_order
+    test_validate_config_rejects_overlap_above_max
 """
 
 import pytest
@@ -77,3 +78,9 @@ def test_chunk_many_preserves_document_order() -> None:
     """Checks that chunk_many concatenates documents in input order."""
     chunks = TextChunker().chunk_many([("a", "Alpha text."), ("b", "Beta text.")])
     assert [chunk.doc_id for chunk in chunks] == ["a", "b"]
+
+
+def test_validate_config_rejects_overlap_above_max() -> None:
+    """Checks that overlap larger than max_chars is rejected."""
+    with pytest.raises(ValueError):
+        validate_config(ChunkConfig(max_chars=100, overlap_chars=100))
