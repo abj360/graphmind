@@ -9,6 +9,10 @@ Contains:
     test_long_text_is_split_under_ceiling
     test_chunks_cover_the_whole_document
     test_overlap_carries_trailing_context
+    test_sentence_spans_finds_boundaries
+    test_chunk_many_preserves_document_order
+    test_validate_config_rejects_overlap_above_max
+    test_from_env_reads_overrides
 """
 
 import pytest
@@ -63,3 +67,27 @@ def test_overlap_carries_trailing_context() -> None:
     chunks = TextChunker(config).chunk("doc-1", LOREM)
     assert len(chunks) > 1
     assert chunks[1].start < chunks[0].end
+
+
+def test_sentence_spans_finds_boundaries() -> None:
+    """Checks that sentence segmentation finds period boundaries."""
+    spans = sentence_spans("One. Two! Three?")
+    assert len(spans) == 3
+
+
+def test_chunk_many_preserves_document_order() -> None:
+    """Checks that chunk_many concatenates documents in input order."""
+    chunks = TextChunker().chunk_many([("a", "Alpha text."), ("b", "Beta text.")])
+    assert [chunk.doc_id for chunk in chunks] == ["a", "b"]
+
+
+def test_validate_config_rejects_overlap_above_max() -> None:
+    """Checks that overlap larger than max_chars is rejected."""
+    with pytest.raises(ValueError):
+        validate_config(ChunkConfig(max_chars=100, overlap_chars=100))
+
+
+def test_from_env_reads_overrides() -> None:
+    """Checks that environment overrides reach the chunker config."""
+    chunker = TextChunker.from_env({"GRAPHMIND_CHUNK_MAX_CHARS": "500"})
+    assert chunker.config.max_chars == 500
