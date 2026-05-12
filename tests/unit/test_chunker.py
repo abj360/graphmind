@@ -9,6 +9,7 @@ Contains:
     test_long_text_is_split_under_ceiling
     test_chunks_cover_the_whole_document
     test_overlap_carries_trailing_context
+    test_sentence_spans_finds_boundaries
 """
 
 import pytest
@@ -63,3 +64,9 @@ def test_overlap_carries_trailing_context() -> None:
     chunks = TextChunker(config).chunk("doc-1", LOREM)
     assert len(chunks) > 1
     assert chunks[1].start < chunks[0].end
+
+
+def test_sentence_spans_finds_boundaries() -> None:
+    """Checks that sentence segmentation finds period boundaries."""
+    spans = sentence_spans("One. Two! Three?")
+    assert len(spans) == 3
