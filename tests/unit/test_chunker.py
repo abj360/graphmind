@@ -12,6 +12,7 @@ Contains:
     test_sentence_spans_finds_boundaries
     test_chunk_many_preserves_document_order
     test_validate_config_rejects_overlap_above_max
+    test_from_env_reads_overrides
 """
 
 import pytest
@@ -84,3 +85,9 @@ def test_validate_config_rejects_overlap_above_max() -> None:
     """Checks that overlap larger than max_chars is rejected."""
     with pytest.raises(ValueError):
         validate_config(ChunkConfig(max_chars=100, overlap_chars=100))
+
+
+def test_from_env_reads_overrides() -> None:
+    """Checks that environment overrides reach the chunker config."""
+    chunker = TextChunker.from_env({"GRAPHMIND_CHUNK_MAX_CHARS": "500"})
+    assert chunker.config.max_chars == 500
