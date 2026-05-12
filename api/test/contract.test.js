@@ -18,6 +18,8 @@
  *  *   test: graphml export sets a download filename
  *  *   test: graph endpoint surfaces driver failure as 500
  *  *   test: graph edges carry confidence and inferred flags
+ *  *   test: malformed limit falls back to default
+ *  *   test: node endpoint returns a neighborhood
  */
 
 import assert from "node:assert/strict";
@@ -174,4 +176,20 @@ test("graph edges carry confidence and inferred flags", async () => {
   const response = await request(app).get("/api/graph");
   assert.equal(response.body.edges[0].confidence, 0.7);
   assert.equal(response.body.edges[0].inferred, false);
+});
+
+test("a malformed limit falls back to the default", async () => {
+  const { app, driver } = await makeApp({ "MATCH (n:Entity)": [] });
+  await request(app).get("/api/graph?limit=abc");
+  const call = driver.calls.find((entry) => entry.params.limit);
+  assert.equal(call.params.limit, 500);
+});
+
+test("GET /api/graph/node/:name returns the node neighborhood", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity {name: $name})": [fakeRecord("Acme", "acquired", "ByteWorks")],
+  });
+  const response = await request(app).get("/api/graph/node/Acme");
+  assert.equal(response.status, 200);
+  assert.equal(response.body.nodes.length, 2);
 });
