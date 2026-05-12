@@ -19,6 +19,7 @@
  *  *   test: graph endpoint surfaces driver failure as 500
  *  *   test: graph edges carry confidence and inferred flags
  *  *   test: malformed limit falls back to default
+ *  *   test: node endpoint returns a neighborhood
  */
 
 import assert from "node:assert/strict";
@@ -182,4 +183,13 @@ test("a malformed limit falls back to the default", async () => {
   await request(app).get("/api/graph?limit=abc");
   const call = driver.calls.find((entry) => entry.params.limit);
   assert.equal(call.params.limit, 500);
+});
+
+test("GET /api/graph/node/:name returns the node neighborhood", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity {name: $name})": [fakeRecord("Acme", "acquired", "ByteWorks")],
+  });
+  const response = await request(app).get("/api/graph/node/Acme");
+  assert.equal(response.status, 200);
+  assert.equal(response.body.nodes.length, 2);
 });
