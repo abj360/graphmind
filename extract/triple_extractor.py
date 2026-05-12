@@ -35,6 +35,8 @@ Contains:
     build_extractor_from_env(): wires a production extractor
     format_stats_summary(): one-line stats rendering
     build_arg_parser(): CLI argument parser for extraction
+    main(): CLI entrypoint for the extraction pass
+    module entrypoint guard
 """
 
 import json
@@ -566,3 +568,36 @@ def build_arg_parser() -> "argparse.ArgumentParser":
     parser.add_argument("--out", default="out/triples.jsonl", help="output JSONL path")
     parser.add_argument("--batch-size", type=int, default=8, help="chunks per batch")
     return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Runs the extraction CLI over a corpus directory.
+
+    Args:
+        argv: Command-line arguments; sys.argv when omitted.
+
+    Returns:
+        exit_code: 0 on success, nonzero on failure.
+    """
+    import json
+    import os
+    from pathlib import Path
+
+    args = build_arg_parser().parse_args(argv)
+    corpus = Path(args.corpus)
+    documents = [
+        (path.name, path.read_text(encoding="utf-8")) for path in sorted(corpus.glob("**/*.txt"))
+    ]
+    extractor = build_extractor_from_env(dict(os.environ))
+    triples = extractor.extract_batch(documents)
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as handle:
+        for triple in triples:
+            handle.write(json.dumps(triple.model_dump()) + "\n")
+    logger.info("wrote %d triples to %s", len(triples), out_path)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

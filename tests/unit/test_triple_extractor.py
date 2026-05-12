@@ -14,6 +14,8 @@ Contains:
     test_confidence_from_payload_is_clamped
     test_min_confidence_floor_drops_weak_triples
     test_calibrate_confidence_discounts_missing_span
+    test_merge_extraction_stats_accumulates
+    test_require_source_span_drops_uncited_triples
 """
 
 import json
@@ -154,3 +156,21 @@ def test_calibrate_confidence_discounts_missing_span() -> None:
     """Checks that calibration discounts scores lacking a citation."""
     assert calibrate_confidence(1.0, has_span=False) == 0.8
     assert calibrate_confidence(0.5, has_span=True) == 0.5
+
+
+def test_merge_extraction_stats_accumulates() -> None:
+    """Checks that stats merging sums every counter."""
+    target = ExtractionStats(calls_made=1, triples_extracted=2)
+    source = ExtractionStats(calls_made=3, dropped_low_confidence=4)
+    merge_extraction_stats(target, source)
+    assert target.calls_made == 4
+    assert target.triples_extracted == 2
+    assert target.dropped_low_confidence == 4
+
+
+def test_require_source_span_drops_uncited_triples() -> None:
+    """Checks that require_source_span drops triples without citations."""
+    extractor = make_extractor(PAYLOAD, require_source_span=True)
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert triples == []
+    assert extractor.stats.dropped_missing_span == 1
