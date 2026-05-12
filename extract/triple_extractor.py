@@ -36,6 +36,7 @@ Contains:
     format_stats_summary(): one-line stats rendering
     build_arg_parser(): CLI argument parser for extraction
     main(): CLI entrypoint for the extraction pass
+    module entrypoint guard
 """
 
 import json
@@ -596,3 +597,7 @@ def main(argv: list[str] | None = None) -> int:
             handle.write(json.dumps(triple.model_dump()) + "\n")
     logger.info("wrote %d triples to %s", len(triples), out_path)
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
