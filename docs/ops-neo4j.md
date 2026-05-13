@@ -98,3 +98,10 @@ If any of those three goes quiet, that is the alert.
 - Running backup.sh against the browser port's database container
   without cypher-shell installed: the script checks for it and fails
   fast; install the tools image or use the compose sidecar.
+
+## Data hygiene
+
+The graph is derived state — the corpus is the system of record. That
+means: never hand-edit production nodes, never let a one-off script
+write without provenance, and treat any edge without `source_doc_id`
+as a bug to file, not a fact to keep.
