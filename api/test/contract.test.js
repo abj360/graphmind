@@ -21,6 +21,7 @@
  *  *   test: malformed limit falls back to default
  *  *   test: node endpoint returns a neighborhood
  *  *   test: node endpoint 404s on unknown entities
+ *  *   test: hubs endpoint lists degrees
  */
 
 import assert from "node:assert/strict";
@@ -199,4 +200,14 @@ test("GET /api/graph/node/:name 404s on unknown entities", async () => {
   const { app } = await makeApp({ "MATCH (n:Entity {name: $name})": [] });
   const response = await request(app).get("/api/graph/node/ghost");
   assert.equal(response.status, 404);
+});
+
+test("GET /api/metrics/hubs lists entities by degree", async () => {
+  const { app } = await makeApp({
+    "RETURN n.name AS name, count(r) AS degree": [
+      { get: (key) => (key === "name" ? "Acme" : { toNumber: () => 6 }) },
+    ],
+  });
+  const response = await request(app).get("/api/metrics/hubs");
+  assert.deepEqual(response.body, [{ name: "Acme", degree: 6 }]);
 });
