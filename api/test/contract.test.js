@@ -20,6 +20,7 @@
  *  *   test: graph edges carry confidence and inferred flags
  *  *   test: malformed limit falls back to default
  *  *   test: node endpoint returns a neighborhood
+ *  *   test: node endpoint 404s on unknown entities
  */
 
 import assert from "node:assert/strict";
@@ -192,4 +193,10 @@ test("GET /api/graph/node/:name returns the node neighborhood", async () => {
   const response = await request(app).get("/api/graph/node/Acme");
   assert.equal(response.status, 200);
   assert.equal(response.body.nodes.length, 2);
+});
+
+test("GET /api/graph/node/:name 404s on unknown entities", async () => {
+  const { app } = await makeApp({ "MATCH (n:Entity {name: $name})": [] });
+  const response = await request(app).get("/api/graph/node/ghost");
+  assert.equal(response.status, 404);
 });
