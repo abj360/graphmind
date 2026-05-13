@@ -105,3 +105,16 @@ The graph is derived state — the corpus is the system of record. That
 means: never hand-edit production nodes, never let a one-off script
 write without provenance, and treat any edge without `source_doc_id`
 as a bug to file, not a fact to keep.
+
+## Useful queries
+
+```cypher
+// degree distribution sanity check
+MATCH (n:Entity)-[r:RELATED]-()
+RETURN n.name, count(r) AS degree ORDER BY degree DESC LIMIT 15
+
+// edges added today
+MATCH ()-[r:RELATED]->()
+WHERE r.source_doc_id STARTS WITH 'docs/'
+RETURN count(r)
+```
