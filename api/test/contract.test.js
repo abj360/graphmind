@@ -22,6 +22,7 @@
  *  *   test: node endpoint returns a neighborhood
  *  *   test: node endpoint 404s on unknown entities
  *  *   test: hubs endpoint lists degrees
+ *  *   test: metrics payload uses the canned helper
  */
 
 import assert from "node:assert/strict";
@@ -210,4 +211,12 @@ test("GET /api/metrics/hubs lists entities by degree", async () => {
   });
   const response = await request(app).get("/api/metrics/hubs");
   assert.deepEqual(response.body, [{ name: "Acme", degree: 6 }]);
+});
+
+test("GET /api/metrics/dedup works with the shared canned records", async () => {
+  const { metricsRecords } = await import("./helpers.js");
+  const { app } = await makeApp(metricsRecords());
+  const response = await request(app).get("/api/metrics/dedup");
+  assert.equal(response.body.nodes.total, 7);
+  assert.equal(response.body.edges.meanConfidence, 0.77);
 });
