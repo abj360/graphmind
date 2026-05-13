@@ -28,3 +28,11 @@ verbatim source span per triple and drops any triple that lacks one.
 This is the single most effective anti-hallucination knob we have (see
 the 2026-05-20 incident), at the cost of dropping some legitimate
 triples from models that cannot count offsets reliably.
+
+## Model choice
+
+`GRAPHMIND_EXTRACT_MODEL` defaults to a small, cheap model. Extraction
+is structured-output work: what matters is JSON reliability and
+instruction following, not creativity. A bigger model buys a couple of
+points of recall at several times the cost; spend it only after the
+prompt itself is no longer the bottleneck (it usually is).
