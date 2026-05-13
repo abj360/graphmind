@@ -17,6 +17,7 @@
  *  *   layoutForSize(): picks a layout by graph size
  *  *   clampZoom(): bounds the zoom level for readability
  *  *   edgeTooltipFor(): full tooltip text for one edge
+ *  *   mergeDuplicatePredicates(): joins predicate labels on parallels
  */
 
 import cytoscape from "cytoscape";
@@ -259,4 +260,18 @@ export function edgeTooltipFor(edge) {
     parts.push("inferred");
   }
   return parts.join(" · ");
+}
+
+/**
+ * Joins duplicate predicate labels within a parallel edge group.
+ *
+ * @param edges - Edges in one parallel group.
+ * @returns label - Comma-joined distinct predicate label.
+ */
+export function mergeDuplicatePredicates(edges) {
+  const seen = new Set();
+  for (const edge of edges) {
+    seen.add(edge.predicate);
+  }
+  return [...seen].join(", ");
 }
