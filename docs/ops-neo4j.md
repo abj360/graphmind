@@ -77,3 +77,14 @@ still bounded by batch size, not by RAM. For anything above a few
 hundred thousand relationships in one file, raise
 `GRAPHMIND_LOAD_BATCH_SIZE` to 1000 and watch the batch latency in the
 loader logs.
+
+## Monitoring
+
+There is no separate metrics stack here by design — the signals that
+matter are already visible:
+
+- loader logs (batch counts, retries, durations),
+- the viewer's dedup metrics dashboard,
+- backup job exit codes in cron.
+
+If any of those three goes quiet, that is the alert.
