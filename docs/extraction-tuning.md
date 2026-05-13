@@ -20,3 +20,11 @@ drops triples below a score at parse time. Model-reported confidence is
 calibrated loosely at best; treat the floor as a noise gate, not a
 truth filter. Start at 0.3 for noisy corpora and watch
 `dropped_low_confidence` in the extraction stats before going higher.
+
+## Citation requirement
+
+`GRAPHMIND_EXTRACT_REQUIRE_SPAN=true` makes the prompt demand a
+verbatim source span per triple and drops any triple that lacks one.
+This is the single most effective anti-hallucination knob we have (see
+the 2026-05-20 incident), at the cost of dropping some legitimate
+triples from models that cannot count offsets reliably.
