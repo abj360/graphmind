@@ -88,3 +88,13 @@ matter are already visible:
 - backup job exit codes in cron.
 
 If any of those three goes quiet, that is the alert.
+
+## Common mistakes
+
+- Pointing the loader at 7474 instead of 7687: bolt only, always.
+- Deleting nodes to "clean up": delete edges by `source_doc_id` and let
+  orphan nodes age out naturally — the resolver may still reference
+  them.
+- Running backup.sh against the browser port's database container
+  without cypher-shell installed: the script checks for it and fails
+  fast; install the tools image or use the compose sidecar.
