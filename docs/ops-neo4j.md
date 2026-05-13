@@ -77,3 +77,44 @@ still bounded by batch size, not by RAM. For anything above a few
 hundred thousand relationships in one file, raise
 `GRAPHMIND_LOAD_BATCH_SIZE` to 1000 and watch the batch latency in the
 loader logs.
+
+## Monitoring
+
+There is no separate metrics stack here by design — the signals that
+matter are already visible:
+
+- loader logs (batch counts, retries, durations),
+- the viewer's dedup metrics dashboard,
+- backup job exit codes in cron.
+
+If any of those three goes quiet, that is the alert.
+
+## Common mistakes
+
+- Pointing the loader at 7474 instead of 7687: bolt only, always.
+- Deleting nodes to "clean up": delete edges by `source_doc_id` and let
+  orphan nodes age out naturally — the resolver may still reference
+  them.
+- Running backup.sh against the browser port's database container
+  without cypher-shell installed: the script checks for it and fails
+  fast; install the tools image or use the compose sidecar.
+
+## Data hygiene
+
+The graph is derived state — the corpus is the system of record. That
+means: never hand-edit production nodes, never let a one-off script
+write without provenance, and treat any edge without `source_doc_id`
+as a bug to file, not a fact to keep.
+
+## Useful queries
+
+```cypher
+// degree distribution sanity check
+MATCH (n:Entity)-[r:RELATED]-()
+RETURN n.name, count(r) AS degree ORDER BY degree DESC LIMIT 15
+
+// edges added today
+MATCH ()-[r:RELATED]->()
+WHERE r.source_doc_id STARTS WITH 'docs/'
+RETURN count(r)
+```
