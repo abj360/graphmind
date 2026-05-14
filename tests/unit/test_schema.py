@@ -9,6 +9,7 @@ Contains:
     test_validate_triples_strict_raises_with_details
     test_source_span_requires_end_after_start
     test_dedupe_triples_keeps_highest_confidence
+    test_clamp_confidence_bounds_scores
 """
 
 import pytest
@@ -85,3 +86,10 @@ def test_dedupe_triples_keeps_highest_confidence() -> None:
     deduped = dedupe_triples([low, high])
     assert len(deduped) == 1
     assert deduped[0].confidence == 0.95
+
+
+def test_clamp_confidence_bounds_scores() -> None:
+    """Checks that clamping constrains scores to the unit interval."""
+    assert clamp_confidence(1.7) == 1.0
+    assert clamp_confidence(-0.2) == 0.0
+    assert clamp_confidence(0.5) == 0.5
