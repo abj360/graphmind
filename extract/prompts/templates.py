@@ -29,6 +29,7 @@ Contains:
     citation_block(): renders the citation requirement block
     merge_domain_hints(): combines hints for compound domains
     validate_few_shot_examples(): sanity-checks the example registry
+    render_prompt_preview(): abbreviated prompt for debugging
 """
 
 from typing import TYPE_CHECKING
@@ -325,3 +326,19 @@ def validate_few_shot_examples() -> None:
                 msg = f"few-shot example missing key {key!r}"
                 raise ValueError(msg)
         validate_domain(str(example["domain"]))
+
+
+def render_prompt_preview(text: str, config: "PromptConfig | None" = None) -> str:
+    """Renders an abbreviated prompt preview for debugging.
+
+    Args:
+        text: Text window the prompt would target.
+        config: Prompt configuration; defaults are used when omitted.
+
+    Returns:
+        preview: Prompt truncated to its first 400 characters.
+    """
+    prompt = build_extraction_prompt(text, config)
+    if len(prompt) <= 400:
+        return prompt
+    return prompt[:400] + "...[truncated]"
