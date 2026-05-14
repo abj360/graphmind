@@ -26,6 +26,7 @@ Contains:
     TEMPLATE_VERSION: semantic version of the prompt set
     CITATION_REQUIREMENT: mandatory source-span citation block
     CITATION_FEW_SHOT_EXAMPLE: worked example with citations
+    citation_block(): renders the citation requirement block
 """
 
 from typing import TYPE_CHECKING
@@ -278,3 +279,20 @@ CITATION_FEW_SHOT_EXAMPLE: dict[str, object] = {
         }
     ],
 }
+
+
+def citation_block(enabled: bool) -> str:
+    """Renders the citation requirement block when citations are enabled.
+
+    Args:
+        enabled: Whether the active prompt configuration requires citations.
+
+    Returns:
+        block: Citation requirement text, or an empty string when disabled.
+    """
+    if not enabled:
+        return ""
+    import json
+
+    example = json.dumps(CITATION_FEW_SHOT_EXAMPLE["output"], indent=2)
+    return f"{CITATION_REQUIREMENT}\nExample output:\n{example}"
