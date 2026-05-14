@@ -19,6 +19,7 @@
  *  *   buildHoverStyle(): subtle highlight on hover
  *  *   fontFamilyFor(): consistent font stack token
  *  *   buildCompoundNodeSizing(): degree-scaled node diameters
+ *  *   buildEdgeConfidenceColor(): confidence-to-color mapping
  */
 
 export const GRAPH_LAYOUT = {
@@ -250,6 +251,21 @@ export function buildCompoundNodeSizing() {
     style: {
       width: "mapData(degree, 0, 20, 18, 42)",
       height: "mapData(degree, 0, 20, 18, 42)",
+    },
+  };
+}
+
+/**
+ * Builds the confidence-to-color mapping for edge lines.
+ *
+ * @returns style - Cytoscape style definition coloring edges by confidence.
+ */
+export function buildEdgeConfidenceColor() {
+  return {
+    selector: "edge[confidence]",
+    style: {
+      "line-color": "mapData(confidence, 0, 1, #495057, #06d6a0)",
+      "target-arrow-color": "mapData(confidence, 0, 1, #495057, #06d6a0)",
     },
   };
 }
