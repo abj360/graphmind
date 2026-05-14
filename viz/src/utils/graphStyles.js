@@ -14,6 +14,7 @@
  *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
  *  *   buildFullStylesheet(): composes every style block
  *  *   buildSelectedNodeStyle(): highlight for the selected node
+ *  *   buildDimmedStyle(): fades non-matching elements
  */
 
 export const GRAPH_LAYOUT = {
@@ -180,6 +181,21 @@ export function buildSelectedNodeStyle() {
     style: {
       "border-width": 3,
       "border-color": "#e9c46a",
+    },
+  };
+}
+
+/**
+ * Builds the dimmed style applied to filtered-out elements.
+ *
+ * @returns style - Cytoscape style definition for dimmed elements.
+ */
+export function buildDimmedStyle() {
+  return {
+    selector: ".dimmed",
+    style: {
+      opacity: 0.15,
+      "text-opacity": 0.2,
     },
   };
 }
