@@ -4,6 +4,7 @@ test_schema.py --- unit tests for triple schema validation
 
 Contains:
     test_validate_triple_accepts_wellformed_payload
+    test_validate_triple_rejects_blank_predicate
 """
 
 import pytest
@@ -33,3 +34,14 @@ def test_validate_triple_accepts_wellformed_payload() -> None:
     triple = validate_triple(raw, "doc-1")
     assert triple.subject.name == "Alice"
     assert triple.source_doc_id == "doc-1"
+
+
+def test_validate_triple_rejects_blank_predicate() -> None:
+    """Checks that a blank predicate fails validation."""
+    raw = {
+        "subject": {"name": "Alice"},
+        "predicate": "   ",
+        "object": {"name": "Acme"},
+    }
+    with pytest.raises(ValueError):
+        validate_triple(raw, "doc-1")
