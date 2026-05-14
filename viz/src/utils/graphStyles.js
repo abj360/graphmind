@@ -14,6 +14,12 @@
  *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
  *  *   buildFullStylesheet(): composes every style block
  *  *   buildSelectedNodeStyle(): highlight for the selected node
+ *  *   buildDimmedStyle(): fades non-matching elements
+ *  *   buildEdgeLabelStyle(): edge label styling rules
+ *  *   buildHoverStyle(): subtle highlight on hover
+ *  *   fontFamilyFor(): consistent font stack token
+ *  *   buildCompoundNodeSizing(): degree-scaled node diameters
+ *  *   buildEdgeConfidenceColor(): confidence-to-color mapping
  */
 
 export const GRAPH_LAYOUT = {
@@ -180,6 +186,86 @@ export function buildSelectedNodeStyle() {
     style: {
       "border-width": 3,
       "border-color": "#e9c46a",
+    },
+  };
+}
+
+/**
+ * Builds the dimmed style applied to filtered-out elements.
+ *
+ * @returns style - Cytoscape style definition for dimmed elements.
+ */
+export function buildDimmedStyle() {
+  return {
+    selector: ".dimmed",
+    style: {
+      opacity: 0.15,
+      "text-opacity": 0.2,
+    },
+  };
+}
+
+/**
+ * Builds the edge label styling rules for readable density.
+ *
+ * @returns style - Cytoscape style definition for edge labels.
+ */
+export function buildEdgeLabelStyle() {
+  return {
+    selector: "edge[label]",
+    style: {
+      label: "data(label)",
+      "font-size": 8,
+      "text-rotation": "autorotate",
+      "text-margin-y": -6,
+      color: "#9fb0c7",
+    },
+  };
+}
+
+/**
+ * Builds the subtle highlight style applied on element hover.
+ *
+ * @returns style - Cytoscape style definition for hovered elements.
+ */
+export function buildHoverStyle() {
+  return {
+    selector: "node:active",
+    style: {
+      "overlay-color": "#e9c46a",
+      "overlay-opacity": 0.15,
+    },
+  };
+}
+
+export const GRAPH_FONT_FAMILY = "Inter, Segoe UI, system-ui, sans-serif";
+
+/**
+ * Builds degree-scaled node sizing overrides for hub visibility.
+ *
+ * @returns style - Cytoscape style definition scaling nodes by degree.
+ */
+export function buildCompoundNodeSizing() {
+  return {
+    selector: "node",
+    style: {
+      width: "mapData(degree, 0, 20, 18, 42)",
+      height: "mapData(degree, 0, 20, 18, 42)",
+    },
+  };
+}
+
+/**
+ * Builds the confidence-to-color mapping for edge lines.
+ *
+ * @returns style - Cytoscape style definition coloring edges by confidence.
+ */
+export function buildEdgeConfidenceColor() {
+  return {
+    selector: "edge[confidence]",
+    style: {
+      "line-color": "mapData(confidence, 0, 1, #495057, #06d6a0)",
+      "target-arrow-color": "mapData(confidence, 0, 1, #495057, #06d6a0)",
     },
   };
 }
