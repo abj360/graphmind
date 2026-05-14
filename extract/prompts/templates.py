@@ -28,6 +28,7 @@ Contains:
     CITATION_FEW_SHOT_EXAMPLE: worked example with citations
     citation_block(): renders the citation requirement block
     merge_domain_hints(): combines hints for compound domains
+    validate_few_shot_examples(): sanity-checks the example registry
 """
 
 from typing import TYPE_CHECKING
@@ -310,3 +311,17 @@ def merge_domain_hints(domains: list[str]) -> str:
     """
     hints = [DOMAIN_HINTS[d] for d in domains if d in DOMAIN_HINTS]
     return " ".join(hints)
+
+
+def validate_few_shot_examples() -> None:
+    """Sanity-checks that every registered example is well-formed.
+
+    Raises:
+        ValueError: If an example lacks required keys or a known domain.
+    """
+    for example in FEW_SHOT_EXAMPLES:
+        for key in ("domain", "input", "output"):
+            if key not in example:
+                msg = f"few-shot example missing key {key!r}"
+                raise ValueError(msg)
+        validate_domain(str(example["domain"]))
