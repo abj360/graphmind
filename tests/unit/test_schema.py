@@ -10,6 +10,7 @@ Contains:
     test_source_span_requires_end_after_start
     test_dedupe_triples_keeps_highest_confidence
     test_clamp_confidence_bounds_scores
+    test_confidence_stats_counts_low_confidence
 """
 
 import pytest
@@ -93,3 +94,11 @@ def test_clamp_confidence_bounds_scores() -> None:
     assert clamp_confidence(1.7) == 1.0
     assert clamp_confidence(-0.2) == 0.0
     assert clamp_confidence(0.5) == 0.5
+
+
+def test_confidence_stats_counts_low_confidence() -> None:
+    """Checks that confidence stats tally low-confidence triples."""
+    triples = [make_triple(confidence=0.9), make_triple(confidence=0.3)]
+    stats = confidence_stats(triples, review_threshold=0.6)
+    assert stats.count == 2
+    assert stats.low_confidence_count == 1
