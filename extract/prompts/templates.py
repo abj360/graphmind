@@ -27,6 +27,7 @@ Contains:
     CITATION_REQUIREMENT: mandatory source-span citation block
     CITATION_FEW_SHOT_EXAMPLE: worked example with citations
     citation_block(): renders the citation requirement block
+    merge_domain_hints(): combines hints for compound domains
 """
 
 from typing import TYPE_CHECKING
@@ -296,3 +297,16 @@ def citation_block(enabled: bool) -> str:
 
     example = json.dumps(CITATION_FEW_SHOT_EXAMPLE["output"], indent=2)
     return f"{CITATION_REQUIREMENT}\nExample output:\n{example}"
+
+
+def merge_domain_hints(domains: list[str]) -> str:
+    """Combines the hints of several domains into one guidance block.
+
+    Args:
+        domains: Domain keys whose hints are merged, in order.
+
+    Returns:
+        hint: Joined guidance text for the compound domain.
+    """
+    hints = [DOMAIN_HINTS[d] for d in domains if d in DOMAIN_HINTS]
+    return " ".join(hints)
