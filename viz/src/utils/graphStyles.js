@@ -15,6 +15,7 @@
  *  *   buildFullStylesheet(): composes every style block
  *  *   buildSelectedNodeStyle(): highlight for the selected node
  *  *   buildDimmedStyle(): fades non-matching elements
+ *  *   buildEdgeLabelStyle(): edge label styling rules
  */
 
 export const GRAPH_LAYOUT = {
@@ -196,6 +197,24 @@ export function buildDimmedStyle() {
     style: {
       opacity: 0.15,
       "text-opacity": 0.2,
+    },
+  };
+}
+
+/**
+ * Builds the edge label styling rules for readable density.
+ *
+ * @returns style - Cytoscape style definition for edge labels.
+ */
+export function buildEdgeLabelStyle() {
+  return {
+    selector: "edge[label]",
+    style: {
+      label: "data(label)",
+      "font-size": 8,
+      "text-rotation": "autorotate",
+      "text-margin-y": -6,
+      color: "#9fb0c7",
     },
   };
 }
