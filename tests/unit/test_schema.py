@@ -7,6 +7,7 @@ Contains:
     test_validate_triple_rejects_blank_predicate
     test_validate_triples_drops_invalid_items
     test_validate_triples_strict_raises_with_details
+    test_source_span_requires_end_after_start
 """
 
 import pytest
@@ -68,3 +69,9 @@ def test_validate_triples_strict_raises_with_details() -> None:
     with pytest.raises(TripleValidationError) as excinfo:
         validate_triples_strict(items, "doc-1")
     assert "item 1" in str(excinfo.value)
+
+
+def test_source_span_requires_end_after_start() -> None:
+    """Checks that inverted source spans are rejected."""
+    with pytest.raises(ValueError):
+        SourceSpan(start=10, end=5, text="passage")
