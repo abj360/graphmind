@@ -6,6 +6,7 @@ Contains:
     test_validate_triple_accepts_wellformed_payload
     test_validate_triple_rejects_blank_predicate
     test_validate_triples_drops_invalid_items
+    test_validate_triples_strict_raises_with_details
 """
 
 import pytest
@@ -56,3 +57,14 @@ def test_validate_triples_drops_invalid_items() -> None:
     ]
     triples = validate_triples(items, "doc-1")
     assert len(triples) == 1
+
+
+def test_validate_triples_strict_raises_with_details() -> None:
+    """Checks that strict validation aggregates per-item failure details."""
+    items = [
+        {"subject": {"name": "Alice"}, "predicate": "founded", "object": {"name": "Acme"}},
+        {"subject": {"name": ""}, "predicate": "x", "object": {"name": "y"}},
+    ]
+    with pytest.raises(TripleValidationError) as excinfo:
+        validate_triples_strict(items, "doc-1")
+    assert "item 1" in str(excinfo.value)
