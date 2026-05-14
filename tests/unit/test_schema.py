@@ -5,6 +5,7 @@ test_schema.py --- unit tests for triple schema validation
 Contains:
     test_validate_triple_accepts_wellformed_payload
     test_validate_triple_rejects_blank_predicate
+    test_validate_triples_drops_invalid_items
 """
 
 import pytest
@@ -45,3 +46,13 @@ def test_validate_triple_rejects_blank_predicate() -> None:
     }
     with pytest.raises(ValueError):
         validate_triple(raw, "doc-1")
+
+
+def test_validate_triples_drops_invalid_items() -> None:
+    """Checks that batch validation drops bad items and keeps good ones."""
+    items = [
+        {"subject": {"name": "Alice"}, "predicate": "founded", "object": {"name": "Acme"}},
+        {"subject": {"name": "Bob"}, "predicate": "", "object": {"name": "Acme"}},
+    ]
+    triples = validate_triples(items, "doc-1")
+    assert len(triples) == 1
