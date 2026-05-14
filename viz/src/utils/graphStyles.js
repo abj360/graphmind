@@ -16,6 +16,7 @@
  *  *   buildSelectedNodeStyle(): highlight for the selected node
  *  *   buildDimmedStyle(): fades non-matching elements
  *  *   buildEdgeLabelStyle(): edge label styling rules
+ *  *   buildHoverStyle(): subtle highlight on hover
  */
 
 export const GRAPH_LAYOUT = {
@@ -215,6 +216,21 @@ export function buildEdgeLabelStyle() {
       "text-rotation": "autorotate",
       "text-margin-y": -6,
       color: "#9fb0c7",
+    },
+  };
+}
+
+/**
+ * Builds the subtle highlight style applied on element hover.
+ *
+ * @returns style - Cytoscape style definition for hovered elements.
+ */
+export function buildHoverStyle() {
+  return {
+    selector: "node:active",
+    style: {
+      "overlay-color": "#e9c46a",
+      "overlay-opacity": 0.15,
     },
   };
 }
