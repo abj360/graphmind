@@ -17,6 +17,7 @@
  *  *   buildDimmedStyle(): fades non-matching elements
  *  *   buildEdgeLabelStyle(): edge label styling rules
  *  *   buildHoverStyle(): subtle highlight on hover
+ *  *   fontFamilyFor(): consistent font stack token
  */
 
 export const GRAPH_LAYOUT = {
@@ -234,3 +235,5 @@ export function buildHoverStyle() {
     },
   };
 }
+
+export const GRAPH_FONT_FAMILY = "Inter, Segoe UI, system-ui, sans-serif";
