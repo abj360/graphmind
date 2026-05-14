@@ -8,6 +8,7 @@ Contains:
     test_validate_triples_drops_invalid_items
     test_validate_triples_strict_raises_with_details
     test_source_span_requires_end_after_start
+    test_dedupe_triples_keeps_highest_confidence
 """
 
 import pytest
@@ -75,3 +76,12 @@ def test_source_span_requires_end_after_start() -> None:
     """Checks that inverted source spans are rejected."""
     with pytest.raises(ValueError):
         SourceSpan(start=10, end=5, text="passage")
+
+
+def test_dedupe_triples_keeps_highest_confidence() -> None:
+    """Checks that deduplication keeps the highest-confidence copy."""
+    low = make_triple(confidence=0.4)
+    high = make_triple(confidence=0.95)
+    deduped = dedupe_triples([low, high])
+    assert len(deduped) == 1
+    assert deduped[0].confidence == 0.95
