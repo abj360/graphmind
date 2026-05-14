@@ -18,6 +18,7 @@
  *  *   buildEdgeLabelStyle(): edge label styling rules
  *  *   buildHoverStyle(): subtle highlight on hover
  *  *   fontFamilyFor(): consistent font stack token
+ *  *   buildCompoundNodeSizing(): degree-scaled node diameters
  */
 
 export const GRAPH_LAYOUT = {
@@ -237,3 +238,18 @@ export function buildHoverStyle() {
 }
 
 export const GRAPH_FONT_FAMILY = "Inter, Segoe UI, system-ui, sans-serif";
+
+/**
+ * Builds degree-scaled node sizing overrides for hub visibility.
+ *
+ * @returns style - Cytoscape style definition scaling nodes by degree.
+ */
+export function buildCompoundNodeSizing() {
+  return {
+    selector: "node",
+    style: {
+      width: "mapData(degree, 0, 20, 18, 42)",
+      height: "mapData(degree, 0, 20, 18, 42)",
+    },
+  };
+}
