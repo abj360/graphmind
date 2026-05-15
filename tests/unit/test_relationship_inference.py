@@ -3,6 +3,7 @@
 test_relationship_inference.py --- unit tests for relationship inference between subgraphs
 
 Contains:
+    test_connected_graph_yields_no_bridges
 """
 
 from extract.relationship_inference import (
@@ -12,3 +13,9 @@ from extract.relationship_inference import (
     merge_inferred,
 )
 from tests.unit.factories import make_triple, make_triple_chain
+
+
+def test_connected_graph_yields_no_bridges() -> None:
+    """Checks that a fully connected graph needs no bridges."""
+    triples = make_triple_chain(["a", "b", "c"])
+    assert RelationshipInferer().infer(triples) == []
