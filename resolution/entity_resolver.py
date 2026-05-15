@@ -8,6 +8,9 @@ Contains:
     EntityResolver: canonicalizes entities via embedding similarity
     EntityResolver.resolve(): canonicalizes all entity mentions
     EntityResolver._collect_entities(): distinct normalized names
+    EntityResolver._cluster_entities(): union-find over similarities
+    EntityResolver._find(): path-compressed root lookup
+    EntityResolver._union(): merges two clusters
 """
 
 from dataclasses import dataclass
@@ -102,3 +105,65 @@ class EntityResolver:
             names.add(triple.subject.normalized_name())
             names.add(triple.object.normalized_name())
         return sorted(names)
+
+    def _cluster_entities(
+        self, names: list[str]
+    ) -> tuple[dict[str, str], list[MergeDecision], list[MergeDecision]]:
+        """Clusters entity names by embedding similarity via union-find.
+
+        Args:
+            names: Distinct normalized entity names to cluster.
+
+        Returns:
+            clusters: Mapping of each name to its cluster representative.
+            merges: Auto-merge decisions applied.
+            borderline: Pairs flagged for human review, not merged.
+        """
+        parent = {name: name for name in names}
+        vectors = {name: self.provider.embed(name) for name in names}
+        merges: list[MergeDecision] = []
+        borderline: list[MergeDecision] = []
+        for left_index, left in enumerate(names):
+            for right in names[left_index + 1 :]:
+                similarity = cosine_similarity(vectors[left], vectors[right])
+                if similarity >= self.threshold:
+                    self._union(parent, left, right)
+                    merges.append(MergeDecision(self._find(parent, left), right, similarity))
+                elif similarity >= self.review_floor:
+                    borderline.append(MergeDecision(left, right, similarity))
+        clusters = {name: self._pick_representative(parent, name) for name in names}
+        return clusters, merges, borderline
+
+    @classmethod
+    def _find(cls, parent: dict[str, str], name: str) -> str:
+        """Finds the cluster root of a name with path compression.
+
+        Args:
+            parent: Union-find parent mapping.
+            name: Name whose root is looked up.
+
+        Returns:
+            root: Canonical root name of the cluster.
+        """
+        root = name
+        while parent[root] != root:
+            root = parent[root]
+        while parent[name] != root:
+            parent[name], name = root, parent[name]
+        return root
+
+    @classmethod
+    def _union(cls, parent: dict[str, str], left: str, right: str) -> None:
+        """Merges the clusters of two names, preferring the shorter root.
+
+        Args:
+            parent: Union-find parent mapping, mutated in place.
+            left: First name whose cluster merges.
+            right: Second name whose cluster merges.
+        """
+        left_root = cls._find(parent, left)
+        right_root = cls._find(parent, right)
+        if left_root == right_root:
+            return
+        canonical, alias = sorted((left_root, right_root), key=len)
+        parent[alias] = canonical
