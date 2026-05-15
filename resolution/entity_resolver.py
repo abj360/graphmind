@@ -11,6 +11,8 @@ Contains:
     EntityResolver._cluster_entities(): union-find over similarities
     EntityResolver._find(): path-compressed root lookup
     EntityResolver._union(): merges two clusters
+    EntityResolver._pick_representative(): chooses cluster canonical
+    EntityResolver._rewrite_triples(): applies cluster mapping
 """
 
 from dataclasses import dataclass
@@ -167,3 +169,35 @@ class EntityResolver:
             return
         canonical, alias = sorted((left_root, right_root), key=len)
         parent[alias] = canonical
+
+    def _pick_representative(self, parent: dict[str, str], name: str) -> str:
+        """Chooses the representative name for a name's cluster.
+
+        Args:
+            parent: Union-find parent mapping.
+            name: Name whose cluster representative is chosen.
+
+        Returns:
+            representative: Root name of the cluster.
+        """
+        return self._find(parent, name)
+
+    @staticmethod
+    def _rewrite_triples(triples: list[Triple], clusters: dict[str, str]) -> list[Triple]:
+        """Rewrites triple endpoints to their canonical cluster names.
+
+        Args:
+            triples: Original triples with unresolved entity names.
+            clusters: Normalized name to canonical name mapping.
+
+        Returns:
+            resolved: Triples with canonicalized endpoints.
+        """
+        resolved: list[Triple] = []
+        for triple in triples:
+            subject_name = clusters.get(triple.subject.normalized_name(), triple.subject.name)
+            object_name = clusters.get(triple.object.normalized_name(), triple.object.name)
+            subject = triple.subject.model_copy(update={"name": subject_name})
+            object_ = triple.object.model_copy(update={"name": object_name})
+            resolved.append(triple.model_copy(update={"subject": subject, "object": object_}))
+        return resolved
