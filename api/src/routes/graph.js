@@ -8,6 +8,7 @@
  *  *   toViewGraph(): maps records into viewer-friendly JSON
  *  *   parseLimit(): validates the limit query parameter
  *  *   graphRouter(): serves the graph JSON endpoint
+ *  *   LABELS_QUERY + labels endpoint
  */
 
 import { Router } from "express";
@@ -98,4 +99,33 @@ export function graphRouter(driver, config) {
   });
 
   return router;
+}
+
+const LABELS_QUERY = `
+MATCH (n:Entity)
+RETURN DISTINCT n.entity_type AS type, count(*) AS count
+ORDER BY count DESC
+`.trim();
+
+/**
+ * Mounts an endpoint listing entity types with counts.
+ *
+ * @param router - Router to extend.
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ */
+export function mountLabelsEndpoint(router, driver, config) {
+  router.get("/graph/labels", async (_request, response, next) => {
+    try {
+      const records = await runQuery(driver, LABELS_QUERY, {}, config.neo4jDatabase);
+      response.json(
+        records.map((record) => ({
+          type: record.get("type") ?? "CONCEPT",
+          count: record.get("count").toNumber(),
+        })),
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
 }
