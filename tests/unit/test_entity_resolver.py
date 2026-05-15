@@ -5,6 +5,7 @@ test_entity_resolver.py --- unit tests for embedding-based entity resolution
 Contains:
     test_exact_duplicates_merge
     test_similar_names_merge_with_ngram_embeddings
+    test_distinct_entities_stay_separate
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -30,3 +31,11 @@ def test_similar_names_merge_with_ngram_embeddings() -> None:
     triples = [make_triple("Acme Corp"), make_triple("Acme Corporation", "acquired", "ByteWorks")]
     result = EntityResolver(threshold=0.7).resolve(triples)
     assert result.merges
+
+
+def test_distinct_entities_stay_separate() -> None:
+    """Checks that genuinely different entities are not merged."""
+    triples = [make_triple("Alice"), make_triple("Bob", "joined", "Acme")]
+    result = EntityResolver().resolve(triples)
+    names = {triple.subject.name for triple in result.triples}
+    assert len(names) == 2
