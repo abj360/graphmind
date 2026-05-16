@@ -18,6 +18,7 @@ Contains:
     MergeReviewQueue.approve(): accepts a pending merge
     MergeReviewQueue.reject(): declines a pending merge
     MergeReviewQueue._take(): pops an item by id
+    MergeReviewQueue.pending(): lists undecided items
 """
 
 import json
@@ -219,3 +220,11 @@ class MergeReviewQueue:
                 return self.pending_items.pop(index)
         msg = f"no pending review item with id {item_id!r}"
         raise KeyError(msg)
+
+    def pending(self) -> list[ReviewItem]:
+        """Lists the items still awaiting a human decision.
+
+        Returns:
+            items: Pending review items in arrival order.
+        """
+        return list(self.pending_items)
