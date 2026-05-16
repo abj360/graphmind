@@ -18,6 +18,10 @@ Contains:
     MergeReviewQueue.approve(): accepts a pending merge
     MergeReviewQueue.reject(): declines a pending merge
     MergeReviewQueue._take(): pops an item by id
+    MergeReviewQueue.pending(): lists undecided items
+    apply_decisions(): writes approved merges into the alias table
+    queue_from_borderline(): builds a queue from resolver output
+    find_candidates(): fuzzy alias lookup by token overlap
 """
 
 import json
@@ -219,3 +223,74 @@ class MergeReviewQueue:
                 return self.pending_items.pop(index)
         msg = f"no pending review item with id {item_id!r}"
         raise KeyError(msg)
+
+    def pending(self) -> list[ReviewItem]:
+        """Lists the items still awaiting a human decision.
+
+        Returns:
+            items: Pending review items in arrival order.
+        """
+        return list(self.pending_items)
+
+
+def apply_decisions(queue: MergeReviewQueue, table: AliasTable) -> int:
+    """Writes every approved merge in a queue into an alias table.
+
+    Args:
+        queue: Queue holding decided review items.
+        table: Alias table receiving approved canonical-alias pairs.
+
+    Returns:
+        applied: Number of approved merges written into the table.
+    """
+    applied = 0
+    approved_ids = {item_id for item_id, ok in queue.decided.items() if ok}
+    for item in list(queue.pending_items):
+        if item.item_id in approved_ids:
+            table.add(item.canonical, item.alias)
+            queue.approve(item.item_id)
+            applied += 1
+    return applied
+
+
+def queue_from_borderline(borderline: list[tuple[str, str, float]]) -> MergeReviewQueue:
+    """Builds a review queue from borderline resolver candidates.
+
+    Args:
+        borderline: (canonical, alias, similarity) candidate triples.
+
+    Returns:
+        queue: Populated review queue with stable item identifiers.
+    """
+    queue = MergeReviewQueue()
+    for index, (canonical, alias, similarity) in enumerate(borderline):
+        queue.submit(
+            ReviewItem(
+                item_id=f"review-{index:04d}",
+                canonical=canonical,
+                alias=alias,
+                similarity=similarity,
+            )
+        )
+    return queue
+
+
+def find_candidates(table: AliasTable, name: str) -> list[str]:
+    """Finds registered aliases sharing a significant token with a name.
+
+    Args:
+        table: Alias table to search.
+        name: Name to find candidate aliases for.
+
+    Returns:
+        candidates: Registered aliases sharing a length-4+ token.
+    """
+    tokens = {token for token in name.casefold().split() if len(token) >= 4}
+    if not tokens:
+        return []
+    candidates = []
+    for alias in table.canonical_of:
+        alias_tokens = {token for token in alias.split() if len(token) >= 4}
+        if tokens & alias_tokens:
+            candidates.append(alias)
+    return sorted(candidates)
