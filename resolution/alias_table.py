@@ -20,6 +20,7 @@ Contains:
     MergeReviewQueue._take(): pops an item by id
     MergeReviewQueue.pending(): lists undecided items
     apply_decisions(): writes approved merges into the alias table
+    queue_from_borderline(): builds a queue from resolver output
 """
 
 import json
@@ -249,3 +250,25 @@ def apply_decisions(queue: MergeReviewQueue, table: AliasTable) -> int:
             queue.approve(item.item_id)
             applied += 1
     return applied
+
+
+def queue_from_borderline(borderline: list[tuple[str, str, float]]) -> MergeReviewQueue:
+    """Builds a review queue from borderline resolver candidates.
+
+    Args:
+        borderline: (canonical, alias, similarity) candidate triples.
+
+    Returns:
+        queue: Populated review queue with stable item identifiers.
+    """
+    queue = MergeReviewQueue()
+    for index, (canonical, alias, similarity) in enumerate(borderline):
+        queue.submit(
+            ReviewItem(
+                item_id=f"review-{index:04d}",
+                canonical=canonical,
+                alias=alias,
+                similarity=similarity,
+            )
+        )
+    return queue
