@@ -34,3 +34,9 @@ The `.*` toggle next to the search box switches matching from substring
 to regular expressions. Invalid patterns fail safe: the filter silently
 keeps everything rather than throwing. Handy patterns: `^acme` for
 prefixes, `corp|ltd` for suffix families, `^\d{4}` for date-like names.
+
+## The legend
+
+The bottom-left legend lists every entity type present in the current
+view with its palette color and node count. Types come from the data,
+not a static list, so newly introduced types appear automatically.
