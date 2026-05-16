@@ -27,3 +27,10 @@ The header search filters the visible graph by entity label or type,
 case-insensitively. Only matching nodes and their induced edges stay
 visible — the underlying graph is untouched, so clearing the search
 restores everything instantly.
+
+## Regex mode
+
+The `.*` toggle next to the search box switches matching from substring
+to regular expressions. Invalid patterns fail safe: the filter silently
+keeps everything rather than throwing. Handy patterns: `^acme` for
+prefixes, `corp|ltd` for suffix families, `^\d{4}` for date-like names.
