@@ -21,6 +21,7 @@ Contains:
     MergeReviewQueue.pending(): lists undecided items
     apply_decisions(): writes approved merges into the alias table
     queue_from_borderline(): builds a queue from resolver output
+    find_candidates(): fuzzy alias lookup by token overlap
 """
 
 import json
@@ -272,3 +273,24 @@ def queue_from_borderline(borderline: list[tuple[str, str, float]]) -> MergeRevi
             )
         )
     return queue
+
+
+def find_candidates(table: AliasTable, name: str) -> list[str]:
+    """Finds registered aliases sharing a significant token with a name.
+
+    Args:
+        table: Alias table to search.
+        name: Name to find candidate aliases for.
+
+    Returns:
+        candidates: Registered aliases sharing a length-4+ token.
+    """
+    tokens = {token for token in name.casefold().split() if len(token) >= 4}
+    if not tokens:
+        return []
+    candidates = []
+    for alias in table.canonical_of:
+        alias_tokens = {token for token in alias.split() if len(token) >= 4}
+        if tokens & alias_tokens:
+            candidates.append(alias)
+    return sorted(candidates)
