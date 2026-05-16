@@ -21,6 +21,7 @@ Contains:
     format_violations(): renders violations for review
     diff_ontologies(): rules present in one but not the other
     save_ontology(): writes an ontology to JSON
+    rule_from_string(): parses 'TYPE predicate TYPE' shorthand
 """
 
 import json
@@ -312,3 +313,21 @@ def save_ontology(ontology: Ontology, path: Path) -> None:
         path: Destination file location.
     """
     path.write_text(json.dumps(ontology.to_dict(), indent=2) + "\n", encoding="utf-8")
+
+
+def rule_from_string(shorthand: str) -> OntologyRule:
+    """Parses a shorthand rule string into an OntologyRule.
+
+    Args:
+        shorthand: Rule in "SUBJECT_TYPE predicate OBJECT_TYPE" form.
+
+    Returns:
+        rule: Parsed ontology rule.
+    """
+    parts = shorthand.split(" ", 1)
+    if len(parts) != 2 or " " not in parts[1].strip():
+        msg = f"expected 'SUBJECT_TYPE predicate OBJECT_TYPE', got {shorthand!r}"
+        raise ValueError(msg)
+    subject_type = parts[0]
+    predicate, _, object_type = parts[1].rpartition(" ")
+    return OntologyRule(subject_type, predicate.strip(), object_type.strip())
