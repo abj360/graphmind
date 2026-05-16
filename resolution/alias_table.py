@@ -19,6 +19,7 @@ Contains:
     MergeReviewQueue.reject(): declines a pending merge
     MergeReviewQueue._take(): pops an item by id
     MergeReviewQueue.pending(): lists undecided items
+    apply_decisions(): writes approved merges into the alias table
 """
 
 import json
@@ -228,3 +229,23 @@ class MergeReviewQueue:
             items: Pending review items in arrival order.
         """
         return list(self.pending_items)
+
+
+def apply_decisions(queue: MergeReviewQueue, table: AliasTable) -> int:
+    """Writes every approved merge in a queue into an alias table.
+
+    Args:
+        queue: Queue holding decided review items.
+        table: Alias table receiving approved canonical-alias pairs.
+
+    Returns:
+        applied: Number of approved merges written into the table.
+    """
+    applied = 0
+    approved_ids = {item_id for item_id, ok in queue.decided.items() if ok}
+    for item in list(queue.pending_items):
+        if item.item_id in approved_ids:
+            table.add(item.canonical, item.alias)
+            queue.approve(item.item_id)
+            applied += 1
+    return applied
