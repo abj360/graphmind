@@ -40,3 +40,10 @@ prefixes, `corp|ltd` for suffix families, `^\d{4}` for date-like names.
 The bottom-left legend lists every entity type present in the current
 view with its palette color and node count. Types come from the data,
 not a static list, so newly introduced types appear automatically.
+
+## Node detail panel
+
+Clicking a node opens the detail panel in the sidebar: the node's type,
+its incident relationships grouped around the selection, and per-edge
+confidence badges (green ≥ 0.8, yellow ≥ 0.5, red below). Clicking the
+canvas background or the × closes the panel.
