@@ -20,6 +20,7 @@ Contains:
     infer_rules(): mines candidate rules from trusted triples
     format_violations(): renders violations for review
     diff_ontologies(): rules present in one but not the other
+    save_ontology(): writes an ontology to JSON
 """
 
 import json
@@ -301,3 +302,13 @@ def diff_ontologies(left: Ontology, right: Ontology) -> set[OntologyRule]:
         rules: Rules unique to the left ontology.
     """
     return set(left.rules) - set(right.rules)
+
+
+def save_ontology(ontology: Ontology, path: Path) -> None:
+    """Writes an ontology's rule set to a JSON file.
+
+    Args:
+        ontology: Ontology to serialize.
+        path: Destination file location.
+    """
+    path.write_text(json.dumps(ontology.to_dict(), indent=2) + "\n", encoding="utf-8")
