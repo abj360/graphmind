@@ -47,3 +47,11 @@ Clicking a node opens the detail panel in the sidebar: the node's type,
 its incident relationships grouped around the selection, and per-edge
 confidence badges (green ≥ 0.8, yellow ≥ 0.5, red below). Clicking the
 canvas background or the × closes the panel.
+
+## Reading edges
+
+- Solid edges are extracted relationships with confidence-colored lines.
+- Dashed edges are *inferred* bridges between subgraphs — hypotheses,
+  not facts; treat them accordingly.
+- Parallel edges between the same nodes fan out into separate curves;
+  their predicates combine when the graph gets dense.
