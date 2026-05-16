@@ -55,3 +55,10 @@ canvas background or the × closes the panel.
   not facts; treat them accordingly.
 - Parallel edges between the same nodes fan out into separate curves;
   their predicates combine when the graph gets dense.
+
+## Metrics dashboard
+
+The sidebar dashboard reports node and edge totals, distinct predicate
+count, mean edge confidence, and the duplicate-name clusters the API
+finds. Duplicate clusters rising week over week means entity resolution
+needs attention — it is the earliest visible symptom.
