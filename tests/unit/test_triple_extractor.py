@@ -18,6 +18,7 @@ Contains:
     test_require_source_span_drops_uncited_triples
     test_require_source_span_keeps_cited_triples
     test_prompt_mentions_citation_requirement_when_enabled
+    test_extract_batch_covers_all_documents
 """
 
 import json
@@ -205,3 +206,42 @@ def test_prompt_mentions_citation_requirement_when_enabled() -> None:
     extractor = TripleExtractor(client, ExtractionConfig(), PromptConfig(require_citations=True))
     extractor.extract_text("doc-1", "Alice founded Acme.")
     assert "source_span" in client.prompts[0]
+
+
+def test_extract_batch_covers_all_documents() -> None:
+    """Checks that batch extraction processes every supplied document."""
+    first = json.dumps(
+        [
+            {
+                "doc_id": "d1",
+                "subject": {"name": "Alice"},
+                "predicate": "founded",
+                "object": {"name": "Acme"},
+                "confidence": 0.9,
+            },
+            {
+                "doc_id": "d2",
+                "subject": {"name": "Bob"},
+                "predicate": "joined",
+                "object": {"name": "Acme"},
+                "confidence": 0.8,
+            },
+        ]
+    )
+    second = json.dumps(
+        [
+            {
+                "doc_id": "d3",
+                "subject": {"name": "Cid"},
+                "predicate": "runs",
+                "object": {"name": "Ops"},
+                "confidence": 0.7,
+            },
+        ]
+    )
+    client = FakeLLMClient([first, second])
+    extractor = TripleExtractor(client, ExtractionConfig(batch_size=2))
+    documents = [("d1", "t1"), ("d2", "t2"), ("d3", "t3")]
+    triples = extractor.extract_batch(documents)
+    assert len(triples) == 3
+    assert extractor.stats.calls_made == 2
