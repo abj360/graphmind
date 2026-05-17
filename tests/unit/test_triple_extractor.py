@@ -16,6 +16,7 @@ Contains:
     test_calibrate_confidence_discounts_missing_span
     test_merge_extraction_stats_accumulates
     test_require_source_span_drops_uncited_triples
+    test_require_source_span_keeps_cited_triples
 """
 
 import json
@@ -174,3 +175,22 @@ def test_require_source_span_drops_uncited_triples() -> None:
     triples = extractor.extract_text("doc-1", "Alice founded Acme.")
     assert triples == []
     assert extractor.stats.dropped_missing_span == 1
+
+
+def test_require_source_span_keeps_cited_triples() -> None:
+    """Checks that cited triples survive the citation requirement."""
+    payload = json.dumps(
+        [
+            {
+                "subject": {"name": "Alice", "entity_type": "PERSON"},
+                "predicate": "founded",
+                "object": {"name": "Acme", "entity_type": "ORG"},
+                "confidence": 0.9,
+                "source_span": {"start": 0, "end": 19, "text": "Alice founded Acme."},
+            }
+        ]
+    )
+    extractor = make_extractor(payload, require_source_span=True)
+    triples = extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert len(triples) == 1
+    assert triples[0].source_span is not None
