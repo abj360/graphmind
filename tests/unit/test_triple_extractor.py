@@ -19,6 +19,7 @@ Contains:
     test_require_source_span_keeps_cited_triples
     test_prompt_mentions_citation_requirement_when_enabled
     test_extract_batch_covers_all_documents
+    test_extract_chunks_uses_single_calls_for_small_sets
 """
 
 import json
@@ -245,3 +246,14 @@ def test_extract_batch_covers_all_documents() -> None:
     triples = extractor.extract_batch(documents)
     assert len(triples) == 3
     assert extractor.stats.calls_made == 2
+
+
+def test_extract_chunks_uses_single_calls_for_small_sets() -> None:
+    """Checks that small chunk sets use per-chunk calls, not batching."""
+    from extract.chunker import TextChunk
+
+    client = FakeLLMClient([PAYLOAD])
+    extractor = TripleExtractor(client, ExtractionConfig(batch_size=5))
+    chunks = [TextChunk("d1", 0, "text one", 0, 8), TextChunk("d2", 0, "text two", 0, 8)]
+    extractor.extract_chunks(chunks)
+    assert len(client.prompts) == 2
