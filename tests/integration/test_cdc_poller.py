@@ -4,6 +4,7 @@ test_cdc_poller.py --- integration tests for CDC polling over a filesystem corpu
 
 Contains:
     make_poller(): builds a poller over a temp corpus
+    test_new_document_emits_upsert
 """
 
 from pathlib import Path
@@ -31,3 +32,15 @@ def make_poller(corpus: Path, state: Path) -> CdcPoller:
         poller: Configured CDC poller.
     """
     return CdcPoller(corpus, PollerConfig(state_path=state))
+
+
+def test_new_document_emits_upsert(tmp_path) -> None:
+    """Checks that a newly added document emits an upsert event."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    events = poller.poll_once()
+    assert len(events) == 1
+    assert events[0].kind == ChangeKind.UPSERT
+    assert events[0].doc_id == "a.txt"
