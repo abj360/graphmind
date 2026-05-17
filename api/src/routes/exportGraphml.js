@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   EXPORT_QUERY: full-graph read for export
+ *  *   GRAPHML_CONTENT_TYPE: response media type
  */
 
 import { Router } from "express";
@@ -18,3 +19,5 @@ OPTIONAL MATCH (n)-[r:RELATED]->(m:Entity)
 RETURN n, r, m
 LIMIT $limit
 `.trim();
+
+const GRAPHML_CONTENT_TYPE = "application/graphml+xml; charset=utf-8";
