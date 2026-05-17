@@ -21,6 +21,7 @@ Contains:
     filter_upserts(): keeps only upsert events
     summarize_events(): counts events by kind
     main(): CLI entrypoint for the CDC poller
+    module entrypoint guard
 """
 
 import hashlib
@@ -304,3 +305,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     poller.run()
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
