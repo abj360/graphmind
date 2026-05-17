@@ -140,3 +140,11 @@ is how you end up with two different people collapsed into one node.
   all consume the same schema — no per-consumer translation layers.
 - Tests run fully offline: deterministic fakes for the LLM and a
   recording double for the Neo4j driver.
+
+## Alternatives considered: property graph vs RDF triplestore
+
+We chose Neo4j's labelled property graph over an RDF store. The queries
+this project actually runs (neighborhood expansion for the viewer,
+path-finding for the integration, type/predicate aggregations for the
+metrics dashboard) are Cypher-shaped; OWL reasoning is out of scope,
+and the team already operates Neo4j in production.
