@@ -17,6 +17,7 @@ Contains:
     test_merge_extraction_stats_accumulates
     test_require_source_span_drops_uncited_triples
     test_require_source_span_keeps_cited_triples
+    test_prompt_mentions_citation_requirement_when_enabled
 """
 
 import json
@@ -194,3 +195,13 @@ def test_require_source_span_keeps_cited_triples() -> None:
     triples = extractor.extract_text("doc-1", "Alice founded Acme.")
     assert len(triples) == 1
     assert triples[0].source_span is not None
+
+
+def test_prompt_mentions_citation_requirement_when_enabled() -> None:
+    """Checks that citation-requiring configs render the citation block."""
+    client = FakeLLMClient([PAYLOAD])
+    from extract.prompts.config import PromptConfig
+
+    extractor = TripleExtractor(client, ExtractionConfig(), PromptConfig(require_citations=True))
+    extractor.extract_text("doc-1", "Alice founded Acme.")
+    assert "source_span" in client.prompts[0]
