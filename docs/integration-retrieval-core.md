@@ -278,3 +278,14 @@ Metrics worth alarming on, all available without new instrumentation:
 - Neo4j pool wait time (rising = connection starvation under fan-out).
 - Duplicate-cluster count on the viewer dashboard (rising = resolution
   regression; see the 2026-05-06 incident).
+
+## Security notes
+
+- The integration account is read-only; writes happen only through the
+  pipeline's own loader credentials.
+- Query parameters are always driver parameters — the day someone
+  concatenates user text into Cypher is the day we get an injection
+  incident report.
+- Graph contents inherit corpus sensitivity: if a document shouldn't
+  be queryable, it shouldn't be in the corpus, because its facts will
+  be in the graph.
