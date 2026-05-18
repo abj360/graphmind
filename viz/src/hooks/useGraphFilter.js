@@ -6,6 +6,7 @@
  *  *   useGraphFilter(): filters nodes and their induced edges
  *  *   useDebouncedValue(): debounces fast-changing input
  *  *   useTypeFilter(): toggles visibility per entity type
+ *  *   useRegexMode(): tracks the substring/regex toggle state
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -70,4 +71,15 @@ export function useTypeFilter(initialTypes = []) {
   };
   const isVisible = (type) => !hidden.has(type);
   return { hidden, toggleType, isVisible, initialTypes };
+}
+
+/**
+ * Tracks whether the search filter is in regex mode.
+ *
+ * @returns state - { regexMode, toggleRegexMode } toggle state.
+ */
+export function useRegexMode() {
+  const [regexMode, setRegexMode] = useState(false);
+  const toggleRegexMode = () => setRegexMode((current) => !current);
+  return { regexMode, toggleRegexMode };
 }
