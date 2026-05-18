@@ -320,3 +320,11 @@ button {
     radial-gradient(circle at 1px 1px, #1c2940 1px, transparent 0) 0 0 / 24px 24px,
     #0f1620;
 }
+
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
