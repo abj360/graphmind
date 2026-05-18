@@ -7,6 +7,7 @@
  *  *   useDebouncedValue(): debounces fast-changing input
  *  *   useTypeFilter(): toggles visibility per entity type
  *  *   useRegexMode(): tracks the substring/regex toggle state
+ *  *   useRegexFilter(): filters nodes by a compiled pattern
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -82,4 +83,23 @@ export function useRegexMode() {
   const [regexMode, setRegexMode] = useState(false);
   const toggleRegexMode = () => setRegexMode((current) => !current);
   return { regexMode, toggleRegexMode };
+}
+
+/**
+ * Filters a view graph using a compiled regular expression.
+ *
+ * @param graph - Full { nodes, edges } payload.
+ * @param pattern - Compiled RegExp, or null for no filtering.
+ * @returns filtered - Graph limited to matching nodes and induced edges.
+ */
+export function useRegexFilter(graph, pattern) {
+  return useMemo(() => {
+    if (!pattern) {
+      return graph;
+    }
+    const nodes = graph.nodes.filter((node) => pattern.test(node.label) || pattern.test(node.type));
+    const visible = new Set(nodes.map((node) => node.id));
+    const edges = graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target));
+    return { nodes, edges };
+  }, [graph, pattern]);
 }
