@@ -310,3 +310,14 @@ integration point".
   the CDC state's max `modified_at`, or don't cache at all.
 - Never cache "entity not found" for longer than a polling interval —
   that is how you get ghost misses after a document lands.
+
+## Load characteristics
+
+Under the reference query mix (70% anchor, 20% bridge, 10% grounding
+fan-out):
+
+- Neo4j stays under 20% heap at 50 queries/second.
+- The binding constraint is connection checkout during fan-out bursts;
+  size the pool for the p99 fan-out, not the average.
+- The BFF adds ~2 ms per hop; it is never the bottleneck and should not
+  be scaled before Neo4j is.
