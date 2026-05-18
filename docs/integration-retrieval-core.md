@@ -321,3 +321,14 @@ fan-out):
   size the pool for the p99 fan-out, not the average.
 - The BFF adds ~2 ms per hop; it is never the bottleneck and should not
   be scaled before Neo4j is.
+
+## Edge case: unicode and case in names
+
+Entity names are matched exactly after the resolution pass folded
+case/whitespace variants. Consumers must:
+
+- Anchor with the canonical (normalized) form returned by the linker,
+  not the raw query span.
+- Expect unicode names to round-trip unchanged; the GraphML export
+  escapes XML metacharacters but never rewrites names (see the
+  2026-05-28 fix).
