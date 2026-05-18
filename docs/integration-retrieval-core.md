@@ -289,3 +289,15 @@ Metrics worth alarming on, all available without new instrumentation:
 - Graph contents inherit corpus sensitivity: if a document shouldn't
   be queryable, it shouldn't be in the corpus, because its facts will
   be in the graph.
+
+## Schema versioning
+
+| Version | Change | Consumer action |
+| --- | --- | --- |
+| 1 | `:Entity{name, entity_type}`, `:RELATED{predicate, confidence, source_doc_id}` | none |
+| 2 | adds `inferred` on `:RELATED` | filter/flag inferred edges |
+| 3 | adds `source_span` on extraction-produced edges | optional citation display |
+
+Consumers pin to a major version; additions are minor, removals or
+renames are major and coordinated as described in "Testing the
+integration point".
