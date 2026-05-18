@@ -301,3 +301,12 @@ Metrics worth alarming on, all available without new instrumentation:
 Consumers pin to a major version; additions are minor, removals or
 renames are major and coordinated as described in "Testing the
 integration point".
+
+## Caching guidance
+
+- Anchor lookups cache well: entity names change rarely; a 5-minute TTL
+  is safe and cuts repeat latency sharply.
+- Bridge queries cache poorly across corpus updates; key any cache on
+  the CDC state's max `modified_at`, or don't cache at all.
+- Never cache "entity not found" for longer than a polling interval —
+  that is how you get ghost misses after a document lands.
