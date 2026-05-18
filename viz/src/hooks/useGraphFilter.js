@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   useGraphFilter(): filters nodes and their induced edges
  *  *   useDebouncedValue(): debounces fast-changing input
+ *  *   useTypeFilter(): toggles visibility per entity type
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -46,4 +47,27 @@ export function useDebouncedValue(value, delayMs = 150) {
     return () => clearTimeout(handle);
   }, [value, delayMs]);
   return debounced;
+}
+
+/**
+ * Tracks which entity types are currently visible in the viewer.
+ *
+ * @param initialTypes - Types visible initially.
+ * @returns state - { hidden, toggleType, isVisible } type filter state.
+ */
+export function useTypeFilter(initialTypes = []) {
+  const [hidden, setHidden] = useState(new Set());
+  const toggleType = (type) => {
+    setHidden((current) => {
+      const next = new Set(current);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
+  const isVisible = (type) => !hidden.has(type);
+  return { hidden, toggleType, isVisible, initialTypes };
 }
