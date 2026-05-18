@@ -278,3 +278,75 @@ Metrics worth alarming on, all available without new instrumentation:
 - Neo4j pool wait time (rising = connection starvation under fan-out).
 - Duplicate-cluster count on the viewer dashboard (rising = resolution
   regression; see the 2026-05-06 incident).
+
+## Security notes
+
+- The integration account is read-only; writes happen only through the
+  pipeline's own loader credentials.
+- Query parameters are always driver parameters — the day someone
+  concatenates user text into Cypher is the day we get an injection
+  incident report.
+- Graph contents inherit corpus sensitivity: if a document shouldn't
+  be queryable, it shouldn't be in the corpus, because its facts will
+  be in the graph.
+
+## Schema versioning
+
+| Version | Change | Consumer action |
+| --- | --- | --- |
+| 1 | `:Entity{name, entity_type}`, `:RELATED{predicate, confidence, source_doc_id}` | none |
+| 2 | adds `inferred` on `:RELATED` | filter/flag inferred edges |
+| 3 | adds `source_span` on extraction-produced edges | optional citation display |
+
+Consumers pin to a major version; additions are minor, removals or
+renames are major and coordinated as described in "Testing the
+integration point".
+
+## Caching guidance
+
+- Anchor lookups cache well: entity names change rarely; a 5-minute TTL
+  is safe and cuts repeat latency sharply.
+- Bridge queries cache poorly across corpus updates; key any cache on
+  the CDC state's max `modified_at`, or don't cache at all.
+- Never cache "entity not found" for longer than a polling interval —
+  that is how you get ghost misses after a document lands.
+
+## Load characteristics
+
+Under the reference query mix (70% anchor, 20% bridge, 10% grounding
+fan-out):
+
+- Neo4j stays under 20% heap at 50 queries/second.
+- The binding constraint is connection checkout during fan-out bursts;
+  size the pool for the p99 fan-out, not the average.
+- The BFF adds ~2 ms per hop; it is never the bottleneck and should not
+  be scaled before Neo4j is.
+
+## Edge case: unicode and case in names
+
+Entity names are matched exactly after the resolution pass folded
+case/whitespace variants. Consumers must:
+
+- Anchor with the canonical (normalized) form returned by the linker,
+  not the raw query span.
+- Expect unicode names to round-trip unchanged; the GraphML export
+  escapes XML metacharacters but never rewrites names (see the
+  2026-05-28 fix).
+
+## Edge case: highly connected hubs
+
+Generic concepts ("software", "company") accumulate thousands of edges
+and poison one-hop expansion. The integration caps expansion fan-out
+and, for nodes above the hub threshold, requires a predicate hint
+before expanding at all. If every answer mentions the same generic
+node, the corpus needs ontology enforcement, not more expansion.
+
+## Runbook: graph answers look stale
+
+1. Check the CDC state file timestamp — if polling stalled, restart
+   the pipeline service and let it catch up.
+2. Spot-check one known document: does its `source_doc_id` appear in
+   any edge? If not, re-run the loader for that document.
+3. If edges exist but look wrong, inspect the extraction stats for the
+   document (dropped-low-confidence spikes correlate with prompt
+   regressions).
