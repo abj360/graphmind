@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   useGraphFilter(): filters nodes and their induced edges
+ *  *   useDebouncedValue(): debounces fast-changing input
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -29,4 +30,20 @@ export function useGraphFilter(graph) {
     return { nodes, edges };
   }, [graph, query]);
   return { query, setQuery, filtered };
+}
+
+/**
+ * Debounces a fast-changing value to avoid re-filtering every keystroke.
+ *
+ * @param value - Value to debounce.
+ * @param delayMs - Quiet period before the value settles.
+ * @returns debounced - Value updated only after the quiet period.
+ */
+export function useDebouncedValue(value, delayMs = 150) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const handle = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(handle);
+  }, [value, delayMs]);
+  return debounced;
 }
