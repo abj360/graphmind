@@ -332,3 +332,11 @@ case/whitespace variants. Consumers must:
 - Expect unicode names to round-trip unchanged; the GraphML export
   escapes XML metacharacters but never rewrites names (see the
   2026-05-28 fix).
+
+## Edge case: highly connected hubs
+
+Generic concepts ("software", "company") accumulate thousands of edges
+and poison one-hop expansion. The integration caps expansion fan-out
+and, for nodes above the hub threshold, requires a predicate hint
+before expanding at all. If every answer mentions the same generic
+node, the corpus needs ontology enforcement, not more expansion.
