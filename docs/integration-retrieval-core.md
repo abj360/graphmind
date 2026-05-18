@@ -340,3 +340,13 @@ and poison one-hop expansion. The integration caps expansion fan-out
 and, for nodes above the hub threshold, requires a predicate hint
 before expanding at all. If every answer mentions the same generic
 node, the corpus needs ontology enforcement, not more expansion.
+
+## Runbook: graph answers look stale
+
+1. Check the CDC state file timestamp — if polling stalled, restart
+   the pipeline service and let it catch up.
+2. Spot-check one known document: does its `source_doc_id` appear in
+   any edge? If not, re-run the loader for that document.
+3. If edges exist but look wrong, inspect the extraction stats for the
+   document (dropped-low-confidence spikes correlate with prompt
+   regressions).
