@@ -31,6 +31,7 @@ Contains:
     validate_few_shot_examples(): sanity-checks the example registry
     render_prompt_preview(): abbreviated prompt for debugging
     template_hash(): content fingerprint of the template set
+    reload_templates(): re-reads templates after an edit
 """
 
 from typing import TYPE_CHECKING
@@ -355,3 +356,13 @@ def template_hash() -> str:
 
     material = f"{SYSTEM_PROMPT}|{EXTRACTION_RULES}|{TEMPLATE_VERSION}"
     return hashlib.sha256(material.encode()).hexdigest()[:12]
+
+
+def reload_templates() -> str:
+    """Re-validates the template set after an in-place edit.
+
+    Returns:
+        summary: Template summary line for logs.
+    """
+    validate_few_shot_examples()
+    return summarize_template()
