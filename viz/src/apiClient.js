@@ -8,6 +8,7 @@
  *  *   fetchGraph(): loads the view graph
  *  *   fetchLabels(): loads entity type counts
  *  *   fetchDedupMetrics(): loads the dedup metrics payload
+ *  *   graphmlExportUrl(): absolute URL of the GraphML export
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -59,4 +60,13 @@ export function fetchLabels() {
  */
 export function fetchDedupMetrics() {
   return fetchJson("/api/metrics/dedup");
+}
+
+/**
+ * Builds the absolute URL of the GraphML export endpoint.
+ *
+ * @returns url - Absolute export URL for download links.
+ */
+export function graphmlExportUrl() {
+  return `${API_BASE}/api/export/graphml`;
 }
