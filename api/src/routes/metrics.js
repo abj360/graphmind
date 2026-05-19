@@ -10,6 +10,7 @@
  *  *   buildMetricsPayload(): shapes the dashboard payload
  *  *   metricsRouter(): serves the metrics endpoint
  *  *   EMPTY_PAYLOAD: response when the graph is empty
+ *  *   HUB_QUERY: most connected entities for hub detection
  */
 
 import { Router } from "express";
@@ -119,3 +120,10 @@ export function withEmptyGuard(payload) {
   }
   return payload;
 }
+
+const HUB_QUERY = `
+MATCH (n:Entity)-[r:RELATED]-()
+RETURN n.name AS name, count(r) AS degree
+ORDER BY degree DESC
+LIMIT 10
+`.trim();
