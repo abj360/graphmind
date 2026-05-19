@@ -5,6 +5,7 @@ test_cdc_poller.py --- integration tests for CDC polling over a filesystem corpu
 Contains:
     make_poller(): builds a poller over a temp corpus
     test_new_document_emits_upsert
+    test_unchanged_corpus_emits_nothing
 """
 
 from pathlib import Path
@@ -44,3 +45,13 @@ def test_new_document_emits_upsert(tmp_path) -> None:
     assert len(events) == 1
     assert events[0].kind == ChangeKind.UPSERT
     assert events[0].doc_id == "a.txt"
+
+
+def test_unchanged_corpus_emits_nothing(tmp_path) -> None:
+    """Checks that an unchanged corpus emits no events on re-poll."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.poll_once()
+    assert poller.poll_once() == []
