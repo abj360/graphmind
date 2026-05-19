@@ -30,6 +30,8 @@ Contains:
     merge_domain_hints(): combines hints for compound domains
     validate_few_shot_examples(): sanity-checks the example registry
     render_prompt_preview(): abbreviated prompt for debugging
+    template_hash(): content fingerprint of the template set
+    reload_templates(): re-reads templates after an edit
 """
 
 from typing import TYPE_CHECKING
@@ -342,3 +344,25 @@ def render_prompt_preview(text: str, config: "PromptConfig | None" = None) -> st
     if len(prompt) <= 400:
         return prompt
     return prompt[:400] + "...[truncated]"
+
+
+def template_hash() -> str:
+    """Computes a content fingerprint of the current template set.
+
+    Returns:
+        fingerprint: Stable short hash of prompts and rules.
+    """
+    import hashlib
+
+    material = f"{SYSTEM_PROMPT}|{EXTRACTION_RULES}|{TEMPLATE_VERSION}"
+    return hashlib.sha256(material.encode()).hexdigest()[:12]
+
+
+def reload_templates() -> str:
+    """Re-validates the template set after an in-place edit.
+
+    Returns:
+        summary: Template summary line for logs.
+    """
+    validate_few_shot_examples()
+    return summarize_template()
