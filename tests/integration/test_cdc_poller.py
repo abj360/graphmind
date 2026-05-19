@@ -6,6 +6,7 @@ Contains:
     make_poller(): builds a poller over a temp corpus
     test_new_document_emits_upsert
     test_unchanged_corpus_emits_nothing
+    test_modified_document_emits_new_upsert
 """
 
 from pathlib import Path
@@ -55,3 +56,17 @@ def test_unchanged_corpus_emits_nothing(tmp_path) -> None:
     poller = make_poller(corpus, tmp_path / "state.json")
     poller.poll_once()
     assert poller.poll_once() == []
+
+
+def test_modified_document_emits_new_upsert(tmp_path) -> None:
+    """Checks that a content change re-emits an upsert for the document."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    target = corpus / "a.txt"
+    target.write_text("alpha")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.poll_once()
+    target.write_text("alpha beta")
+    events = poller.poll_once()
+    assert len(events) == 1
+    assert events[0].kind == ChangeKind.UPSERT
