@@ -11,6 +11,7 @@
  *  *   metricsRouter(): serves the metrics endpoint
  *  *   EMPTY_PAYLOAD: response when the graph is empty
  *  *   HUB_QUERY: most connected entities for hub detection
+ *  *   mountHubsEndpoint(): top-degree entities endpoint
  */
 
 import { Router } from "express";
@@ -127,3 +128,26 @@ RETURN n.name AS name, count(r) AS degree
 ORDER BY degree DESC
 LIMIT 10
 `.trim();
+
+/**
+ * Mounts an endpoint listing the most connected entities.
+ *
+ * @param router - Router to extend.
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ */
+export function mountHubsEndpoint(router, driver, config) {
+  router.get("/metrics/hubs", async (_request, response, next) => {
+    try {
+      const records = await runQuery(driver, HUB_QUERY, {}, config.neo4jDatabase);
+      response.json(
+        records.map((record) => ({
+          name: record.get("name"),
+          degree: toNumber(record.get("degree")),
+        })),
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+}
