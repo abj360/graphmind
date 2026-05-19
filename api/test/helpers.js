@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   fakeConfig(): deterministic test configuration
  *  *   fakeRecord(): builds a raw-record shaped double
+ *  *   stubDriver(): driver double serving canned records
  */
 
 /**
@@ -44,4 +45,33 @@ export function fakeRecord(subject, predicate, object, extra = {}) {
       : null,
   };
   return { get: (key) => values[key] ?? null };
+}
+
+/**
+ * Builds a Neo4j driver double that serves canned query results.
+ *
+ * @param resultsByQuery - Map of query-substring to records to return.
+ * @returns driver - Double with session() and close() implemented.
+ */
+export function stubDriver(resultsByQuery = {}) {
+  return {
+    calls: [],
+    session({ database } = {}) {
+      return {
+        run: async (query, params) => {
+          const entry = Object.entries(resultsByQuery).find(([fragment]) =>
+            query.includes(fragment),
+          );
+          const records = entry ? entry[1] : [];
+          const driver = resultsByQuery.__driver;
+          if (driver) {
+            driver.calls.push({ query, params, database });
+          }
+          return { records };
+        },
+        close: async () => {},
+      };
+    },
+    close: async () => {},
+  };
 }
