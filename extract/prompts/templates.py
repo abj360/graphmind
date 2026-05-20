@@ -43,9 +43,10 @@ if TYPE_CHECKING:
     from extract.prompts.config import PromptConfig
 
 SYSTEM_PROMPT = (
-    "You are an information-extraction engine. Extract "
-    "subject-predicate-object triples from the supplied text, covering every "
-    "relationship the text mentions or implies."
+    "You are a precise information-extraction engine. Extract "
+    "subject-predicate-object triples from the supplied text. Only extract "
+    "relationships that are explicitly stated in the text; never infer, "
+    "assume, or generalize beyond what the text says."
 )
 
 EXTRACTION_RULES = [
@@ -84,7 +85,13 @@ def build_extraction_prompt(text: str, config: "PromptConfig | None" = None) -> 
 
     active = config or load_prompt_config()
     sections = [SYSTEM_PROMPT, format_rules(EXTRACTION_RULES)]
-    sections.append(format_few_shot(FEW_SHOT_EXAMPLES[: active.few_shot_count]))
+    citation = citation_block(active.require_citations)
+    if citation:
+        sections.append(citation)
+    sections.append(format_few_shot(select_examples(active)))
+    hint = render_domain_hint(active.domain)
+    if hint:
+        sections.append(hint)
     sections.append(f"Text:\n{text}\n\nTriples JSON:")
     return "\n\n".join(sections)
 
