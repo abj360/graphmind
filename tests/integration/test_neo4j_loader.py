@@ -19,6 +19,7 @@ Contains:
     test_batch_writer_rejects_zero_batch_size
     test_estimate_write_seconds_scales_with_batches
     test_close_marks_driver_closed
+    test_healthcheck_reports_true_with_working_driver
 """
 
 from typing import Any
@@ -200,3 +201,9 @@ def test_close_marks_driver_closed() -> None:
     loader, driver = make_loader()
     loader.close()
     assert driver.closed
+
+
+def test_healthcheck_reports_true_with_working_driver() -> None:
+    """Checks that the healthcheck passes with a working driver."""
+    loader, _ = make_loader()
+    assert loader.healthcheck()
