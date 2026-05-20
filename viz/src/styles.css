@@ -350,3 +350,16 @@ button {
 .search-clear:hover {
   color: #ffffff;
 }
+
+.graph-legend li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: #9fb0c7;
+  font-variant-numeric: tabular-nums;
+}
