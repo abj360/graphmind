@@ -328,3 +328,8 @@ button {
     animation: none !important;
   }
 }
+
+
+.search-input {
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
