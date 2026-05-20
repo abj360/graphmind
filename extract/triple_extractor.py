@@ -70,6 +70,7 @@ class ExtractionConfig:
         batch_size: Maximum chunks sent per batched request.
         batch_token_budget: Approximate token ceiling per batched prompt.
         min_confidence: Triples scoring below this are dropped.
+        require_source_span: Triples without a cited span are dropped.
     """
 
     model: str = DEFAULT_MODEL
@@ -78,6 +79,7 @@ class ExtractionConfig:
     batch_size: int = 8
     batch_token_budget: int = 6_000
     min_confidence: float = 0.0
+    require_source_span: bool = False
 
 
 @dataclass
@@ -89,12 +91,14 @@ class ExtractionStats:
         triples_extracted: Number of triples kept after all filtering.
         retries: Number of retry attempts after transient failures.
         dropped_low_confidence: Triples discarded by the confidence floor.
+        dropped_missing_span: Triples discarded for lacking a citation.
     """
 
     calls_made: int = 0
     triples_extracted: int = 0
     retries: int = 0
     dropped_low_confidence: int = 0
+    dropped_missing_span: int = 0
 
 
 class ExtractionError(RuntimeError):
@@ -168,7 +172,7 @@ class TripleExtractor:
             doc_id: Document identifier stamped onto produced triples.
 
         Returns:
-            triples: Validated triples passing the confidence floor.
+            triples: Validated triples passing confidence and citation rules.
         """
         items = self._extract_json_array(raw)
         triples: list[Triple] = []
@@ -178,6 +182,9 @@ class TripleExtractor:
                 continue
             if triple.confidence < self.config.min_confidence:
                 self.stats.dropped_low_confidence += 1
+                continue
+            if self.config.require_source_span and triple.source_span is None:
+                self.stats.dropped_missing_span += 1
                 continue
             triples.append(triple)
         return triples

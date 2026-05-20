@@ -32,6 +32,10 @@ Contains:
     render_prompt_preview(): abbreviated prompt for debugging
     template_hash(): content fingerprint of the template set
     reload_templates(): re-reads templates after an edit
+    system_prompt_for_domain(): domain-tuned system prompt
+    rules_for_domain(): base rules plus domain extras
+    example_for_domain(): single best worked example
+    prompt_length_budget(): character budget per prompt section
 """
 
 from typing import TYPE_CHECKING
@@ -40,9 +44,10 @@ if TYPE_CHECKING:
     from extract.prompts.config import PromptConfig
 
 SYSTEM_PROMPT = (
-    "You are an information-extraction engine. Extract "
-    "subject-predicate-object triples from the supplied text, covering every "
-    "relationship the text mentions or implies."
+    "You are a precise information-extraction engine. Extract "
+    "subject-predicate-object triples from the supplied text. Only extract "
+    "relationships that are explicitly stated in the text; never infer, "
+    "assume, or generalize beyond what the text says."
 )
 
 EXTRACTION_RULES = [
@@ -81,7 +86,13 @@ def build_extraction_prompt(text: str, config: "PromptConfig | None" = None) -> 
 
     active = config or load_prompt_config()
     sections = [SYSTEM_PROMPT, format_rules(EXTRACTION_RULES)]
-    sections.append(format_few_shot(FEW_SHOT_EXAMPLES[: active.few_shot_count]))
+    citation = citation_block(active.require_citations)
+    if citation:
+        sections.append(citation)
+    sections.append(format_few_shot(select_examples(active)))
+    hint = render_domain_hint(active.domain)
+    if hint:
+        sections.append(hint)
     sections.append(f"Text:\n{text}\n\nTriples JSON:")
     return "\n\n".join(sections)
 
@@ -366,3 +377,57 @@ def reload_templates() -> str:
     """
     validate_few_shot_examples()
     return summarize_template()
+
+
+def system_prompt_for_domain(domain: str) -> str:
+    """Builds a domain-tuned variant of the base system prompt.
+
+    Args:
+        domain: Domain key such as technical, news, or biomedical.
+
+    Returns:
+        prompt: Base system prompt with the domain hint appended.
+    """
+    hint = render_domain_hint(domain)
+    if not hint:
+        return SYSTEM_PROMPT
+    return f"{SYSTEM_PROMPT}\n\n{hint}"
+
+
+def rules_for_domain(domain: str) -> list[str]:
+    """Builds the rule list for a domain, appending predicate guidance.
+
+    Args:
+        domain: Domain key to extend rules for.
+
+    Returns:
+        rules: Base rules plus a domain predicate suggestion line.
+    """
+    rules = list(EXTRACTION_RULES)
+    suggestions = predicate_guidance(domain)
+    if suggestions != ["relates to"]:
+        rules.append(f"Common predicates in this domain: {', '.join(suggestions)}.")
+    return rules
+
+
+def example_for_domain(domain: str) -> dict[str, object] | None:
+    """Picks the single best worked example for a domain.
+
+    Args:
+        domain: Domain key to match.
+
+    Returns:
+        example: Matching example mapping, or None when none matches.
+    """
+    for example in FEW_SHOT_EXAMPLES:
+        if example["domain"] == domain:
+            return example
+    return None
+
+
+PROMPT_LENGTH_BUDGET = {
+    "system": 400,
+    "rules": 600,
+    "examples": 1200,
+    "text": 4000,
+}
