@@ -32,6 +32,9 @@ Contains:
     render_prompt_preview(): abbreviated prompt for debugging
     template_hash(): content fingerprint of the template set
     reload_templates(): re-reads templates after an edit
+    system_prompt_for_domain(): domain-tuned system prompt
+    rules_for_domain(): base rules plus domain extras
+    example_for_domain(): single best worked example
 """
 
 from typing import TYPE_CHECKING
@@ -366,3 +369,49 @@ def reload_templates() -> str:
     """
     validate_few_shot_examples()
     return summarize_template()
+
+
+def system_prompt_for_domain(domain: str) -> str:
+    """Builds a domain-tuned variant of the base system prompt.
+
+    Args:
+        domain: Domain key such as technical, news, or biomedical.
+
+    Returns:
+        prompt: Base system prompt with the domain hint appended.
+    """
+    hint = render_domain_hint(domain)
+    if not hint:
+        return SYSTEM_PROMPT
+    return f"{SYSTEM_PROMPT}\n\n{hint}"
+
+
+def rules_for_domain(domain: str) -> list[str]:
+    """Builds the rule list for a domain, appending predicate guidance.
+
+    Args:
+        domain: Domain key to extend rules for.
+
+    Returns:
+        rules: Base rules plus a domain predicate suggestion line.
+    """
+    rules = list(EXTRACTION_RULES)
+    suggestions = predicate_guidance(domain)
+    if suggestions != ["relates to"]:
+        rules.append(f"Common predicates in this domain: {', '.join(suggestions)}.")
+    return rules
+
+
+def example_for_domain(domain: str) -> dict[str, object] | None:
+    """Picks the single best worked example for a domain.
+
+    Args:
+        domain: Domain key to match.
+
+    Returns:
+        example: Matching example mapping, or None when none matches.
+    """
+    for example in FEW_SHOT_EXAMPLES:
+        if example["domain"] == domain:
+            return example
+    return None
