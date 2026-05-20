@@ -6,6 +6,7 @@
  *  *   fakeConfig(): deterministic test configuration
  *  *   fakeRecord(): builds a raw-record shaped double
  *  *   stubDriver(): driver double serving canned records
+ *  *   makeApp(): wires the app with a stub driver
  */
 
 /**
@@ -74,4 +75,16 @@ export function stubDriver(resultsByQuery = {}) {
     },
     close: async () => {},
   };
+}
+
+/**
+ * Wires the Express app with a stub driver and canned records.
+ *
+ * @param resultsByQuery - Map of query-substring to records to return.
+ * @returns app - Express application ready for supertest.
+ */
+export async function makeApp(resultsByQuery = {}) {
+  const { createApp } = await import("../src/app.js");
+  const driver = stubDriver(resultsByQuery);
+  return { app: createApp(driver, fakeConfig()), driver };
 }
