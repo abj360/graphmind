@@ -21,6 +21,7 @@ Contains:
     test_extract_batch_covers_all_documents
     test_extract_chunks_uses_single_calls_for_small_sets
     test_describe_config_mentions_model
+    test_extraction_config_defaults_are_sane
 """
 
 import json
@@ -264,3 +265,12 @@ def test_describe_config_mentions_model() -> None:
     """Checks that the config summary mentions the model name."""
     extractor = make_extractor()
     assert "model=" in extractor.describe_config()
+
+
+def test_extraction_config_defaults_are_sane() -> None:
+    """Checks that default extraction config values pass validation."""
+    from extract.triple_extractor import validate_extraction_config
+
+    config = validate_extraction_config(ExtractionConfig())
+    assert config.batch_size >= 1
+    assert 0.0 <= config.min_confidence <= 1.0
