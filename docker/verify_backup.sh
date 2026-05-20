@@ -35,3 +35,8 @@ usage() {
     printf 'checks every neo4j-*.tar.gz in %s for integrity\n' "$BACKUP_DIR" >&2
     exit 64
 }
+
+report() {
+    local checked="$1"
+    printf 'checked %d archive(s); %d corrupt\n' "$checked" "$failures"
+}
