@@ -20,6 +20,7 @@ Contains:
     test_prompt_mentions_citation_requirement_when_enabled
     test_extract_batch_covers_all_documents
     test_extract_chunks_uses_single_calls_for_small_sets
+    test_describe_config_mentions_model
 """
 
 import json
@@ -257,3 +258,9 @@ def test_extract_chunks_uses_single_calls_for_small_sets() -> None:
     chunks = [TextChunk("d1", 0, "text one", 0, 8), TextChunk("d2", 0, "text two", 0, 8)]
     extractor.extract_chunks(chunks)
     assert len(client.prompts) == 2
+
+
+def test_describe_config_mentions_model() -> None:
+    """Checks that the config summary mentions the model name."""
+    extractor = make_extractor()
+    assert "model=" in extractor.describe_config()
