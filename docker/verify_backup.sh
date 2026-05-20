@@ -29,3 +29,9 @@ main() {
 }
 
 main "$@"
+
+usage() {
+    printf 'usage: %s\n' "$(basename "$0")" >&2
+    printf 'checks every neo4j-*.tar.gz in %s for integrity\n' "$BACKUP_DIR" >&2
+    exit 64
+}
