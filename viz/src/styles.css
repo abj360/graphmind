@@ -328,3 +328,46 @@ button {
     animation: none !important;
   }
 }
+
+
+.search-input {
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.detail-edge:hover {
+  background: #16202e;
+}
+
+.search-clear {
+  background: none;
+  border: none;
+  color: #9fb0c7;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.search-clear:hover {
+  color: #ffffff;
+}
+
+.graph-legend li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: #9fb0c7;
+  font-variant-numeric: tabular-nums;
+}
+
+.detail-panel h3 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9fb0c7;
+}
