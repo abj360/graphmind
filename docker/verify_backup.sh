@@ -14,3 +14,18 @@ check_one() {
         return 1
     fi
 }
+
+main() {
+    shopt -s nullglob
+    local archives=("${BACKUP_DIR}"/neo4j-*.tar.gz)
+    if [ ${#archives[@]} -eq 0 ]; then
+        printf 'no archives found in %s\n' "$BACKUP_DIR" >&2
+        exit 1
+    fi
+    for archive in "${archives[@]}"; do
+        check_one "$archive" || failures=$((failures + 1))
+    done
+    [ "$failures" -eq 0 ]
+}
+
+main "$@"
