@@ -363,3 +363,11 @@ button {
   color: #9fb0c7;
   font-variant-numeric: tabular-nums;
 }
+
+.detail-panel h3 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9fb0c7;
+}
