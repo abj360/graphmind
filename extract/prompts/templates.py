@@ -35,6 +35,7 @@ Contains:
     system_prompt_for_domain(): domain-tuned system prompt
     rules_for_domain(): base rules plus domain extras
     example_for_domain(): single best worked example
+    prompt_length_budget(): character budget per prompt section
 """
 
 from typing import TYPE_CHECKING
@@ -422,3 +423,11 @@ def example_for_domain(domain: str) -> dict[str, object] | None:
         if example["domain"] == domain:
             return example
     return None
+
+
+PROMPT_LENGTH_BUDGET = {
+    "system": 400,
+    "rules": 600,
+    "examples": 1200,
+    "text": 4000,
+}
