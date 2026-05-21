@@ -11,6 +11,10 @@ Contains:
     test_merge_remaps_aliases_to_survivor
     test_merge_same_canonical_is_noop
     test_save_and_load_alias_table
+    test_load_missing_file_yields_empty_table
+    test_submit_dedupes_by_item_id
+    test_approve_moves_item_to_decided
+    test_reject_records_false_decision
 """
 
 import pytest
@@ -94,3 +98,35 @@ def test_save_and_load_alias_table(tmp_path) -> None:
     table.add("Acme", "ACME Corp")
     save_alias_table(table, path)
     assert load_alias_table(path).canonical_for("acme corp") == "acme"
+
+
+def test_load_missing_file_yields_empty_table(tmp_path) -> None:
+    """Checks that loading a missing file yields an empty table."""
+    table = load_alias_table(tmp_path / "missing.json")
+    assert table.to_dict() == {}
+
+
+def test_submit_dedupes_by_item_id() -> None:
+    """Checks that resubmitting the same id is ignored."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.submit(make_item())
+    assert len(queue.pending()) == 1
+
+
+def test_approve_moves_item_to_decided() -> None:
+    """Checks that approval empties the queue and records the decision."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    item = queue.approve("review-1")
+    assert item.alias == "acme corp"
+    assert queue.decided["review-1"] is True
+    assert queue.pending() == []
+
+
+def test_reject_records_false_decision() -> None:
+    """Checks that rejection records a negative decision."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.reject("review-1")
+    assert queue.decided["review-1"] is False
