@@ -22,6 +22,7 @@ Contains:
     test_extract_chunks_uses_single_calls_for_small_sets
     test_describe_config_mentions_model
     test_extraction_config_defaults_are_sane
+    test_validate_extraction_config_rejects_bad_confidence
 """
 
 import json
@@ -274,3 +275,15 @@ def test_extraction_config_defaults_are_sane() -> None:
     config = validate_extraction_config(ExtractionConfig())
     assert config.batch_size >= 1
     assert 0.0 <= config.min_confidence <= 1.0
+
+
+def test_validate_extraction_config_rejects_bad_confidence() -> None:
+    """Checks that out-of-range confidence floors are rejected."""
+    from extract.triple_extractor import validate_extraction_config
+
+    try:
+        validate_extraction_config(ExtractionConfig(min_confidence=1.5))
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised
