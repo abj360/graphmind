@@ -19,6 +19,7 @@
  *  *   edgeTooltipFor(): full tooltip text for one edge
  *  *   mergeDuplicatePredicates(): joins predicate labels on parallels
  *  *   opacityForDensity(): fades edges as density climbs
+ *  *   labelFontForDensity(): shrinks labels on dense graphs
  */
 
 import cytoscape from "cytoscape";
@@ -290,4 +291,20 @@ export function opacityForDensity(nodeCount, edgeCount) {
   }
   const density = edgeCount / nodeCount;
   return Math.max(0.25, Math.min(0.9, 1.1 - density * 0.15));
+}
+
+/**
+ * Shrinks node label font size as the visible graph gets denser.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @returns fontSize - Label font size in pixels.
+ */
+export function labelFontForDensity(nodeCount) {
+  if (nodeCount > 800) {
+    return 6;
+  }
+  if (nodeCount > 300) {
+    return 8;
+  }
+  return 10;
 }
