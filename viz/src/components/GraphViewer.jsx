@@ -20,6 +20,7 @@
  *  *   mergeDuplicatePredicates(): joins predicate labels on parallels
  *  *   opacityForDensity(): fades edges as density climbs
  *  *   labelFontForDensity(): shrinks labels on dense graphs
+ *  *   selectLayoutOptions(): full layout options for current size
  */
 
 import cytoscape from "cytoscape";
@@ -307,4 +308,18 @@ export function labelFontForDensity(nodeCount) {
     return 8;
   }
   return 10;
+}
+
+/**
+ * Builds full layout options for the current visible size.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @returns options - Layout name plus tuning parameters.
+ */
+export function selectLayoutOptions(nodeCount) {
+  const name = layoutForSize(nodeCount);
+  if (name === "cose") {
+    return { ...GRAPH_LAYOUT, nodeRepulsion: nodeCount > 300 ? 12000 : 8000 };
+  }
+  return { name, animate: false, padding: 40 };
 }
