@@ -14,6 +14,7 @@ Contains:
     test_load_missing_file_yields_empty_table
     test_submit_dedupes_by_item_id
     test_approve_moves_item_to_decided
+    test_reject_records_false_decision
 """
 
 import pytest
@@ -121,3 +122,11 @@ def test_approve_moves_item_to_decided() -> None:
     assert item.alias == "acme corp"
     assert queue.decided["review-1"] is True
     assert queue.pending() == []
+
+
+def test_reject_records_false_decision() -> None:
+    """Checks that rejection records a negative decision."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.reject("review-1")
+    assert queue.decided["review-1"] is False
