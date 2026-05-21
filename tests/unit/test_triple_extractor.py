@@ -23,6 +23,7 @@ Contains:
     test_describe_config_mentions_model
     test_extraction_config_defaults_are_sane
     test_validate_extraction_config_rejects_bad_confidence
+    test_extraction_config_from_env_reads_overrides
 """
 
 import json
@@ -287,3 +288,11 @@ def test_validate_extraction_config_rejects_bad_confidence() -> None:
     except ValueError:
         raised = True
     assert raised
+
+
+def test_extraction_config_from_env_reads_overrides() -> None:
+    """Checks that environment variables reach the extraction config."""
+    from extract.triple_extractor import extraction_config_from_env
+
+    config = extraction_config_from_env({"GRAPHMIND_EXTRACT_BATCH_SIZE": "4"})
+    assert config.batch_size == 4
