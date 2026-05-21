@@ -22,6 +22,7 @@
  *  *   labelFontForDensity(): shrinks labels on dense graphs
  *  *   selectLayoutOptions(): full layout options for current size
  *  *   batchStyleUpdates(): applies style changes in one batch
+ *  *   pruneDisconnected(): drops edges referencing missing nodes
  */
 
 import cytoscape from "cytoscape";
@@ -333,4 +334,18 @@ export function selectLayoutOptions(nodeCount) {
  */
 export function batchStyleUpdates(cy, apply) {
   cy.batch(() => apply(cy));
+}
+
+/**
+ * Drops edges that reference nodes absent from the visible set.
+ *
+ * @param graph - { nodes, edges } payload, possibly inconsistent.
+ * @returns graph - Consistent subgraph with dangling edges removed.
+ */
+export function pruneDisconnected(graph) {
+  const visible = new Set(graph.nodes.map((node) => node.id));
+  return {
+    nodes: graph.nodes,
+    edges: graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target)),
+  };
 }
