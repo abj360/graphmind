@@ -21,6 +21,7 @@
  *  *   opacityForDensity(): fades edges as density climbs
  *  *   labelFontForDensity(): shrinks labels on dense graphs
  *  *   selectLayoutOptions(): full layout options for current size
+ *  *   batchStyleUpdates(): applies style changes in one batch
  */
 
 import cytoscape from "cytoscape";
@@ -322,4 +323,14 @@ export function selectLayoutOptions(nodeCount) {
     return { ...GRAPH_LAYOUT, nodeRepulsion: nodeCount > 300 ? 12000 : 8000 };
   }
   return { name, animate: false, padding: 40 };
+}
+
+/**
+ * Applies style changes inside a single Cytoscape batch for speed.
+ *
+ * @param cy - Cytoscape instance to update.
+ * @param apply - Callback receiving the batched instance.
+ */
+export function batchStyleUpdates(cy, apply) {
+  cy.batch(() => apply(cy));
 }
