@@ -22,6 +22,9 @@ Contains:
     test_extract_chunks_uses_single_calls_for_small_sets
     test_describe_config_mentions_model
     test_extraction_config_defaults_are_sane
+    test_validate_extraction_config_rejects_bad_confidence
+    test_extraction_config_from_env_reads_overrides
+    test_with_config_overrides_derives_new_config
 """
 
 import json
@@ -274,3 +277,33 @@ def test_extraction_config_defaults_are_sane() -> None:
     config = validate_extraction_config(ExtractionConfig())
     assert config.batch_size >= 1
     assert 0.0 <= config.min_confidence <= 1.0
+
+
+def test_validate_extraction_config_rejects_bad_confidence() -> None:
+    """Checks that out-of-range confidence floors are rejected."""
+    from extract.triple_extractor import validate_extraction_config
+
+    try:
+        validate_extraction_config(ExtractionConfig(min_confidence=1.5))
+        raised = False
+    except ValueError:
+        raised = True
+    assert raised
+
+
+def test_extraction_config_from_env_reads_overrides() -> None:
+    """Checks that environment variables reach the extraction config."""
+    from extract.triple_extractor import extraction_config_from_env
+
+    config = extraction_config_from_env({"GRAPHMIND_EXTRACT_BATCH_SIZE": "4"})
+    assert config.batch_size == 4
+
+
+def test_with_config_overrides_derives_new_config() -> None:
+    """Checks that with_config_overrides copies with selected changes."""
+    from extract.triple_extractor import with_config_overrides
+
+    base = ExtractionConfig(batch_size=4)
+    derived = with_config_overrides(base, batch_size=12)
+    assert derived.batch_size == 12
+    assert base.batch_size == 4
