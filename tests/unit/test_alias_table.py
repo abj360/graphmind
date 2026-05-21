@@ -12,6 +12,7 @@ Contains:
     test_merge_same_canonical_is_noop
     test_save_and_load_alias_table
     test_load_missing_file_yields_empty_table
+    test_submit_dedupes_by_item_id
 """
 
 import pytest
@@ -101,3 +102,11 @@ def test_load_missing_file_yields_empty_table(tmp_path) -> None:
     """Checks that loading a missing file yields an empty table."""
     table = load_alias_table(tmp_path / "missing.json")
     assert table.to_dict() == {}
+
+
+def test_submit_dedupes_by_item_id() -> None:
+    """Checks that resubmitting the same id is ignored."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.submit(make_item())
+    assert len(queue.pending()) == 1
