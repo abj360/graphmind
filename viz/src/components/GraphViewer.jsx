@@ -23,6 +23,7 @@
  *  *   selectLayoutOptions(): full layout options for current size
  *  *   batchStyleUpdates(): applies style changes in one batch
  *  *   pruneDisconnected(): drops edges referencing missing nodes
+ *  *   edgeKeySet(): fast lookup set of edge identities
  */
 
 import cytoscape from "cytoscape";
@@ -348,4 +349,14 @@ export function pruneDisconnected(graph) {
     nodes: graph.nodes,
     edges: graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target)),
   };
+}
+
+/**
+ * Builds a fast lookup set of edge identity strings.
+ *
+ * @param edges - Edge list to index.
+ * @returns keys - Set of source|predicate|target identity strings.
+ */
+export function edgeKeySet(edges) {
+  return new Set(edges.map((edge) => `${edge.source}|${edge.predicate}|${edge.target}`));
 }
