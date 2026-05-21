@@ -18,6 +18,12 @@
  *  *   clampZoom(): bounds the zoom level for readability
  *  *   edgeTooltipFor(): full tooltip text for one edge
  *  *   mergeDuplicatePredicates(): joins predicate labels on parallels
+ *  *   opacityForDensity(): fades edges as density climbs
+ *  *   labelFontForDensity(): shrinks labels on dense graphs
+ *  *   selectLayoutOptions(): full layout options for current size
+ *  *   batchStyleUpdates(): applies style changes in one batch
+ *  *   pruneDisconnected(): drops edges referencing missing nodes
+ *  *   edgeKeySet(): fast lookup set of edge identities
  */
 
 import cytoscape from "cytoscape";
@@ -274,4 +280,83 @@ export function mergeDuplicatePredicates(edges) {
     seen.add(edge.predicate);
   }
   return [...seen].join(", ");
+}
+
+/**
+ * Fades edge opacity as the visible graph gets denser.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @param edgeCount - Number of visible edges.
+ * @returns opacity - Edge opacity between 0.25 and 0.9.
+ */
+export function opacityForDensity(nodeCount, edgeCount) {
+  if (nodeCount === 0) {
+    return 0.9;
+  }
+  const density = edgeCount / nodeCount;
+  return Math.max(0.25, Math.min(0.9, 1.1 - density * 0.15));
+}
+
+/**
+ * Shrinks node label font size as the visible graph gets denser.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @returns fontSize - Label font size in pixels.
+ */
+export function labelFontForDensity(nodeCount) {
+  if (nodeCount > 800) {
+    return 6;
+  }
+  if (nodeCount > 300) {
+    return 8;
+  }
+  return 10;
+}
+
+/**
+ * Builds full layout options for the current visible size.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @returns options - Layout name plus tuning parameters.
+ */
+export function selectLayoutOptions(nodeCount) {
+  const name = layoutForSize(nodeCount);
+  if (name === "cose") {
+    return { ...GRAPH_LAYOUT, nodeRepulsion: nodeCount > 300 ? 12000 : 8000 };
+  }
+  return { name, animate: false, padding: 40 };
+}
+
+/**
+ * Applies style changes inside a single Cytoscape batch for speed.
+ *
+ * @param cy - Cytoscape instance to update.
+ * @param apply - Callback receiving the batched instance.
+ */
+export function batchStyleUpdates(cy, apply) {
+  cy.batch(() => apply(cy));
+}
+
+/**
+ * Drops edges that reference nodes absent from the visible set.
+ *
+ * @param graph - { nodes, edges } payload, possibly inconsistent.
+ * @returns graph - Consistent subgraph with dangling edges removed.
+ */
+export function pruneDisconnected(graph) {
+  const visible = new Set(graph.nodes.map((node) => node.id));
+  return {
+    nodes: graph.nodes,
+    edges: graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target)),
+  };
+}
+
+/**
+ * Builds a fast lookup set of edge identity strings.
+ *
+ * @param edges - Edge list to index.
+ * @returns keys - Set of source|predicate|target identity strings.
+ */
+export function edgeKeySet(edges) {
+  return new Set(edges.map((edge) => `${edge.source}|${edge.predicate}|${edge.target}`));
 }
