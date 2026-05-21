@@ -13,6 +13,7 @@ Contains:
     test_save_and_load_alias_table
     test_load_missing_file_yields_empty_table
     test_submit_dedupes_by_item_id
+    test_approve_moves_item_to_decided
 """
 
 import pytest
@@ -110,3 +111,13 @@ def test_submit_dedupes_by_item_id() -> None:
     queue.submit(make_item())
     queue.submit(make_item())
     assert len(queue.pending()) == 1
+
+
+def test_approve_moves_item_to_decided() -> None:
+    """Checks that approval empties the queue and records the decision."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    item = queue.approve("review-1")
+    assert item.alias == "acme corp"
+    assert queue.decided["review-1"] is True
+    assert queue.pending() == []
