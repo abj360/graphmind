@@ -18,6 +18,7 @@
  *  *   clampZoom(): bounds the zoom level for readability
  *  *   edgeTooltipFor(): full tooltip text for one edge
  *  *   mergeDuplicatePredicates(): joins predicate labels on parallels
+ *  *   opacityForDensity(): fades edges as density climbs
  */
 
 import cytoscape from "cytoscape";
@@ -274,4 +275,19 @@ export function mergeDuplicatePredicates(edges) {
     seen.add(edge.predicate);
   }
   return [...seen].join(", ");
+}
+
+/**
+ * Fades edge opacity as the visible graph gets denser.
+ *
+ * @param nodeCount - Number of visible nodes.
+ * @param edgeCount - Number of visible edges.
+ * @returns opacity - Edge opacity between 0.25 and 0.9.
+ */
+export function opacityForDensity(nodeCount, edgeCount) {
+  if (nodeCount === 0) {
+    return 0.9;
+  }
+  const density = edgeCount / nodeCount;
+  return Math.max(0.25, Math.min(0.9, 1.1 - density * 0.15));
 }
