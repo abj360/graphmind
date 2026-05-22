@@ -6,6 +6,7 @@ Contains:
     neo4j_available(): skips when no Neo4j is reachable
     neo4j_config fixture
     loader fixture
+    corpus_dir fixture
 """
 
 import os
@@ -54,3 +55,20 @@ def loader(neo4j_config):
 
     with Neo4jLoader(neo4j_config) as instance:
         yield instance
+
+
+@pytest.fixture
+def corpus_dir(tmp_path):
+    """Provides a temporary corpus directory with two documents.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        corpus: Directory containing two text documents.
+    """
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "one.txt").write_text("Alice founded Acme.")
+    (corpus / "two.txt").write_text("Acme acquired ByteWorks.")
+    return corpus
