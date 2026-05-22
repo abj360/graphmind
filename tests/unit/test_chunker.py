@@ -13,6 +13,8 @@ Contains:
     test_chunk_many_preserves_document_order
     test_validate_config_rejects_overlap_above_max
     test_from_env_reads_overrides
+    test_estimate_tokens_rounds_up
+    test_budget_batches_respects_token_budget
 """
 
 import pytest
@@ -91,3 +93,20 @@ def test_from_env_reads_overrides() -> None:
     """Checks that environment overrides reach the chunker config."""
     chunker = TextChunker.from_env({"GRAPHMIND_CHUNK_MAX_CHARS": "500"})
     assert chunker.config.max_chars == 500
+
+
+def test_estimate_tokens_rounds_up() -> None:
+    """Checks that token estimation rounds up and never returns zero."""
+    assert estimate_tokens("") == 1
+    assert estimate_tokens("abcd") == 1
+    assert estimate_tokens("abcde") == 2
+
+
+def test_budget_batches_respects_token_budget() -> None:
+    """Checks that batches stay within the configured token budget."""
+    config = ChunkConfig(max_chars=200, overlap_chars=20, min_chunk_chars=40)
+    chunks = TextChunker(config).chunk("doc-1", LOREM)
+    batches = budget_batches(chunks, token_budget=120)
+    assert len(batches) > 1
+    for batch in batches:
+        assert sum(estimate_tokens(chunk.text) for chunk in batch) <= 120 + 50
