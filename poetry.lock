@@ -68,3 +68,15 @@ files = [
 
 [package.dependencies]
 pydantic = ">=2.7.1,<3.0.0"
+
+[[package]]
+name = "pytest"
+version = "8.2.0"
+description = "pytest: simple powerful testing with Python"
+files = [
+    {file = "pytest-8.2.0-py3-none-any.whl", hash = "sha256:1733f0620f6cda4095bbf0d9ff8022486e91892245bb9e7d5542c2a612f0b229"},
+]
+
+[package.dependencies]
+iniconfig = "*"
+pluggy = "*"
