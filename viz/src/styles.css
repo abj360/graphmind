@@ -378,3 +378,11 @@ button {
   text-align: right;
   margin-top: 8px;
 }
+
+.detail-empty::before {
+  content: "◇";
+  display: block;
+  font-size: 28px;
+  color: #223047;
+  margin-bottom: 8px;
+}
