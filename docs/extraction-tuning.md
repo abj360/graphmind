@@ -44,3 +44,11 @@ very different prompt from 8 chunks of 300. Small chunks raise recall
 on dense text but multiply calls; large chunks do the opposite. If you
 change one, re-measure the other — the pairs (600/16), (1200/8),
 (2400/4) are roughly equivalent in total prompt volume.
+
+## Retry policy
+
+`GRAPHMIND_EXTRACT_MAX_RETRIES` (default 2) covers transient provider
+errors with linear backoff. Raising it past 3 usually hides a real
+problem (rate limits, an oversized prompt) rather than fixing one —
+watch the `retries` counter; a healthy run retries well under 1% of
+calls.
