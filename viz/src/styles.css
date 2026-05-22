@@ -371,3 +371,29 @@ button {
   letter-spacing: 0.06em;
   color: #9fb0c7;
 }
+
+.metrics-refresh {
+  font-size: 11px;
+  color: #54657e;
+  text-align: right;
+  margin-top: 8px;
+}
+
+.detail-empty::before {
+  content: "◇";
+  display: block;
+  font-size: 28px;
+  color: #223047;
+  margin-bottom: 8px;
+}
+
+.detail-panel a,
+.metrics-panel a {
+  color: #74b3ce;
+  text-decoration: none;
+}
+
+.detail-panel a:hover,
+.metrics-panel a:hover {
+  text-decoration: underline;
+}
