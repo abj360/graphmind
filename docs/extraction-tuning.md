@@ -52,3 +52,11 @@ errors with linear backoff. Raising it past 3 usually hides a real
 problem (rate limits, an oversized prompt) rather than fixing one —
 watch the `retries` counter; a healthy run retries well under 1% of
 calls.
+
+## Measuring quality
+
+There is no substitute for a labeled spot-check set: keep ~20 chunks
+with hand-verified triples, run the extractor over them after any
+prompt or model change, and compare precision/recall against the last
+run. The unit tests keep the parser honest; only the spot set keeps
+the model honest.
