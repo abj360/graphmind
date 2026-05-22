@@ -371,3 +371,10 @@ button {
   letter-spacing: 0.06em;
   color: #9fb0c7;
 }
+
+.metrics-refresh {
+  font-size: 11px;
+  color: #54657e;
+  text-align: right;
+  margin-top: 8px;
+}
