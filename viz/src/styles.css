@@ -386,3 +386,14 @@ button {
   color: #223047;
   margin-bottom: 8px;
 }
+
+.detail-panel a,
+.metrics-panel a {
+  color: #74b3ce;
+  text-decoration: none;
+}
+
+.detail-panel a:hover,
+.metrics-panel a:hover {
+  text-decoration: underline;
+}
