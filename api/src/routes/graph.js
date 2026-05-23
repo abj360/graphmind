@@ -9,6 +9,7 @@
  *  *   parseLimit(): validates the limit query parameter
  *  *   graphRouter(): serves the graph JSON endpoint
  *  *   LABELS_QUERY + labels endpoint
+ *  *   NODE_QUERY: single-node neighborhood read
  */
 
 import { Router } from "express";
@@ -129,3 +130,10 @@ export function mountLabelsEndpoint(router, driver, config) {
     }
   });
 }
+
+const NODE_QUERY = `
+MATCH (n:Entity {name: $name})
+OPTIONAL MATCH (n)-[r:RELATED]-(m:Entity)
+RETURN n, r, m
+LIMIT 200
+`.trim();
