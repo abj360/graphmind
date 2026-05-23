@@ -9,6 +9,8 @@
  *  *   parseLimit(): validates the limit query parameter
  *  *   graphRouter(): serves the graph JSON endpoint
  *  *   LABELS_QUERY + labels endpoint
+ *  *   NODE_QUERY: single-node neighborhood read
+ *  *   mountNodeEndpoint(): node detail neighborhood endpoint
  */
 
 import { Router } from "express";
@@ -124,6 +126,40 @@ export function mountLabelsEndpoint(router, driver, config) {
           count: record.get("count").toNumber(),
         })),
       );
+    } catch (error) {
+      next(error);
+    }
+  });
+}
+
+const NODE_QUERY = `
+MATCH (n:Entity {name: $name})
+OPTIONAL MATCH (n)-[r:RELATED]-(m:Entity)
+RETURN n, r, m
+LIMIT 200
+`.trim();
+
+/**
+ * Mounts an endpoint returning one node's neighborhood for the detail panel.
+ *
+ * @param router - Router to extend.
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ */
+export function mountNodeEndpoint(router, driver, config) {
+  router.get("/graph/node/:name", async (request, response, next) => {
+    try {
+      const records = await runQuery(
+        driver,
+        NODE_QUERY,
+        { name: request.params.name },
+        config.neo4jDatabase,
+      );
+      if (records.length === 0) {
+        response.status(404).json({ error: `unknown entity: ${request.params.name}` });
+        return;
+      }
+      response.json(toViewGraph(records));
     } catch (error) {
       next(error);
     }
