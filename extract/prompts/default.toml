@@ -1,3 +1,8 @@
 [prompts]
 domain = "general"
 few_shot_count = 2
+
+require_citations = false
+max_predicate_tokens = 5
+
+extra_instructions = []
