@@ -11,6 +11,7 @@ Contains:
     test_dedupe_triples_keeps_highest_confidence
     test_clamp_confidence_bounds_scores
     test_confidence_stats_counts_low_confidence
+    test_confidence_stats_handles_empty_batch
 """
 
 import pytest
@@ -102,3 +103,10 @@ def test_confidence_stats_counts_low_confidence() -> None:
     stats = confidence_stats(triples, review_threshold=0.6)
     assert stats.count == 2
     assert stats.low_confidence_count == 1
+
+
+def test_confidence_stats_handles_empty_batch() -> None:
+    """Checks that confidence stats degrade gracefully on empty input."""
+    stats = confidence_stats([])
+    assert stats.count == 0
+    assert stats.mean == 0.0
