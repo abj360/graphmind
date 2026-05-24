@@ -5,6 +5,7 @@ test_relationship_inference.py --- unit tests for relationship inference between
 Contains:
     test_connected_graph_yields_no_bridges
     test_disconnected_components_are_bridged
+    test_low_confidence_bridges_are_filtered
 """
 
 from extract.relationship_inference import (
@@ -28,3 +29,10 @@ def test_disconnected_components_are_bridged() -> None:
     bridges = RelationshipInferer().infer(triples)
     assert bridges
     assert all(triple.inferred for triple in bridges)
+
+
+def test_low_confidence_bridges_are_filtered() -> None:
+    """Checks that a high confidence floor suppresses weak bridges."""
+    triples = make_triple_chain(["alpha", "beta"]) + make_triple_chain(["gamma", "delta"])
+    inferer = RelationshipInferer(InferenceConfig(min_bridge_confidence=0.99))
+    assert inferer.infer(triples) == []
