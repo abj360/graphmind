@@ -13,6 +13,9 @@ Contains:
     EntityResolver._union(): merges two clusters
     EntityResolver._pick_representative(): chooses cluster canonical
     EntityResolver._rewrite_triples(): applies cluster mapping
+    resolve_names(): canonicalizes a bare list of names
+    summarize_merges(): renders merge decisions for review
+    duplicate_rate(): measures entity duplication before resolution
 """
 
 from dataclasses import dataclass
@@ -201,3 +204,59 @@ class EntityResolver:
             object_ = triple.object.model_copy(update={"name": object_name})
             resolved.append(triple.model_copy(update={"subject": subject, "object": object_}))
         return resolved
+
+
+def resolve_names(names: list[str], threshold: float = 0.85) -> dict[str, str]:
+    """Canonicalizes a bare list of entity names without triples.
+
+    Args:
+        names: Entity names to cluster and canonicalize.
+        threshold: Cosine similarity floor for automatic merges.
+
+    Returns:
+        mapping: Normalized name to canonical representative name.
+    """
+    resolver = EntityResolver(threshold=threshold)
+    normalized_of = {name: " ".join(name.casefold().split()) for name in names}
+    distinct = sorted(set(normalized_of.values()))
+    parent = {name: name for name in distinct}
+    vectors = {name: resolver.provider.embed(name) for name in distinct}
+    for left_index, left in enumerate(distinct):
+        for right in distinct[left_index + 1 :]:
+            if cosine_similarity(vectors[left], vectors[right]) >= threshold:
+                resolver._union(parent, left, right)
+    return {name: resolver._find(parent, normalized_of[name]) for name in names}
+
+
+def summarize_merges(result: ResolutionResult) -> str:
+    """Renders merge decisions as a human-readable summary.
+
+    Args:
+        result: Resolution output containing merge bookkeeping.
+
+    Returns:
+        summary: Newline-joined merge and borderline descriptions.
+    """
+    lines = [f"MERGE {m.alias} -> {m.canonical} (sim={m.similarity:.3f})" for m in result.merges]
+    lines.extend(
+        f"REVIEW {m.alias} ~ {m.canonical} (sim={m.similarity:.3f})" for m in result.borderline
+    )
+    return "\n".join(lines)
+
+
+def duplicate_rate(triples: list[Triple]) -> float:
+    """Measures how inflated the entity count is before resolution.
+
+    Args:
+        triples: Triples whose entity duplication is measured.
+
+    Returns:
+        rate: Share of mentions that are duplicates of another mention.
+    """
+    mentions: list[str] = []
+    for triple in triples:
+        mentions.append(triple.subject.normalized_name())
+        mentions.append(triple.object.normalized_name())
+    if not mentions:
+        return 0.0
+    return 1.0 - len(set(mentions)) / len(mentions)
