@@ -62,3 +62,24 @@ The sidebar dashboard reports node and edge totals, distinct predicate
 count, mean edge confidence, and the duplicate-name clusters the API
 finds. Duplicate clusters rising week over week means entity resolution
 needs attention — it is the earliest visible symptom.
+
+## Refresh behavior
+
+The dashboard refreshes itself every 30 seconds; the main graph reloads
+on demand. During a refresh the panel shows a busy indicator and stays
+interactive — metrics are advisory, never blocking.
+
+## GraphML export
+
+The export endpoint (`/api/export/graphml`) downloads the full graph as
+GraphML with a dated filename, for use in desktop tools like Gephi or
+yEd. Labels are XML-escaped server-side; see the 2026-05-28 fix for why
+that matters.
+
+## Keyboard and accessibility
+
+- The search input is a real `<input type="search">` and takes focus on
+  load; tab order follows the visual layout.
+- Focus rings are high-contrast; the canvas itself is keyboard-focusable
+  for screen reader landmarking.
+- The layout collapses to a single column under 860px wide.
