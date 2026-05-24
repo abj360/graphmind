@@ -6,6 +6,7 @@ Contains:
     test_exact_duplicates_merge
     test_similar_names_merge_with_ngram_embeddings
     test_distinct_entities_stay_separate
+    test_borderline_pairs_are_flagged_for_review
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -39,3 +40,11 @@ def test_distinct_entities_stay_separate() -> None:
     result = EntityResolver().resolve(triples)
     names = {triple.subject.name for triple in result.triples}
     assert len(names) == 2
+
+
+def test_borderline_pairs_are_flagged_for_review() -> None:
+    """Checks that mid-similarity pairs land in the review queue."""
+    resolver = EntityResolver(threshold=0.99, review_floor=0.5)
+    triples = [make_triple("Acme Corp"), make_triple("Acme Corporation", "acquired", "ByteWorks")]
+    result = resolver.resolve(triples)
+    assert result.borderline
