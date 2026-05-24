@@ -62,3 +62,9 @@ The sidebar dashboard reports node and edge totals, distinct predicate
 count, mean edge confidence, and the duplicate-name clusters the API
 finds. Duplicate clusters rising week over week means entity resolution
 needs attention — it is the earliest visible symptom.
+
+## Refresh behavior
+
+The dashboard refreshes itself every 30 seconds; the main graph reloads
+on demand. During a refresh the panel shows a busy indicator and stays
+interactive — metrics are advisory, never blocking.
