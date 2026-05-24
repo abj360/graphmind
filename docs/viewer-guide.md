@@ -68,3 +68,10 @@ needs attention — it is the earliest visible symptom.
 The dashboard refreshes itself every 30 seconds; the main graph reloads
 on demand. During a refresh the panel shows a busy indicator and stays
 interactive — metrics are advisory, never blocking.
+
+## GraphML export
+
+The export endpoint (`/api/export/graphml`) downloads the full graph as
+GraphML with a dated filename, for use in desktop tools like Gephi or
+yEd. Labels are XML-escaped server-side; see the 2026-05-28 fix for why
+that matters.
