@@ -6,6 +6,7 @@ Contains:
     test_connected_graph_yields_no_bridges
     test_disconnected_components_are_bridged
     test_low_confidence_bridges_are_filtered
+    test_component_report_counts_components
 """
 
 from extract.relationship_inference import (
@@ -36,3 +37,11 @@ def test_low_confidence_bridges_are_filtered() -> None:
     triples = make_triple_chain(["alpha", "beta"]) + make_triple_chain(["gamma", "delta"])
     inferer = RelationshipInferer(InferenceConfig(min_bridge_confidence=0.99))
     assert inferer.infer(triples) == []
+
+
+def test_component_report_counts_components() -> None:
+    """Checks that the component report tallies components and entities."""
+    triples = make_triple_chain(["a", "b", "c"]) + make_triple_chain(["x", "y"])
+    report = component_report(triples)
+    assert report["components"] == 2
+    assert report["entities"] == 5
