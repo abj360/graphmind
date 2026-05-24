@@ -7,6 +7,7 @@ Contains:
     test_disconnected_components_are_bridged
     test_low_confidence_bridges_are_filtered
     test_component_report_counts_components
+    test_merge_inferred_dedupes_existing_edges
 """
 
 from extract.relationship_inference import (
@@ -45,3 +46,11 @@ def test_component_report_counts_components() -> None:
     report = component_report(triples)
     assert report["components"] == 2
     assert report["entities"] == 5
+
+
+def test_merge_inferred_dedupes_existing_edges() -> None:
+    """Checks that merging inferred triples never duplicates an edge."""
+    extracted = [make_triple("Alice", "founded", "Acme")]
+    duplicate = make_triple("Alice", "founded", "Acme", confidence=0.5)
+    inferred = [duplicate.model_copy(update={"inferred": True})]
+    assert len(merge_inferred(extracted, inferred)) == 1
