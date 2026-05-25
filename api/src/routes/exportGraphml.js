@@ -7,6 +7,7 @@
  *  *   GRAPHML_CONTENT_TYPE: response media type
  *  *   exportFilename(): builds a dated download filename
  *  *   exportGraphmlRouter(): serves the GraphML export
+ *  *   mountExportRoute(): convenience mounter used by the app
  */
 
 import { Router } from "express";
@@ -60,4 +61,15 @@ export function exportGraphmlRouter(driver, config) {
   });
 
   return router;
+}
+
+/**
+ * Mounts the GraphML export router under /api.
+ *
+ * @param app - Express application instance.
+ * @param driver - Neo4j driver instance.
+ * @param config - Resolved service configuration.
+ */
+export function mountExportRoute(app, driver, config) {
+  app.use("/api", exportGraphmlRouter(driver, config));
 }
