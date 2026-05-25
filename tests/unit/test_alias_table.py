@@ -16,6 +16,7 @@ Contains:
     test_approve_moves_item_to_decided
     test_reject_records_false_decision
     test_take_unknown_id_raises
+    test_decided_items_cannot_be_resubmitted
 """
 
 import pytest
@@ -138,3 +139,12 @@ def test_take_unknown_id_raises() -> None:
     queue = MergeReviewQueue()
     with pytest.raises(KeyError):
         queue.approve("nope")
+
+
+def test_decided_items_cannot_be_resubmitted() -> None:
+    """Checks that decided items stay out of the queue for good."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.approve("review-1")
+    queue.submit(make_item())
+    assert queue.pending() == []
