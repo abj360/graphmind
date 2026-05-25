@@ -409,3 +409,9 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+.graph-canvas:focus-visible {
+  outline: 3px solid #e9c46a;
+  outline-offset: -3px;
+}
