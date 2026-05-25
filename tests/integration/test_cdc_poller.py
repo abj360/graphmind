@@ -7,6 +7,9 @@ Contains:
     test_new_document_emits_upsert
     test_unchanged_corpus_emits_nothing
     test_modified_document_emits_new_upsert
+    test_deleted_document_emits_delete
+    test_state_survives_poller_restart
+    test_doc_id_uses_relative_posix_path
 """
 
 from pathlib import Path
@@ -70,3 +73,35 @@ def test_modified_document_emits_new_upsert(tmp_path) -> None:
     events = poller.poll_once()
     assert len(events) == 1
     assert events[0].kind == ChangeKind.UPSERT
+
+
+def test_deleted_document_emits_delete(tmp_path) -> None:
+    """Checks that a removed document emits a delete event."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    target = corpus / "a.txt"
+    target.write_text("alpha")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.poll_once()
+    target.unlink()
+    events = poller.poll_once()
+    assert len(events) == 1
+    assert events[0].kind == ChangeKind.DELETE
+
+
+def test_state_survives_poller_restart(tmp_path) -> None:
+    """Checks that a fresh poller instance sees prior state, not events."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    state = tmp_path / "state.json"
+    make_poller(corpus, state).poll_once()
+    assert make_poller(corpus, state).poll_once() == []
+
+
+def test_doc_id_uses_relative_posix_path(tmp_path) -> None:
+    """Checks that document ids are relative POSIX paths."""
+    nested = tmp_path / "sub" / "doc.txt"
+    nested.parent.mkdir()
+    nested.write_text("x")
+    assert doc_id_for_path(nested, tmp_path) == "sub/doc.txt"
