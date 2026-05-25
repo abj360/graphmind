@@ -397,3 +397,15 @@ button {
 .metrics-panel a:hover {
   text-decoration: underline;
 }
+
+
+@media print {
+  .app-sidebar,
+  .app-header {
+    display: none;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+}
