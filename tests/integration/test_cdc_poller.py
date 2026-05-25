@@ -8,6 +8,7 @@ Contains:
     test_unchanged_corpus_emits_nothing
     test_modified_document_emits_new_upsert
     test_deleted_document_emits_delete
+    test_state_survives_poller_restart
 """
 
 from pathlib import Path
@@ -85,3 +86,13 @@ def test_deleted_document_emits_delete(tmp_path) -> None:
     events = poller.poll_once()
     assert len(events) == 1
     assert events[0].kind == ChangeKind.DELETE
+
+
+def test_state_survives_poller_restart(tmp_path) -> None:
+    """Checks that a fresh poller instance sees prior state, not events."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    state = tmp_path / "state.json"
+    make_poller(corpus, state).poll_once()
+    assert make_poller(corpus, state).poll_once() == []
