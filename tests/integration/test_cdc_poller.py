@@ -9,6 +9,7 @@ Contains:
     test_modified_document_emits_new_upsert
     test_deleted_document_emits_delete
     test_state_survives_poller_restart
+    test_doc_id_uses_relative_posix_path
 """
 
 from pathlib import Path
@@ -96,3 +97,11 @@ def test_state_survives_poller_restart(tmp_path) -> None:
     state = tmp_path / "state.json"
     make_poller(corpus, state).poll_once()
     assert make_poller(corpus, state).poll_once() == []
+
+
+def test_doc_id_uses_relative_posix_path(tmp_path) -> None:
+    """Checks that document ids are relative POSIX paths."""
+    nested = tmp_path / "sub" / "doc.txt"
+    nested.parent.mkdir()
+    nested.write_text("x")
+    assert doc_id_for_path(nested, tmp_path) == "sub/doc.txt"
