@@ -22,6 +22,7 @@ Contains:
     apply_decisions(): writes approved merges into the alias table
     queue_from_borderline(): builds a queue from resolver output
     find_candidates(): fuzzy alias lookup by token overlap
+    table_stats(): counts entries in the alias table
 """
 
 import json
@@ -294,3 +295,18 @@ def find_candidates(table: AliasTable, name: str) -> list[str]:
         if tokens & alias_tokens:
             candidates.append(alias)
     return sorted(candidates)
+
+
+def table_stats(table: AliasTable) -> dict[str, int]:
+    """Counts aliases and canonical entities in the table.
+
+    Args:
+        table: Alias table to measure.
+
+    Returns:
+        stats: Counts of aliases and distinct canonical targets.
+    """
+    return {
+        "aliases": len(table.canonical_of),
+        "canonicals": len(set(table.canonical_of.values())),
+    }
