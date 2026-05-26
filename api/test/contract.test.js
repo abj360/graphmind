@@ -23,6 +23,8 @@
  *  *   test: node endpoint 404s on unknown entities
  *  *   test: hubs endpoint lists degrees
  *  *   test: metrics payload uses the canned helper
+ *  *   test: graphml export escapes special characters
+ *  *   test: graphml export validates edge endpoints
  */
 
 import assert from "node:assert/strict";
@@ -219,4 +221,39 @@ test("GET /api/metrics/dedup works with the shared canned records", async () => 
   const response = await request(app).get("/api/metrics/dedup");
   assert.equal(response.body.nodes.total, 7);
   assert.equal(response.body.edges.meanConfidence, 0.77);
+});
+
+test("GET /api/export/graphml escapes special characters in labels", async () => {
+  const { app } = await makeApp({
+    "MATCH (n:Entity)": [fakeRecord('A & "B"', "founded", "Acme <Ltd>")],
+  });
+  const response = await request(app).get("/api/export/graphml");
+  assert.doesNotMatch(response.text, /A & "B"/);
+  assert.match(response.text, /&amp;/);
+  assert.match(response.text, /&lt;Ltd&gt;/);
+});
+
+test("GET /api/export/graphml rejects dangling edges as 500", async () => {
+  const { createApp } = await import("../src/app.js");
+  const { fakeConfig } = await import("./helpers.js");
+  const dangling = {
+    get: (key) =>
+      ({
+        n: null,
+        m: { properties: { name: "ghost", entity_type: "CONCEPT" } },
+        r: { properties: { predicate: "p", confidence: 0.5, inferred: false } },
+      })[key],
+  };
+  const driver = {
+    session() {
+      return {
+        run: async () => ({ records: [dangling] }),
+        close: async () => {},
+      };
+    },
+    close: async () => {},
+  };
+  const app = createApp(driver, fakeConfig());
+  const response = await request(app).get("/api/export/graphml");
+  assert.equal(response.status, 500);
 });
