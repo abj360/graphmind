@@ -157,3 +157,12 @@ freshness is handled by CDC polling with upsert-only writes (see
 `load/cdc_poller.py`), which cut graph rebuild time from ~40 minutes to
 under 3 — streaming infrastructure would have added brokers and
 exactly-once semantics for no measurable gain at this corpus size.
+
+## Notes: batching and retries
+
+- LLM calls retry transient failures with bounded attempts; persistent
+  failure raises `ExtractionError` rather than returning partial junk.
+- Neo4j writes are batched UNWIND upserts (`MERGE` semantics) so
+  re-running a document is idempotent.
+- Batch sizes are configuration, not constants: the right number on a
+  laptop and in CI are not the same number.
