@@ -148,3 +148,12 @@ this project actually runs (neighborhood expansion for the viewer,
 path-finding for the integration, type/predicate aggregations for the
 metrics dashboard) are Cypher-shaped; OWL reasoning is out of scope,
 and the team already operates Neo4j in production.
+
+## Alternatives considered: batch vs streaming extraction
+
+Extraction is a batch pass over chunks, not a streaming pipeline. The
+corpus is bounded and rebuilds were initially full re-runs; incremental
+freshness is handled by CDC polling with upsert-only writes (see
+`load/cdc_poller.py`), which cut graph rebuild time from ~40 minutes to
+under 3 — streaming infrastructure would have added brokers and
+exactly-once semantics for no measurable gain at this corpus size.
