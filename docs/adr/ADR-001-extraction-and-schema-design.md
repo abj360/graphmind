@@ -166,3 +166,14 @@ exactly-once semantics for no measurable gain at this corpus size.
   re-running a document is idempotent.
 - Batch sizes are configuration, not constants: the right number on a
   laptop and in CI are not the same number.
+
+## Notes: what would change our mind
+
+- If consumers start needing reification beyond confidence/provenance
+  (e.g. temporal validity on edges), RDF + named graphs becomes worth
+  re-evaluating.
+- If the corpus grows past what periodic full snapshots handle, the CDC
+  path becomes the primary ingestion path and the batch extractor
+  becomes a backfill tool.
+- If auto-merge precision measurably exceeds human review quality on
+  the borderline band, the review floor moves — with data, not vibes.
