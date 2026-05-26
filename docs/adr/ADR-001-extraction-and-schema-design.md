@@ -148,3 +148,32 @@ this project actually runs (neighborhood expansion for the viewer,
 path-finding for the integration, type/predicate aggregations for the
 metrics dashboard) are Cypher-shaped; OWL reasoning is out of scope,
 and the team already operates Neo4j in production.
+
+## Alternatives considered: batch vs streaming extraction
+
+Extraction is a batch pass over chunks, not a streaming pipeline. The
+corpus is bounded and rebuilds were initially full re-runs; incremental
+freshness is handled by CDC polling with upsert-only writes (see
+`load/cdc_poller.py`), which cut graph rebuild time from ~40 minutes to
+under 3 — streaming infrastructure would have added brokers and
+exactly-once semantics for no measurable gain at this corpus size.
+
+## Notes: batching and retries
+
+- LLM calls retry transient failures with bounded attempts; persistent
+  failure raises `ExtractionError` rather than returning partial junk.
+- Neo4j writes are batched UNWIND upserts (`MERGE` semantics) so
+  re-running a document is idempotent.
+- Batch sizes are configuration, not constants: the right number on a
+  laptop and in CI are not the same number.
+
+## Notes: what would change our mind
+
+- If consumers start needing reification beyond confidence/provenance
+  (e.g. temporal validity on edges), RDF + named graphs becomes worth
+  re-evaluating.
+- If the corpus grows past what periodic full snapshots handle, the CDC
+  path becomes the primary ingestion path and the batch extractor
+  becomes a backfill tool.
+- If auto-merge precision measurably exceeds human review quality on
+  the borderline band, the review floor moves — with data, not vibes.
