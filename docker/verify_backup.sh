@@ -44,3 +44,5 @@ report() {
 size_of() {
     du -h "$1" | cut -f1
 }
+
+# (status lines include the archive size for quick eyeballing)
