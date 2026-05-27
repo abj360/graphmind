@@ -431,3 +431,9 @@ button {
   color: #e9c46a;
   border-color: #e9c46a;
 }
+
+.search-help {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #54657e;
+}
