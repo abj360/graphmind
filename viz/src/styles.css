@@ -437,3 +437,8 @@ button {
   font-size: 11px;
   color: #54657e;
 }
+
+.search-highlight {
+  background: rgba(233, 196, 106, 0.35);
+  border-radius: 2px;
+}
