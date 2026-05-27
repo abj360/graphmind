@@ -463,3 +463,8 @@ button {
   color: #ffffff;
   border-color: #457b9d;
 }
+
+.graph-legend li[data-hidden="true"] {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
