@@ -442,3 +442,19 @@ button {
   background: rgba(233, 196, 106, 0.35);
   border-radius: 2px;
 }
+
+.metrics-refresh-button {
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: #9fb0c7;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.metrics-refresh-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
