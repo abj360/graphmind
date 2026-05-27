@@ -15,6 +15,7 @@ Contains:
     test_from_env_reads_overrides
     test_estimate_tokens_rounds_up
     test_budget_batches_respects_token_budget
+    test_chunk_stats_reports_lengths
 """
 
 import pytest
@@ -110,3 +111,12 @@ def test_budget_batches_respects_token_budget() -> None:
     assert len(batches) > 1
     for batch in batches:
         assert sum(estimate_tokens(chunk.text) for chunk in batch) <= 120 + 50
+
+
+def test_chunk_stats_reports_lengths() -> None:
+    """Checks that chunk stats report count and max length."""
+    from extract.chunker import chunk_stats
+
+    stats = chunk_stats(LOREM)
+    assert stats["chunks"] > 0
+    assert stats["max"] >= stats["min"]
