@@ -458,3 +458,8 @@ button {
   opacity: 0.5;
   cursor: default;
 }
+
+.metrics-refresh-button:not(:disabled):hover {
+  color: #ffffff;
+  border-color: #457b9d;
+}
