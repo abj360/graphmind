@@ -58,3 +58,9 @@ services:
       - backup_data:/backups
     profiles:
       - tools
+
+volumes:
+  neo4j_data:
+  corpus_data:
+  pipeline_out:
+  backup_data:
