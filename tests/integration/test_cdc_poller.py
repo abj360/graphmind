@@ -10,6 +10,8 @@ Contains:
     test_deleted_document_emits_delete
     test_state_survives_poller_restart
     test_doc_id_uses_relative_posix_path
+    test_file_checksum_changes_with_content
+    test_apply_events_routes_by_kind
 """
 
 from pathlib import Path
@@ -105,3 +107,27 @@ def test_doc_id_uses_relative_posix_path(tmp_path) -> None:
     nested.parent.mkdir()
     nested.write_text("x")
     assert doc_id_for_path(nested, tmp_path) == "sub/doc.txt"
+
+
+def test_file_checksum_changes_with_content(tmp_path) -> None:
+    """Checks that the checksum tracks content, not metadata."""
+    target = tmp_path / "a.txt"
+    target.write_text("alpha")
+    first = file_checksum(target)
+    target.write_text("beta")
+    assert file_checksum(target) != first
+
+
+def test_apply_events_routes_by_kind(tmp_path) -> None:
+    """Checks that apply_events routes upserts and deletes correctly."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    target = corpus / "a.txt"
+    target.write_text("alpha")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.poll_once()
+    target.unlink()
+    events = poller.poll_once()
+    routed: dict[str, list[str]] = {"up": [], "down": []}
+    apply_events(events, routed["up"].append, routed["down"].append)
+    assert routed == {"up": [], "down": ["a.txt"]}
