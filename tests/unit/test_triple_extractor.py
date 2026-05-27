@@ -25,6 +25,7 @@ Contains:
     test_validate_extraction_config_rejects_bad_confidence
     test_extraction_config_from_env_reads_overrides
     test_with_config_overrides_derives_new_config
+    test_normalize_document_text_collapses_blank_lines
 """
 
 import json
@@ -307,3 +308,10 @@ def test_with_config_overrides_derives_new_config() -> None:
     derived = with_config_overrides(base, batch_size=12)
     assert derived.batch_size == 12
     assert base.batch_size == 4
+
+
+def test_normalize_document_text_collapses_blank_lines() -> None:
+    """Checks that document normalization collapses blank-line runs."""
+    from extract.triple_extractor import normalize_document_text
+
+    assert normalize_document_text("a\n\n\n\nb") == "a\n\nb"
