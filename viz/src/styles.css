@@ -415,3 +415,19 @@ button {
   outline: 3px solid #e9c46a;
   outline-offset: -3px;
 }
+
+.regex-toggle {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: #54657e;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.regex-toggle-on {
+  color: #e9c46a;
+  border-color: #e9c46a;
+}
