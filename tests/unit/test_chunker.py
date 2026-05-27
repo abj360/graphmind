@@ -17,6 +17,7 @@ Contains:
     test_budget_batches_respects_token_budget
     test_chunk_stats_reports_lengths
     test_chunk_offsets_are_monotonic
+    test_tiny_min_chunk_merges_tail
 """
 
 import pytest
@@ -128,3 +129,11 @@ def test_chunk_offsets_are_monotonic() -> None:
     chunks = TextChunker().chunk("doc-1", LOREM)
     starts = [chunk.start for chunk in chunks]
     assert starts == sorted(starts)
+
+
+def test_tiny_min_chunk_merges_tail() -> None:
+    """Checks that a tiny trailing window merges into the previous chunk."""
+    text = "First sentence is long enough. Second. " + "Padding. " * 40 + "End."
+    config = ChunkConfig(max_chars=300, overlap_chars=20, min_chunk_chars=100)
+    chunks = TextChunker(config).chunk("doc-1", text)
+    assert chunks[-1].text.endswith("End.")
