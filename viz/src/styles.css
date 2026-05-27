@@ -415,3 +415,56 @@ button {
   outline: 3px solid #e9c46a;
   outline-offset: -3px;
 }
+
+.regex-toggle {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: #54657e;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.regex-toggle-on {
+  color: #e9c46a;
+  border-color: #e9c46a;
+}
+
+.search-help {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #54657e;
+}
+
+.search-highlight {
+  background: rgba(233, 196, 106, 0.35);
+  border-radius: 2px;
+}
+
+.metrics-refresh-button {
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #223047;
+  background: #0f1620;
+  color: #9fb0c7;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.metrics-refresh-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.metrics-refresh-button:not(:disabled):hover {
+  color: #ffffff;
+  border-color: #457b9d;
+}
+
+.graph-legend li[data-hidden="true"] {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
