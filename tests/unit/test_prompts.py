@@ -4,6 +4,7 @@ test_prompts.py --- unit tests for extraction prompt templates and config
 
 Contains:
     test_prompt_contains_system_prompt_and_rules
+    test_prompt_embeds_few_shot_examples
 """
 
 import pytest
@@ -24,3 +25,9 @@ def test_prompt_contains_system_prompt_and_rules() -> None:
     assert SYSTEM_PROMPT.split(".")[0] in prompt
     assert EXTRACTION_RULES[0] in prompt
     assert "Alice founded Acme." in prompt
+
+
+def test_prompt_embeds_few_shot_examples() -> None:
+    """Checks that few-shot examples appear in the rendered prompt."""
+    prompt = build_extraction_prompt("text", PromptConfig(few_shot_count=1))
+    assert "Example input:" in prompt
