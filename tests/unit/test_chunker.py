@@ -16,6 +16,7 @@ Contains:
     test_estimate_tokens_rounds_up
     test_budget_batches_respects_token_budget
     test_chunk_stats_reports_lengths
+    test_chunk_offsets_are_monotonic
 """
 
 import pytest
@@ -120,3 +121,10 @@ def test_chunk_stats_reports_lengths() -> None:
     stats = chunk_stats(LOREM)
     assert stats["chunks"] > 0
     assert stats["max"] >= stats["min"]
+
+
+def test_chunk_offsets_are_monotonic() -> None:
+    """Checks that chunk start offsets never go backwards."""
+    chunks = TextChunker().chunk("doc-1", LOREM)
+    starts = [chunk.start for chunk in chunks]
+    assert starts == sorted(starts)
