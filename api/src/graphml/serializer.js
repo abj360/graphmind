@@ -30,9 +30,9 @@ const GRAPHML_FOOTER = "</graphml>";
  */
 export function serializeNode(node) {
   return [
-    `    <node id="${node.id}">`,
-    `      <data key="label">${node.label}</data>`,
-    `      <data key="type">${node.type}</data>`,
+    `    <node id="${escapeXml(node.id)}">`,
+    `      <data key="label">${escapeXml(node.label)}</data>`,
+    `      <data key="type">${escapeXml(node.type)}</data>`,
     `    </node>`,
   ].join("\n");
 }
