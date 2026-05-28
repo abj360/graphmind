@@ -360,3 +360,12 @@ node, the corpus needs ontology enforcement, not more expansion.
 3. Restore from the latest verified archive if the volume is suspect;
    otherwise a plain restart recovers in seconds since the data is
    derived state.
+
+## Cost notes
+
+- Extraction is the only LLM spend; at the reference corpus size a full
+  rebuild costs single-digit dollars with the default model.
+- CDC keeps spend proportional to change volume, not corpus size —
+  this is the entire point of the incremental design.
+- Neo4j runs comfortably in the 1G heap the compose file sets; do not
+  raise it as a substitute for investigating a slow query.
