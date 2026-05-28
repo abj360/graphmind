@@ -22,6 +22,7 @@ Contains:
     test_healthcheck_reports_true_with_working_driver
     test_delete_doc_triples_scopes_to_document
     test_format_load_stats_renders_counters
+    test_live_instance_roundtrip
 """
 
 from typing import Any
@@ -223,3 +224,13 @@ def test_format_load_stats_renders_counters() -> None:
     summary = format_load_stats(LoadStats(nodes_written=4, batches_written=2))
     assert "nodes=4" in summary
     assert "batches=2" in summary
+
+
+def test_live_instance_roundtrip(loader) -> None:
+    """Writes and reads back triples against a live Neo4j instance.
+
+    Args:
+        loader: Connected loader fixture bound to the test instance.
+    """
+    stats = loader.write_triples([make_triple()])
+    assert stats.batches_written >= 1
