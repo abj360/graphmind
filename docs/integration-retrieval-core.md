@@ -369,3 +369,10 @@ node, the corpus needs ontology enforcement, not more expansion.
   this is the entire point of the incremental design.
 - Neo4j runs comfortably in the 1G heap the compose file sets; do not
   raise it as a substitute for investigating a slow query.
+
+## Multi-tenant future
+
+If several corpora ever share one Neo4j, the plan is database-per-tenant
+(Neo4j 5 supports it natively) rather than label prefixes. The loader's
+`database` config already exists for exactly this reason. Cross-tenant
+queries are a non-goal; a tenant boundary is a trust boundary.
