@@ -385,3 +385,13 @@ queries are a non-goal; a tenant boundary is a trust boundary.
 - **Grounding**: resolving a graph answer back to source passages.
 - **Provenance**: the `source_doc_id`/`source_span` trail on an edge.
 - **Fan-out**: number of edges traversed per expansion step.
+
+## FAQ
+
+- *"Why not call the BFF instead of Neo4j directly?"* The BFF exposes
+  viewer-shaped endpoints, not retrieval-shaped ones; query semantics
+  belong to the consumer. The schema is the API.
+- *"Can we add our own edge types?"* Add them with a new schema minor
+  version; unknown types are ignored by current consumers.
+- *"How do I replay one document?"* Delete its edges by
+  `source_doc_id`, then re-run extraction + load for that file.
