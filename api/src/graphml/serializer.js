@@ -10,6 +10,7 @@
  *  *   toGraphML(): serializes a full view graph
  *  *   validateGraphInput(): rejects malformed view graphs
  *  *   escapeXml(): escapes XML-special characters in text
+ *  *   graphStats(): counts serializable elements
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -29,9 +30,9 @@ const GRAPHML_FOOTER = "</graphml>";
  */
 export function serializeNode(node) {
   return [
-    `    <node id="${node.id}">`,
-    `      <data key="label">${node.label}</data>`,
-    `      <data key="type">${node.type}</data>`,
+    `    <node id="${escapeXml(node.id)}">`,
+    `      <data key="label">${escapeXml(node.label)}</data>`,
+    `      <data key="type">${escapeXml(node.type)}</data>`,
     `    </node>`,
   ].join("\n");
 }
@@ -45,8 +46,8 @@ export function serializeNode(node) {
  */
 export function serializeEdge(edge, index) {
   const lines = [
-    `    <edge id="e${index}" source="${edge.source}" target="${edge.target}">`,
-    `      <data key="predicate">${edge.predicate}</data>`,
+    `    <edge id="e${index}" source="${escapeXml(edge.source)}" target="${escapeXml(edge.target)}">`,
+    `      <data key="predicate">${escapeXml(edge.predicate)}</data>`,
   ];
   if (edge.confidence !== null && edge.confidence !== undefined) {
     lines.push(`      <data key="confidence">${edge.confidence}</data>`);
@@ -103,4 +104,14 @@ export function escapeXml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
+}
+
+/**
+ * Counts the serializable elements of a view graph.
+ *
+ * @param graph - { nodes, edges } payload to measure.
+ * @returns stats - Element counts for logging.
+ */
+export function graphStats(graph) {
+  return { nodes: graph.nodes.length, edges: graph.edges.length };
 }
