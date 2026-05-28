@@ -10,6 +10,7 @@
  *  *   toGraphML(): serializes a full view graph
  *  *   validateGraphInput(): rejects malformed view graphs
  *  *   escapeXml(): escapes XML-special characters in text
+ *  *   graphStats(): counts serializable elements
  */
 
 const GRAPHML_HEADER = `<?xml version="1.0" encoding="UTF-8"?>
@@ -103,4 +104,14 @@ export function escapeXml(text) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&apos;");
+}
+
+/**
+ * Counts the serializable elements of a view graph.
+ *
+ * @param graph - { nodes, edges } payload to measure.
+ * @returns stats - Element counts for logging.
+ */
+export function graphStats(graph) {
+  return { nodes: graph.nodes.length, edges: graph.edges.length };
 }
