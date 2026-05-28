@@ -46,8 +46,8 @@ export function serializeNode(node) {
  */
 export function serializeEdge(edge, index) {
   const lines = [
-    `    <edge id="e${index}" source="${edge.source}" target="${edge.target}">`,
-    `      <data key="predicate">${edge.predicate}</data>`,
+    `    <edge id="e${index}" source="${escapeXml(edge.source)}" target="${escapeXml(edge.target)}">`,
+    `      <data key="predicate">${escapeXml(edge.predicate)}</data>`,
   ];
   if (edge.confidence !== null && edge.confidence !== undefined) {
     lines.push(`      <data key="confidence">${edge.confidence}</data>`);
