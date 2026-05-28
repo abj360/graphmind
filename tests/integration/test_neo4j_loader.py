@@ -21,6 +21,7 @@ Contains:
     test_close_marks_driver_closed
     test_healthcheck_reports_true_with_working_driver
     test_delete_doc_triples_scopes_to_document
+    test_format_load_stats_renders_counters
 """
 
 from typing import Any
@@ -215,3 +216,10 @@ def test_delete_doc_triples_scopes_to_document() -> None:
     loader, driver = make_loader()
     loader.delete_doc_triples("doc-9")
     assert driver.queries[-1][1] == {"doc_id": "doc-9"}
+
+
+def test_format_load_stats_renders_counters() -> None:
+    """Checks that the stats summary mentions nodes and batches."""
+    summary = format_load_stats(LoadStats(nodes_written=4, batches_written=2))
+    assert "nodes=4" in summary
+    assert "batches=2" in summary
