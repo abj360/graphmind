@@ -20,6 +20,7 @@ Contains:
     test_estimate_write_seconds_scales_with_batches
     test_close_marks_driver_closed
     test_healthcheck_reports_true_with_working_driver
+    test_delete_doc_triples_scopes_to_document
 """
 
 from typing import Any
@@ -207,3 +208,10 @@ def test_healthcheck_reports_true_with_working_driver() -> None:
     """Checks that the healthcheck passes with a working driver."""
     loader, _ = make_loader()
     assert loader.healthcheck()
+
+
+def test_delete_doc_triples_scopes_to_document() -> None:
+    """Checks that document deletion passes the doc_id as a parameter."""
+    loader, driver = make_loader()
+    loader.delete_doc_triples("doc-9")
+    assert driver.queries[-1][1] == {"doc_id": "doc-9"}
