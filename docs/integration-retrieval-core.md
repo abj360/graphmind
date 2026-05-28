@@ -410,3 +410,12 @@ RETURN folded, v
 // inferred edges only
 MATCH ()-[r:RELATED {inferred: true}]->() RETURN r LIMIT 50
 ```
+
+## Ownership and contacts
+
+- Graph schema and extraction: Peter
+- Resolution and CDC ingestion: Angel
+- Viewer and BFF surface: Yannick
+
+Questions about this integration go to the graph schema owner first;
+if the answer changes the schema, it becomes an ADR, not a chat log.
