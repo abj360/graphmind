@@ -395,3 +395,18 @@ queries are a non-goal; a tenant boundary is a trust boundary.
   version; unknown types are ignored by current consumers.
 - *"How do I replay one document?"* Delete its edges by
   `source_doc_id`, then re-run extraction + load for that file.
+
+## Appendix: raw query cheatsheet
+
+```cypher
+// all edges for one document
+MATCH ()-[r:RELATED {source_doc_id: $doc}]->() RETURN r
+
+// duplicate-name clusters
+MATCH (n:Entity)
+WITH toLower(n.name) AS folded, collect(n.name) AS v WHERE size(v) > 1
+RETURN folded, v
+
+// inferred edges only
+MATCH ()-[r:RELATED {inferred: true}]->() RETURN r LIMIT 50
+```
