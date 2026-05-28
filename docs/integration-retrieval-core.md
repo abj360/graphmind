@@ -350,3 +350,13 @@ node, the corpus needs ontology enforcement, not more expansion.
 3. If edges exist but look wrong, inspect the extraction stats for the
    document (dropped-low-confidence spikes correlate with prompt
    regressions).
+
+## Runbook: Neo4j is down
+
+1. The BFF `/health` stays up; graph endpoints will 500 — that is
+   correct fail-closed behavior, do not mask it.
+2. retrieval-core should already be answering via the primary path;
+   verify the degraded-mode marker is being set.
+3. Restore from the latest verified archive if the volume is suspect;
+   otherwise a plain restart recovers in seconds since the data is
+   derived state.
