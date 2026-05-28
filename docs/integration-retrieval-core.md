@@ -376,3 +376,12 @@ If several corpora ever share one Neo4j, the plan is database-per-tenant
 (Neo4j 5 supports it natively) rather than label prefixes. The loader's
 `database` config already exists for exactly this reason. Cross-tenant
 queries are a non-goal; a tenant boundary is a trust boundary.
+
+## Glossary
+
+- **Anchor**: entity name used as the starting node of a graph query.
+- **Bridge**: inferred relationship connecting otherwise disconnected
+  components.
+- **Grounding**: resolving a graph answer back to source passages.
+- **Provenance**: the `source_doc_id`/`source_span` trail on an edge.
+- **Fan-out**: number of edges traversed per expansion step.
