@@ -350,3 +350,72 @@ node, the corpus needs ontology enforcement, not more expansion.
 3. If edges exist but look wrong, inspect the extraction stats for the
    document (dropped-low-confidence spikes correlate with prompt
    regressions).
+
+## Runbook: Neo4j is down
+
+1. The BFF `/health` stays up; graph endpoints will 500 — that is
+   correct fail-closed behavior, do not mask it.
+2. retrieval-core should already be answering via the primary path;
+   verify the degraded-mode marker is being set.
+3. Restore from the latest verified archive if the volume is suspect;
+   otherwise a plain restart recovers in seconds since the data is
+   derived state.
+
+## Cost notes
+
+- Extraction is the only LLM spend; at the reference corpus size a full
+  rebuild costs single-digit dollars with the default model.
+- CDC keeps spend proportional to change volume, not corpus size —
+  this is the entire point of the incremental design.
+- Neo4j runs comfortably in the 1G heap the compose file sets; do not
+  raise it as a substitute for investigating a slow query.
+
+## Multi-tenant future
+
+If several corpora ever share one Neo4j, the plan is database-per-tenant
+(Neo4j 5 supports it natively) rather than label prefixes. The loader's
+`database` config already exists for exactly this reason. Cross-tenant
+queries are a non-goal; a tenant boundary is a trust boundary.
+
+## Glossary
+
+- **Anchor**: entity name used as the starting node of a graph query.
+- **Bridge**: inferred relationship connecting otherwise disconnected
+  components.
+- **Grounding**: resolving a graph answer back to source passages.
+- **Provenance**: the `source_doc_id`/`source_span` trail on an edge.
+- **Fan-out**: number of edges traversed per expansion step.
+
+## FAQ
+
+- *"Why not call the BFF instead of Neo4j directly?"* The BFF exposes
+  viewer-shaped endpoints, not retrieval-shaped ones; query semantics
+  belong to the consumer. The schema is the API.
+- *"Can we add our own edge types?"* Add them with a new schema minor
+  version; unknown types are ignored by current consumers.
+- *"How do I replay one document?"* Delete its edges by
+  `source_doc_id`, then re-run extraction + load for that file.
+
+## Appendix: raw query cheatsheet
+
+```cypher
+// all edges for one document
+MATCH ()-[r:RELATED {source_doc_id: $doc}]->() RETURN r
+
+// duplicate-name clusters
+MATCH (n:Entity)
+WITH toLower(n.name) AS folded, collect(n.name) AS v WHERE size(v) > 1
+RETURN folded, v
+
+// inferred edges only
+MATCH ()-[r:RELATED {inferred: true}]->() RETURN r LIMIT 50
+```
+
+## Ownership and contacts
+
+- Graph schema and extraction: Peter
+- Resolution and CDC ingestion: Angel
+- Viewer and BFF surface: Yannick
+
+Questions about this integration go to the graph schema owner first;
+if the answer changes the schema, it becomes an ADR, not a chat log.
