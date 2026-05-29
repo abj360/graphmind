@@ -9,6 +9,7 @@ Contains:
     test_borderline_pairs_are_flagged_for_review
     test_resolution_rewrites_object_endpoints_too
     test_cosine_similarity_identical_vectors
+    test_cosine_similarity_rejects_length_mismatch
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -64,3 +65,8 @@ def test_cosine_similarity_identical_vectors() -> None:
     """Checks that identical vectors score 1.0."""
     vector = [1.0, 2.0, 3.0]
     assert abs(cosine_similarity(vector, vector) - 1.0) < 1e-9
+
+
+def test_cosine_similarity_rejects_length_mismatch() -> None:
+    """Checks that mismatched vector lengths score 0.0."""
+    assert cosine_similarity([1.0], [1.0, 2.0]) == 0.0
