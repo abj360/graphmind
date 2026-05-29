@@ -468,3 +468,10 @@ button {
   opacity: 0.4;
   text-decoration: line-through;
 }
+
+.detail-confidence {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(6, 214, 160, 0.12);
+  font-size: 11px;
+}
