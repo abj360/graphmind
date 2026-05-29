@@ -8,6 +8,7 @@ Contains:
     test_distinct_entities_stay_separate
     test_borderline_pairs_are_flagged_for_review
     test_resolution_rewrites_object_endpoints_too
+    test_cosine_similarity_identical_vectors
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -57,3 +58,9 @@ def test_resolution_rewrites_object_endpoints_too() -> None:
     result = EntityResolver().resolve(triples)
     objects = {triple.object.name for triple in result.triples}
     assert len(objects) == 1
+
+
+def test_cosine_similarity_identical_vectors() -> None:
+    """Checks that identical vectors score 1.0."""
+    vector = [1.0, 2.0, 3.0]
+    assert abs(cosine_similarity(vector, vector) - 1.0) < 1e-9
