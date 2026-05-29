@@ -7,6 +7,7 @@ Contains:
     test_similar_names_merge_with_ngram_embeddings
     test_distinct_entities_stay_separate
     test_borderline_pairs_are_flagged_for_review
+    test_resolution_rewrites_object_endpoints_too
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -48,3 +49,11 @@ def test_borderline_pairs_are_flagged_for_review() -> None:
     triples = [make_triple("Acme Corp"), make_triple("Acme Corporation", "acquired", "ByteWorks")]
     result = resolver.resolve(triples)
     assert result.borderline
+
+
+def test_resolution_rewrites_object_endpoints_too() -> None:
+    """Checks that canonicalization rewrites both subjects and objects."""
+    triples = [make_triple("Alice", "founded", "ACME"), make_triple("Bob", "joined", "Acme")]
+    result = EntityResolver().resolve(triples)
+    objects = {triple.object.name for triple in result.triples}
+    assert len(objects) == 1
