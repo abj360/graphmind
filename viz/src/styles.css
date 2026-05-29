@@ -475,3 +475,13 @@ button {
   background: rgba(6, 214, 160, 0.12);
   font-size: 11px;
 }
+
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #54657e;
+  pointer-events: none;
+}
