@@ -5,6 +5,7 @@ test_prompts.py --- unit tests for extraction prompt templates and config
 Contains:
     test_prompt_contains_system_prompt_and_rules
     test_prompt_embeds_few_shot_examples
+    test_domain_hint_rendered_for_known_domain
 """
 
 import pytest
@@ -31,3 +32,9 @@ def test_prompt_embeds_few_shot_examples() -> None:
     """Checks that few-shot examples appear in the rendered prompt."""
     prompt = build_extraction_prompt("text", PromptConfig(few_shot_count=1))
     assert "Example input:" in prompt
+
+
+def test_domain_hint_rendered_for_known_domain() -> None:
+    """Checks that known domains contribute their hint to the prompt."""
+    prompt = build_extraction_prompt("text", PromptConfig(domain="technical"))
+    assert DOMAIN_HINTS["technical"] in prompt
