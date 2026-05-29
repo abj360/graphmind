@@ -10,6 +10,7 @@ Contains:
     test_resolution_rewrites_object_endpoints_too
     test_cosine_similarity_identical_vectors
     test_cosine_similarity_rejects_length_mismatch
+    test_ngram_embedder_is_deterministic
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -70,3 +71,9 @@ def test_cosine_similarity_identical_vectors() -> None:
 def test_cosine_similarity_rejects_length_mismatch() -> None:
     """Checks that mismatched vector lengths score 0.0."""
     assert cosine_similarity([1.0], [1.0, 2.0]) == 0.0
+
+
+def test_ngram_embedder_is_deterministic() -> None:
+    """Checks that the offline embedder produces stable vectors."""
+    provider = NgramEmbeddingProvider()
+    assert provider.embed("Acme") == provider.embed("Acme")
