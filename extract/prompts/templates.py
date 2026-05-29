@@ -36,6 +36,7 @@ Contains:
     rules_for_domain(): base rules plus domain extras
     example_for_domain(): single best worked example
     prompt_length_budget(): character budget per prompt section
+    within_budget(): checks a rendered prompt against budgets
 """
 
 from typing import TYPE_CHECKING
@@ -431,3 +432,16 @@ PROMPT_LENGTH_BUDGET = {
     "examples": 1200,
     "text": 4000,
 }
+
+
+def within_budget(prompt: str, budget: int = 6000) -> bool:
+    """Checks whether a rendered prompt stays within a character budget.
+
+    Args:
+        prompt: Rendered prompt to measure.
+        budget: Maximum acceptable characters.
+
+    Returns:
+        within: True when the prompt fits the budget.
+    """
+    return len(prompt) <= budget
