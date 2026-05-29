@@ -7,6 +7,7 @@
  *  *   fakeRecord(): builds a raw-record shaped double
  *  *   stubDriver(): driver double serving canned records
  *  *   makeApp(): wires the app with a stub driver
+ *  *   metricsRecords(): canned metrics query records
  */
 
 /**
@@ -87,4 +88,26 @@ export async function makeApp(resultsByQuery = {}) {
   const { createApp } = await import("../src/app.js");
   const driver = stubDriver(resultsByQuery);
   return { app: createApp(driver, fakeConfig()), driver };
+}
+
+/**
+ * Builds canned records for the metrics endpoint queries.
+ *
+ * @returns resultsByQuery - Map of query fragments to canned records.
+ */
+export function metricsRecords() {
+  return {
+    "count(n) AS total": [
+      { get: (key) => (key === "total" ? { toNumber: () => 7 } : ["ORG", "PERSON"]) },
+    ],
+    "count(r) AS total": [
+      {
+        get: (key) =>
+          ({ total: { toNumber: () => 9 }, predicates: { toNumber: () => 4 }, meanConfidence: 0.77 })[
+            key
+          ],
+      },
+    ],
+    "toLower(n.name) AS folded": [],
+  };
 }
