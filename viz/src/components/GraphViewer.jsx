@@ -25,6 +25,7 @@
  *  *   pruneDisconnected(): drops edges referencing missing nodes
  *  *   edgeKeySet(): fast lookup set of edge identities
  *  *   destroyViewer(): tears down a cytoscape instance safely
+ *  *   nodeTooltipFor(): tooltip text for one node
  */
 
 import cytoscape from "cytoscape";
@@ -371,4 +372,14 @@ export function destroyViewer(cy) {
   if (cy && !cy.destroyed()) {
     cy.destroy();
   }
+}
+
+/**
+ * Builds the tooltip text for one node.
+ *
+ * @param node - Node data with label and type.
+ * @returns tooltip - Label plus type descriptor.
+ */
+export function nodeTooltipFor(node) {
+  return `${node.label} · ${node.type}`;
 }
