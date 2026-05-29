@@ -24,6 +24,7 @@
  *  *   batchStyleUpdates(): applies style changes in one batch
  *  *   pruneDisconnected(): drops edges referencing missing nodes
  *  *   edgeKeySet(): fast lookup set of edge identities
+ *  *   destroyViewer(): tears down a cytoscape instance safely
  */
 
 import cytoscape from "cytoscape";
@@ -359,4 +360,15 @@ export function pruneDisconnected(graph) {
  */
 export function edgeKeySet(edges) {
   return new Set(edges.map((edge) => `${edge.source}|${edge.predicate}|${edge.target}`));
+}
+
+/**
+ * Tears down a Cytoscape instance, tolerating repeated calls.
+ *
+ * @param cy - Cytoscape instance to destroy, possibly null.
+ */
+export function destroyViewer(cy) {
+  if (cy && !cy.destroyed()) {
+    cy.destroy();
+  }
 }
