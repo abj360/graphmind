@@ -23,6 +23,7 @@ Contains:
     test_delete_doc_triples_scopes_to_document
     test_format_load_stats_renders_counters
     test_live_instance_roundtrip
+    test_row_size_bytes_counts_content
 """
 
 from typing import Any
@@ -234,3 +235,10 @@ def test_live_instance_roundtrip(loader) -> None:
     """
     stats = loader.write_triples([make_triple()])
     assert stats.batches_written >= 1
+
+
+def test_row_size_bytes_counts_content() -> None:
+    """Checks that the row size estimate grows with content length."""
+    from load.batch_writer import row_size_bytes
+
+    assert row_size_bytes({"a": "bb"}) > row_size_bytes({"a": "b"})
