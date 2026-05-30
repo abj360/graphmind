@@ -26,6 +26,7 @@ Contains:
     test_extraction_config_from_env_reads_overrides
     test_with_config_overrides_derives_new_config
     test_normalize_document_text_collapses_blank_lines
+    test_format_stats_summary_mentions_calls
 """
 
 import json
@@ -315,3 +316,10 @@ def test_normalize_document_text_collapses_blank_lines() -> None:
     from extract.triple_extractor import normalize_document_text
 
     assert normalize_document_text("a\n\n\n\nb") == "a\n\nb"
+
+
+def test_format_stats_summary_mentions_calls() -> None:
+    """Checks that the stats summary mentions call counts."""
+    from extract.triple_extractor import format_stats_summary
+
+    assert "calls=2" in format_stats_summary(ExtractionStats(calls_made=2))
