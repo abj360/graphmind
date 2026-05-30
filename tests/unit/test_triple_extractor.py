@@ -26,6 +26,9 @@ Contains:
     test_extraction_config_from_env_reads_overrides
     test_with_config_overrides_derives_new_config
     test_normalize_document_text_collapses_blank_lines
+    test_format_stats_summary_mentions_calls
+    test_extract_batch_empty_documents
+    test_split_batch_response_falls_back_to_first_doc
 """
 
 import json
@@ -315,3 +318,24 @@ def test_normalize_document_text_collapses_blank_lines() -> None:
     from extract.triple_extractor import normalize_document_text
 
     assert normalize_document_text("a\n\n\n\nb") == "a\n\nb"
+
+
+def test_format_stats_summary_mentions_calls() -> None:
+    """Checks that the stats summary mentions call counts."""
+    from extract.triple_extractor import format_stats_summary
+
+    assert "calls=2" in format_stats_summary(ExtractionStats(calls_made=2))
+
+
+def test_extract_batch_empty_documents() -> None:
+    """Checks that batching an empty document list is a no-op."""
+    extractor = make_extractor()
+    assert extractor.extract_batch([]) == []
+    assert extractor.stats.calls_made == 0
+
+
+def test_split_batch_response_falls_back_to_first_doc() -> None:
+    """Checks that unmarked batch output maps to the first document."""
+    batch = [("d1", "t1"), ("d2", "t2")]
+    segments = TripleExtractor._split_batch_response(PAYLOAD, batch)
+    assert segments[0][0] == "d1"
