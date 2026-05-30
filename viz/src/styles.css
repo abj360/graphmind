@@ -485,3 +485,8 @@ button {
   color: #54657e;
   pointer-events: none;
 }
+
+.app-sidebar > * + * {
+  border-top: 1px solid #1c2940;
+  padding-top: 12px;
+}
