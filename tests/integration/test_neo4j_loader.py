@@ -25,6 +25,7 @@ Contains:
     test_live_instance_roundtrip
     test_row_size_bytes_counts_content
     test_relationship_batches_skip_empty_input
+    test_metrics_track_skipped_self_loops
 """
 
 from typing import Any
@@ -249,3 +250,11 @@ def test_relationship_batches_skip_empty_input() -> None:
     """Checks that empty input yields no batches at all."""
     writer = BatchWriter(batch_size=4)
     assert list(writer.relationship_batches([])) == []
+
+
+def test_metrics_track_skipped_self_loops() -> None:
+    """Checks that the batch writer metrics count skipped self-loops."""
+    writer = BatchWriter(batch_size=4)
+    writer.relationship_rows([make_triple("Acme", "owns", "acme"), make_triple()])
+    assert writer.metrics.skipped_self_loops == 1
+    assert writer.metrics.relationship_rows == 1
