@@ -485,3 +485,18 @@ button {
   color: #54657e;
   pointer-events: none;
 }
+
+.app-sidebar > * + * {
+  border-top: 1px solid #1c2940;
+  padding-top: 12px;
+}
+
+.app-header .header-meta {
+  margin-left: auto;
+  font-size: 11px;
+  color: #54657e;
+}
+
+.graph-canvas .edge-label-halo {
+  text-shadow: 0 0 4px #0f1620;
+}
