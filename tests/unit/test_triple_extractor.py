@@ -28,6 +28,7 @@ Contains:
     test_normalize_document_text_collapses_blank_lines
     test_format_stats_summary_mentions_calls
     test_extract_batch_empty_documents
+    test_split_batch_response_falls_back_to_first_doc
 """
 
 import json
@@ -331,3 +332,10 @@ def test_extract_batch_empty_documents() -> None:
     extractor = make_extractor()
     assert extractor.extract_batch([]) == []
     assert extractor.stats.calls_made == 0
+
+
+def test_split_batch_response_falls_back_to_first_doc() -> None:
+    """Checks that unmarked batch output maps to the first document."""
+    batch = [("d1", "t1"), ("d2", "t2")]
+    segments = TripleExtractor._split_batch_response(PAYLOAD, batch)
+    assert segments[0][0] == "d1"
