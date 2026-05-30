@@ -80,3 +80,11 @@ files = [
 [package.dependencies]
 iniconfig = "*"
 pluggy = "*"
+
+[[package]]
+name = "ruff"
+version = "0.4.4"
+description = "An extremely fast Python linter and code formatter"
+files = [
+    {file = "ruff-0.4.4-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:14d955a1bfc16c88842a4f97e4a5138f0b1b6f5511b9e5356f2c80aa38e7f58b"},
+]

@@ -18,6 +18,7 @@ Contains:
     test_chunk_stats_reports_lengths
     test_chunk_offsets_are_monotonic
     test_tiny_min_chunk_merges_tail
+    test_chunk_indices_are_sequential
 """
 
 import pytest
@@ -137,3 +138,9 @@ def test_tiny_min_chunk_merges_tail() -> None:
     config = ChunkConfig(max_chars=300, overlap_chars=20, min_chunk_chars=100)
     chunks = TextChunker(config).chunk("doc-1", text)
     assert chunks[-1].text.endswith("End.")
+
+
+def test_chunk_indices_are_sequential() -> None:
+    """Checks that chunk indices are zero-based and sequential."""
+    chunks = TextChunker().chunk("doc-1", LOREM)
+    assert [chunk.index for chunk in chunks] == list(range(len(chunks)))
