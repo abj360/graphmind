@@ -27,6 +27,7 @@ Contains:
     test_with_config_overrides_derives_new_config
     test_normalize_document_text_collapses_blank_lines
     test_format_stats_summary_mentions_calls
+    test_extract_batch_empty_documents
 """
 
 import json
@@ -323,3 +324,10 @@ def test_format_stats_summary_mentions_calls() -> None:
     from extract.triple_extractor import format_stats_summary
 
     assert "calls=2" in format_stats_summary(ExtractionStats(calls_made=2))
+
+
+def test_extract_batch_empty_documents() -> None:
+    """Checks that batching an empty document list is a no-op."""
+    extractor = make_extractor()
+    assert extractor.extract_batch([]) == []
+    assert extractor.stats.calls_made == 0
