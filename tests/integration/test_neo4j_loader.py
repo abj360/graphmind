@@ -23,6 +23,10 @@ Contains:
     test_delete_doc_triples_scopes_to_document
     test_format_load_stats_renders_counters
     test_live_instance_roundtrip
+    test_row_size_bytes_counts_content
+    test_relationship_batches_skip_empty_input
+    test_metrics_track_skipped_self_loops
+    test_load_stats_duration_is_set
 """
 
 from typing import Any
@@ -234,3 +238,31 @@ def test_live_instance_roundtrip(loader) -> None:
     """
     stats = loader.write_triples([make_triple()])
     assert stats.batches_written >= 1
+
+
+def test_row_size_bytes_counts_content() -> None:
+    """Checks that the row size estimate grows with content length."""
+    from load.batch_writer import row_size_bytes
+
+    assert row_size_bytes({"a": "bb"}) > row_size_bytes({"a": "b"})
+
+
+def test_relationship_batches_skip_empty_input() -> None:
+    """Checks that empty input yields no batches at all."""
+    writer = BatchWriter(batch_size=4)
+    assert list(writer.relationship_batches([])) == []
+
+
+def test_metrics_track_skipped_self_loops() -> None:
+    """Checks that the batch writer metrics count skipped self-loops."""
+    writer = BatchWriter(batch_size=4)
+    writer.relationship_rows([make_triple("Acme", "owns", "acme"), make_triple()])
+    assert writer.metrics.skipped_self_loops == 1
+    assert writer.metrics.relationship_rows == 1
+
+
+def test_load_stats_duration_is_set() -> None:
+    """Checks that a completed load records a wall-clock duration."""
+    loader, _ = make_loader()
+    stats = loader.write_triples([make_triple()])
+    assert stats.duration_seconds >= 0.0
