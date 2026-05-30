@@ -26,6 +26,7 @@ Contains:
     test_row_size_bytes_counts_content
     test_relationship_batches_skip_empty_input
     test_metrics_track_skipped_self_loops
+    test_load_stats_duration_is_set
 """
 
 from typing import Any
@@ -258,3 +259,10 @@ def test_metrics_track_skipped_self_loops() -> None:
     writer.relationship_rows([make_triple("Acme", "owns", "acme"), make_triple()])
     assert writer.metrics.skipped_self_loops == 1
     assert writer.metrics.relationship_rows == 1
+
+
+def test_load_stats_duration_is_set() -> None:
+    """Checks that a completed load records a wall-clock duration."""
+    loader, _ = make_loader()
+    stats = loader.write_triples([make_triple()])
+    assert stats.duration_seconds >= 0.0
