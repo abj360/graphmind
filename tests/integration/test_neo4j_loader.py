@@ -24,6 +24,7 @@ Contains:
     test_format_load_stats_renders_counters
     test_live_instance_roundtrip
     test_row_size_bytes_counts_content
+    test_relationship_batches_skip_empty_input
 """
 
 from typing import Any
@@ -242,3 +243,9 @@ def test_row_size_bytes_counts_content() -> None:
     from load.batch_writer import row_size_bytes
 
     assert row_size_bytes({"a": "bb"}) > row_size_bytes({"a": "b"})
+
+
+def test_relationship_batches_skip_empty_input() -> None:
+    """Checks that empty input yields no batches at all."""
+    writer = BatchWriter(batch_size=4)
+    assert list(writer.relationship_batches([])) == []
