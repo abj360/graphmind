@@ -496,3 +496,7 @@ button {
   font-size: 11px;
   color: #54657e;
 }
+
+.graph-canvas .edge-label-halo {
+  text-shadow: 0 0 4px #0f1620;
+}
