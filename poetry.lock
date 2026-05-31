@@ -88,3 +88,14 @@ description = "An extremely fast Python linter and code formatter"
 files = [
     {file = "ruff-0.4.4-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:14d955a1bfc16c88842a4f97e4a5138f0b1b6f5511b9e5356f2c80aa38e7f58b"},
 ]
+
+[[package]]
+name = "mypy"
+version = "1.10.0"
+description = "Optional static typing for Python"
+files = [
+    {file = "mypy-1.10.0-cp312-cp312-manylinux_2_17_x86_64.whl", hash = "sha256:323c7160f0ca2dbc7b0cd9c26628e361a8d4b1370a2f6e9b39f3e1ce7ba9f21b"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.1.0"
