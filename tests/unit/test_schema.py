@@ -12,6 +12,7 @@ Contains:
     test_clamp_confidence_bounds_scores
     test_confidence_stats_counts_low_confidence
     test_confidence_stats_handles_empty_batch
+    test_filter_by_confidence
 """
 
 import pytest
@@ -110,3 +111,10 @@ def test_confidence_stats_handles_empty_batch() -> None:
     stats = confidence_stats([])
     assert stats.count == 0
     assert stats.mean == 0.0
+
+
+def test_filter_by_confidence() -> None:
+    """Checks that the confidence filter keeps only qualifying triples."""
+    triples = [make_triple(confidence=0.9), make_triple(confidence=0.3)]
+    kept = filter_by_confidence(triples, 0.5)
+    assert [triple.confidence for triple in kept] == [0.9]
