@@ -12,6 +12,9 @@ Contains:
     test_clamp_confidence_bounds_scores
     test_confidence_stats_counts_low_confidence
     test_confidence_stats_handles_empty_batch
+    test_filter_by_confidence
+    test_validate_triples_preserves_order
+    test_confidence_stats_mean_is_computed
 """
 
 import pytest
@@ -110,3 +113,27 @@ def test_confidence_stats_handles_empty_batch() -> None:
     stats = confidence_stats([])
     assert stats.count == 0
     assert stats.mean == 0.0
+
+
+def test_filter_by_confidence() -> None:
+    """Checks that the confidence filter keeps only qualifying triples."""
+    triples = [make_triple(confidence=0.9), make_triple(confidence=0.3)]
+    kept = filter_by_confidence(triples, 0.5)
+    assert [triple.confidence for triple in kept] == [0.9]
+
+
+def test_validate_triples_preserves_order() -> None:
+    """Checks that batch validation keeps input order for valid items."""
+    items = [
+        {"subject": {"name": "A"}, "predicate": "p1", "object": {"name": "B"}},
+        {"subject": {"name": "C"}, "predicate": "p2", "object": {"name": "D"}},
+    ]
+    triples = validate_triples(items, "doc-1")
+    assert [triple.predicate for triple in triples] == ["p1", "p2"]
+
+
+def test_confidence_stats_mean_is_computed() -> None:
+    """Checks that the mean confidence is the average of the batch."""
+    triples = [make_triple(confidence=0.8), make_triple(confidence=0.4)]
+    stats = confidence_stats(triples)
+    assert abs(stats.mean - 0.6) < 1e-9
