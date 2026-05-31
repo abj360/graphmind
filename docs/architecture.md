@@ -46,3 +46,13 @@ CDC poller), `api` (Express BFF on :4000), `viz` (nginx serving the
 viewer on :5173), `neo4j` (browser on :7474, bolt on :7687). The viz
 container proxies `/api` to the BFF, so the browser only ever talks to
 one origin.
+
+## Where the invariants live
+
+- Validation is lossy-by-default but counted, never silent
+  (extract/schema.py, ExtractionStats).
+- Writes are upsert-only and idempotent (MERGE semantics), so any stage
+  can be re-run safely.
+- Inferred edges are always marked and always scored, and never merge
+  entities by themselves.
+- Secrets come from `.env` at runtime; nothing secret is committed.
