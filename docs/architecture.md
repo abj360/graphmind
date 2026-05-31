@@ -56,3 +56,9 @@ one origin.
 - Inferred edges are always marked and always scored, and never merge
   entities by themselves.
 - Secrets come from `.env` at runtime; nothing secret is committed.
+
+## What to read first
+
+1. `docs/adr/ADR-001-extraction-and-schema-design.md` for the why.
+2. `extract/schema.py` for the what (the data contract).
+3. `docker/docker-compose.yml` for the how (the running system).
