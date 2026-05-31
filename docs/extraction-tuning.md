@@ -76,3 +76,13 @@ enough for budgeting.
    model saw.
 3. Roll back the prompt config, not the code: prompt regressions are
    config changes by design.
+
+## Defaults reference
+
+| Knob | Default | Where |
+| --- | --- | --- |
+| batch size | 8 | `ExtractionConfig.batch_size` |
+| confidence floor | 0.0 | `ExtractionConfig.min_confidence` |
+| require span | false | `ExtractionConfig.require_source_span` |
+| max retries | 2 | `ExtractionConfig.max_retries` |
+| token budget/batch | 6000 | `ExtractionConfig.batch_token_budget` |
