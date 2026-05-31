@@ -38,3 +38,11 @@ text files
   {predicate, confidence, source_doc_id, inferred}` relationships.
 - The BFF serves `{nodes, edges}` view graphs; it never exposes Cypher
   to the browser.
+
+## Service topology
+
+Four containers, one compose network: `pipeline` (Python stages plus
+CDC poller), `api` (Express BFF on :4000), `viz` (nginx serving the
+viewer on :5173), `neo4j` (browser on :7474, bolt on :7687). The viz
+container proxies `/api` to the BFF, so the browser only ever talks to
+one origin.
