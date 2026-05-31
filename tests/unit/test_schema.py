@@ -14,6 +14,7 @@ Contains:
     test_confidence_stats_handles_empty_batch
     test_filter_by_confidence
     test_validate_triples_preserves_order
+    test_confidence_stats_mean_is_computed
 """
 
 import pytest
@@ -129,3 +130,10 @@ def test_validate_triples_preserves_order() -> None:
     ]
     triples = validate_triples(items, "doc-1")
     assert [triple.predicate for triple in triples] == ["p1", "p2"]
+
+
+def test_confidence_stats_mean_is_computed() -> None:
+    """Checks that the mean confidence is the average of the batch."""
+    triples = [make_triple(confidence=0.8), make_triple(confidence=0.4)]
+    stats = confidence_stats(triples)
+    assert abs(stats.mean - 0.6) < 1e-9
