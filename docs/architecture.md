@@ -29,3 +29,12 @@ text files
   metrics dashboard.
 - `docker/` — one Dockerfile per service plus the compose stack.
 - `tests/unit`, `tests/integration` — mirrors of the source trees.
+
+## Data shapes that matter
+
+- `Triple` (extract/schema.py) is the contract between stages: subject,
+  predicate, object, confidence, source provenance, inferred flag.
+- Neo4j stores `:Entity {name, entity_type}` nodes and `:RELATED
+  {predicate, confidence, source_doc_id, inferred}` relationships.
+- The BFF serves `{nodes, edges}` view graphs; it never exposes Cypher
+  to the browser.
