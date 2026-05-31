@@ -18,3 +18,14 @@ text files
   -> load/neo4j_loader.py        batched upsert writes
   -> load/cdc_poller.py          incremental ingestion
 ```
+
+## Directory map
+
+- `extract/` — everything between raw text and validated triples.
+- `resolution/` — everything about "these two names are the same thing".
+- `load/` — everything between resolved triples and Neo4j.
+- `api/` — Express BFF: graph JSON, dedup metrics, GraphML export.
+- `viz/` — the viewer: Cytoscape canvas, search, legend, detail panel,
+  metrics dashboard.
+- `docker/` — one Dockerfile per service plus the compose stack.
+- `tests/unit`, `tests/integration` — mirrors of the source trees.
