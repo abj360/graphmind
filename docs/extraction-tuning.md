@@ -60,3 +60,10 @@ with hand-verified triples, run the extractor over them after any
 prompt or model change, and compare precision/recall against the last
 run. The unit tests keep the parser honest; only the spot set keeps
 the model honest.
+
+## Cost estimation
+
+`estimate_extraction_cost()` gives a rough dollar figure from corpus
+size and config. It underestimates when retries spike and overestimates
+when the corpus is mostly short chunks — within 2x either way, which is
+enough for budgeting.
