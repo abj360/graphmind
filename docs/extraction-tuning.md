@@ -67,3 +67,12 @@ the model honest.
 size and config. It underestimates when retries spike and overestimates
 when the corpus is mostly short chunks — within 2x either way, which is
 enough for budgeting.
+
+## When quality drops suddenly
+
+1. Check `dropped_missing_span` and `dropped_low_confidence` first —
+   a jump means the model's output shape changed, not your data.
+2. Diff the prompt: `render_prompt_preview()` shows exactly what the
+   model saw.
+3. Roll back the prompt config, not the code: prompt regressions are
+   config changes by design.
