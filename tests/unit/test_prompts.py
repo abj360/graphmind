@@ -6,6 +6,10 @@ Contains:
     test_prompt_contains_system_prompt_and_rules
     test_prompt_embeds_few_shot_examples
     test_domain_hint_rendered_for_known_domain
+    test_validate_domain_rejects_unknown_keys
+    test_load_prompt_config_reads_bundled_default
+    test_load_prompt_config_reads_custom_file
+    test_validate_prompt_config_rejects_bad_values
 """
 
 import pytest
@@ -38,3 +42,31 @@ def test_domain_hint_rendered_for_known_domain() -> None:
     """Checks that known domains contribute their hint to the prompt."""
     prompt = build_extraction_prompt("text", PromptConfig(domain="technical"))
     assert DOMAIN_HINTS["technical"] in prompt
+
+
+def test_validate_domain_rejects_unknown_keys() -> None:
+    """Checks that unsupported domain keys are rejected with guidance."""
+    with pytest.raises(ValueError):
+        validate_domain("astrology")
+
+
+def test_load_prompt_config_reads_bundled_default() -> None:
+    """Checks that the bundled default config loads and validates."""
+    config = load_prompt_config()
+    assert config.domain == "general"
+    assert config.few_shot_count >= 0
+
+
+def test_load_prompt_config_reads_custom_file(tmp_path) -> None:
+    """Checks that a custom TOML config file overrides defaults."""
+    config_path = tmp_path / "custom.toml"
+    config_path.write_text('[prompts]\ndomain = "news"\nfew_shot_count = 3\n')
+    config = load_prompt_config(config_path)
+    assert config.domain == "news"
+    assert config.few_shot_count == 3
+
+
+def test_validate_prompt_config_rejects_bad_values() -> None:
+    """Checks that negative few-shot counts are rejected."""
+    with pytest.raises(ValueError):
+        validate_prompt_config(PromptConfig(few_shot_count=-1))
