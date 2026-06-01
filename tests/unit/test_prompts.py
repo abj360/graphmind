@@ -9,6 +9,7 @@ Contains:
     test_validate_domain_rejects_unknown_keys
     test_load_prompt_config_reads_bundled_default
     test_load_prompt_config_reads_custom_file
+    test_validate_prompt_config_rejects_bad_values
 """
 
 import pytest
@@ -63,3 +64,9 @@ def test_load_prompt_config_reads_custom_file(tmp_path) -> None:
     config = load_prompt_config(config_path)
     assert config.domain == "news"
     assert config.few_shot_count == 3
+
+
+def test_validate_prompt_config_rejects_bad_values() -> None:
+    """Checks that negative few-shot counts are rejected."""
+    with pytest.raises(ValueError):
+        validate_prompt_config(PromptConfig(few_shot_count=-1))
