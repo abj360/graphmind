@@ -8,6 +8,7 @@ Contains:
     test_domain_hint_rendered_for_known_domain
     test_validate_domain_rejects_unknown_keys
     test_load_prompt_config_reads_bundled_default
+    test_load_prompt_config_reads_custom_file
 """
 
 import pytest
@@ -53,3 +54,12 @@ def test_load_prompt_config_reads_bundled_default() -> None:
     config = load_prompt_config()
     assert config.domain == "general"
     assert config.few_shot_count >= 0
+
+
+def test_load_prompt_config_reads_custom_file(tmp_path) -> None:
+    """Checks that a custom TOML config file overrides defaults."""
+    config_path = tmp_path / "custom.toml"
+    config_path.write_text('[prompts]\ndomain = "news"\nfew_shot_count = 3\n')
+    config = load_prompt_config(config_path)
+    assert config.domain == "news"
+    assert config.few_shot_count == 3
