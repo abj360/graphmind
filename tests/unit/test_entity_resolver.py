@@ -11,6 +11,7 @@ Contains:
     test_cosine_similarity_identical_vectors
     test_cosine_similarity_rejects_length_mismatch
     test_ngram_embedder_is_deterministic
+    test_ngram_embedder_normalizes_case
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -77,3 +78,9 @@ def test_ngram_embedder_is_deterministic() -> None:
     """Checks that the offline embedder produces stable vectors."""
     provider = NgramEmbeddingProvider()
     assert provider.embed("Acme") == provider.embed("Acme")
+
+
+def test_ngram_embedder_normalizes_case() -> None:
+    """Checks that embeddings are case-insensitive."""
+    provider = NgramEmbeddingProvider()
+    assert provider.embed("ACME") == provider.embed("acme")

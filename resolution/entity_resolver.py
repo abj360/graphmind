@@ -16,6 +16,8 @@ Contains:
     resolve_names(): canonicalizes a bare list of names
     summarize_merges(): renders merge decisions for review
     duplicate_rate(): measures entity duplication before resolution
+    main(): CLI entrypoint for entity resolution
+    module entrypoint guard
 """
 
 from dataclasses import dataclass
@@ -260,3 +262,39 @@ def duplicate_rate(triples: list[Triple]) -> float:
     if not mentions:
         return 0.0
     return 1.0 - len(set(mentions)) / len(mentions)
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Runs the resolution CLI over an extracted-triples JSONL file.
+
+    Args:
+        argv: Command-line arguments; sys.argv when omitted.
+
+    Returns:
+        exit_code: 0 on success, nonzero on failure.
+    """
+    import argparse
+    import json
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description="Resolve duplicate entities in a triple graph")
+    parser.add_argument("--graph", required=True, help="extracted triples JSONL path")
+    parser.add_argument("--out", default="out/resolved.jsonl", help="output JSONL path")
+    parser.add_argument("--threshold", type=float, default=0.85, help="auto-merge threshold")
+    args = parser.parse_args(argv)
+    triples = [
+        Triple.model_validate(json.loads(line))
+        for line in Path(args.graph).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    result = EntityResolver(threshold=args.threshold).resolve(triples)
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as handle:
+        for triple in result.triples:
+            handle.write(json.dumps(triple.model_dump()) + "\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
