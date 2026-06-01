@@ -8,6 +8,7 @@ Contains:
     NgramEmbeddingProvider: deterministic local character-ngram embedder
     NgramEmbeddingProvider.embed(): hashes n-grams into a vector
     OpenAIEmbeddingProvider: hosted embedding provider adapter
+    build_default_provider(): selects the configured provider
 """
 
 import hashlib
@@ -125,3 +126,20 @@ class OpenAIEmbeddingProvider:
         client = OpenAI()
         response = client.embeddings.create(model=self.model, input=text)
         return list(response.data[0].embedding)
+
+
+def build_default_provider(env: dict[str, str] | None = None) -> EmbeddingProvider:
+    """Selects an embedding provider from environment configuration.
+
+    Args:
+        env: Environment mapping; offline n-gram provider is the default.
+
+    Returns:
+        provider: Configured embedding provider instance.
+    """
+    import os
+
+    active = env if env is not None else dict(os.environ)
+    if active.get("GRAPHMIND_EMBEDDING_PROVIDER", "ngram") == "openai":
+        return OpenAIEmbeddingProvider()
+    return NgramEmbeddingProvider()
