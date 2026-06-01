@@ -7,6 +7,7 @@ Contains:
     test_prompt_embeds_few_shot_examples
     test_domain_hint_rendered_for_known_domain
     test_validate_domain_rejects_unknown_keys
+    test_load_prompt_config_reads_bundled_default
 """
 
 import pytest
@@ -45,3 +46,10 @@ def test_validate_domain_rejects_unknown_keys() -> None:
     """Checks that unsupported domain keys are rejected with guidance."""
     with pytest.raises(ValueError):
         validate_domain("astrology")
+
+
+def test_load_prompt_config_reads_bundled_default() -> None:
+    """Checks that the bundled default config loads and validates."""
+    config = load_prompt_config()
+    assert config.domain == "general"
+    assert config.few_shot_count >= 0
