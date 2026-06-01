@@ -6,6 +6,7 @@ Contains:
     test_prompt_contains_system_prompt_and_rules
     test_prompt_embeds_few_shot_examples
     test_domain_hint_rendered_for_known_domain
+    test_validate_domain_rejects_unknown_keys
 """
 
 import pytest
@@ -38,3 +39,9 @@ def test_domain_hint_rendered_for_known_domain() -> None:
     """Checks that known domains contribute their hint to the prompt."""
     prompt = build_extraction_prompt("text", PromptConfig(domain="technical"))
     assert DOMAIN_HINTS["technical"] in prompt
+
+
+def test_validate_domain_rejects_unknown_keys() -> None:
+    """Checks that unsupported domain keys are rejected with guidance."""
+    with pytest.raises(ValueError):
+        validate_domain("astrology")
