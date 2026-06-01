@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   errorHandler(): maps errors to JSON responses
+ *  *   notFoundHandler(): JSON 404 for unmatched routes
  */
 
 /**
@@ -21,4 +22,14 @@ export function errorHandler(error, _request, response, _next) {
     console.error("unhandled route error:", error);
   }
   response.status(status).json(payload);
+}
+
+/**
+ * Responds with a JSON 404 for unmatched routes.
+ *
+ * @param request - Express request that matched nothing.
+ * @param response - Express response used to send the 404 payload.
+ */
+export function notFoundHandler(request, response) {
+  response.status(404).json({ error: `no such route: ${request.method} ${request.path}` });
 }
