@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   errorHandler(): maps errors to JSON responses
  *  *   notFoundHandler(): JSON 404 for unmatched routes
+ *  *   httpError(): creates an error with a status code
  */
 
 /**
@@ -32,4 +33,17 @@ export function errorHandler(error, _request, response, _next) {
  */
 export function notFoundHandler(request, response) {
   response.status(404).json({ error: `no such route: ${request.method} ${request.path}` });
+}
+
+/**
+ * Creates an Error carrying an HTTP status code.
+ *
+ * @param statusCode - HTTP status the error handler should send.
+ * @param message - Human-readable error detail.
+ * @returns error - Error instance with statusCode attached.
+ */
+export function httpError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
 }
