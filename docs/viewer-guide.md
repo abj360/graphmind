@@ -83,3 +83,10 @@ that matters.
 - Focus rings are high-contrast; the canvas itself is keyboard-focusable
   for screen reader landmarking.
 - The layout collapses to a single column under 860px wide.
+
+## Performance expectations
+
+Interactive up to roughly 5,000 visible nodes on a laptop; beyond that
+the viewer keeps working but layout and pan lose fluidity (tracked as
+issue #22). Filtering first is the workaround — the canvas only pays
+for what is visible.
