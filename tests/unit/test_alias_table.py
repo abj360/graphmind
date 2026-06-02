@@ -19,6 +19,7 @@ Contains:
     test_decided_items_cannot_be_resubmitted
     test_queue_from_borderline_assigns_stable_ids
     test_apply_decisions_writes_approved_merges
+    test_find_candidates_matches_shared_tokens
 """
 
 import pytest
@@ -169,3 +170,13 @@ def test_apply_decisions_writes_approved_merges() -> None:
     applied = apply_decisions(queue, table)
     assert applied == 1
     assert table.canonical_for("acme corp") == "acme"
+
+
+def test_find_candidates_matches_shared_tokens() -> None:
+    """Checks that candidate search finds token-overlapping aliases."""
+    from resolution.alias_table import find_candidates
+
+    table = AliasTable()
+    table.add("Acme", "acme corporation")
+    assert find_candidates(table, "ACME Corporation Ltd") == ["acme corporation"]
+    assert find_candidates(table, "globex") == []
