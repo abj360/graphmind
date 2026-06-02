@@ -25,6 +25,9 @@
  *  *   test: metrics payload uses the canned helper
  *  *   test: graphml export escapes special characters
  *  *   test: graphml export validates edge endpoints
+ *  *   test: labels endpoint handles empty graph
+ *  *   test: metrics hubs endpoint handles empty graph
+ *  *   test: node endpoint encodes names in the query
  */
 
 import assert from "node:assert/strict";
@@ -256,4 +259,25 @@ test("GET /api/export/graphml rejects dangling edges as 500", async () => {
   const app = createApp(driver, fakeConfig());
   const response = await request(app).get("/api/export/graphml");
   assert.equal(response.status, 500);
+});
+
+test("GET /api/graph/labels handles an empty graph", async () => {
+  const { app } = await makeApp({ "RETURN DISTINCT n.entity_type": [] });
+  const response = await request(app).get("/api/graph/labels");
+  assert.deepEqual(response.body, []);
+});
+
+test("GET /api/metrics/hubs handles an empty graph", async () => {
+  const { app } = await makeApp({ "RETURN n.name AS name, count(r) AS degree": [] });
+  const response = await request(app).get("/api/metrics/hubs");
+  assert.deepEqual(response.body, []);
+});
+
+test("GET /api/graph/node/:name passes the raw name to the query", async () => {
+  const { app, driver } = await makeApp({
+    "MATCH (n:Entity {name: $name})": [fakeRecord("Acme Ltd", "acquired", "ByteWorks")],
+  });
+  await request(app).get("/api/graph/node/Acme%20Ltd");
+  const call = driver.calls.find((entry) => entry.params.name);
+  assert.equal(call.params.name, "Acme Ltd");
 });

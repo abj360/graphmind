@@ -5,6 +5,8 @@
  *  * Contains:
  *  *   test: serializeNode renders label and type
  *  *   test: serializeEdge omits missing confidence
+ *  *   test: toGraphML wraps nodes and edges in a graph element
+ *  *   test: validateGraphInput rejects dangling edges
  */
 
 import assert from "node:assert/strict";
@@ -29,4 +31,23 @@ test("serializeEdge omits the confidence data when absent", () => {
   assert.doesNotMatch(element, /confidence/);
   const withConfidence = serializeEdge({ source: "A", target: "B", predicate: "p", confidence: 0.5 }, 1);
   assert.match(withConfidence, /<data key="confidence">0.5<\/data>/);
+});
+
+test("toGraphML wraps nodes and edges in a graph element", () => {
+  const document = toGraphML({
+    nodes: [{ id: "A", label: "A", type: "ORG" }],
+    edges: [{ source: "A", target: "A", predicate: "p" }],
+  });
+  assert.match(document, /^<\?xml version="1.0"/);
+  assert.match(document, /<\/graphml>$/);
+  assert.match(document, /<edge id="e0"/);
+});
+
+test("validateGraphInput rejects edges with unknown endpoints", () => {
+  assert.throws(() =>
+    validateGraphInput({
+      nodes: [{ id: "A", label: "A", type: "ORG" }],
+      edges: [{ id: "e0", source: "A", target: "ghost", predicate: "p" }],
+    }),
+  );
 });
