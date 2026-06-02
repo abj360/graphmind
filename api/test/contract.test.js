@@ -26,6 +26,7 @@
  *  *   test: graphml export escapes special characters
  *  *   test: graphml export validates edge endpoints
  *  *   test: labels endpoint handles empty graph
+ *  *   test: metrics hubs endpoint handles empty graph
  */
 
 import assert from "node:assert/strict";
@@ -262,5 +263,11 @@ test("GET /api/export/graphml rejects dangling edges as 500", async () => {
 test("GET /api/graph/labels handles an empty graph", async () => {
   const { app } = await makeApp({ "RETURN DISTINCT n.entity_type": [] });
   const response = await request(app).get("/api/graph/labels");
+  assert.deepEqual(response.body, []);
+});
+
+test("GET /api/metrics/hubs handles an empty graph", async () => {
+  const { app } = await makeApp({ "RETURN n.name AS name, count(r) AS degree": [] });
+  const response = await request(app).get("/api/metrics/hubs");
   assert.deepEqual(response.body, []);
 });
