@@ -83,3 +83,19 @@ that matters.
 - Focus rings are high-contrast; the canvas itself is keyboard-focusable
   for screen reader landmarking.
 - The layout collapses to a single column under 860px wide.
+
+## Performance expectations
+
+Interactive up to roughly 5,000 visible nodes on a laptop; beyond that
+the viewer keeps working but layout and pan lose fluidity (tracked as
+issue #22). Filtering first is the workaround — the canvas only pays
+for what is visible.
+
+## Troubleshooting
+
+- Blank canvas with a "failed to load" banner: the BFF is down or
+  unreachable; check `docker compose -f docker/docker-compose.yml ps`.
+- Graph loads but shows nothing: the database is empty — run the
+  pipeline stages or let CDC ingest something first.
+- Weird colors after a palette change: hard-refresh; Vite caches the
+  stylesheet aggressively in dev.
