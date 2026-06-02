@@ -8,6 +8,7 @@ Contains:
     test_low_confidence_bridges_are_filtered
     test_component_report_counts_components
     test_merge_inferred_dedupes_existing_edges
+    test_bridge_scores_same_type_bonus
 """
 
 from extract.relationship_inference import (
@@ -54,3 +55,11 @@ def test_merge_inferred_dedupes_existing_edges() -> None:
     duplicate = make_triple("Alice", "founded", "Acme", confidence=0.5)
     inferred = [duplicate.model_copy(update={"inferred": True})]
     assert len(merge_inferred(extracted, inferred)) == 1
+
+
+def test_bridge_scores_same_type_bonus() -> None:
+    """Checks that same-typed pairs get the association predicate."""
+    inferer = RelationshipInferer()
+    score, predicate = inferer._score_bridge("acme", "globex", {"acme": "ORG", "globex": "ORG"})
+    assert predicate == "related to"
+    assert score > 0.4
