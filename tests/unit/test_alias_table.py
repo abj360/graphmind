@@ -17,6 +17,7 @@ Contains:
     test_reject_records_false_decision
     test_take_unknown_id_raises
     test_decided_items_cannot_be_resubmitted
+    test_queue_from_borderline_assigns_stable_ids
 """
 
 import pytest
@@ -148,3 +149,10 @@ def test_decided_items_cannot_be_resubmitted() -> None:
     queue.approve("review-1")
     queue.submit(make_item())
     assert queue.pending() == []
+
+
+def test_queue_from_borderline_assigns_stable_ids() -> None:
+    """Checks that queue construction assigns sequential stable ids."""
+    queue = queue_from_borderline([("acme", "acme corp", 0.8), ("acme", "acme ltd", 0.75)])
+    ids = [item.item_id for item in queue.pending()]
+    assert ids == ["review-0000", "review-0001"]
