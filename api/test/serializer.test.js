@@ -6,6 +6,7 @@
  *  *   test: serializeNode renders label and type
  *  *   test: serializeEdge omits missing confidence
  *  *   test: toGraphML wraps nodes and edges in a graph element
+ *  *   test: validateGraphInput rejects dangling edges
  */
 
 import assert from "node:assert/strict";
@@ -40,4 +41,13 @@ test("toGraphML wraps nodes and edges in a graph element", () => {
   assert.match(document, /^<\?xml version="1.0"/);
   assert.match(document, /<\/graphml>$/);
   assert.match(document, /<edge id="e0"/);
+});
+
+test("validateGraphInput rejects edges with unknown endpoints", () => {
+  assert.throws(() =>
+    validateGraphInput({
+      nodes: [{ id: "A", label: "A", type: "ORG" }],
+      edges: [{ id: "e0", source: "A", target: "ghost", predicate: "p" }],
+    }),
+  );
 });
