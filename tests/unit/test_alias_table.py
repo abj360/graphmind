@@ -21,6 +21,7 @@ Contains:
     test_apply_decisions_writes_approved_merges
     test_find_candidates_matches_shared_tokens
     test_table_stats_counts_aliases_and_canonicals
+    test_pending_returns_copy
 """
 
 import pytest
@@ -191,3 +192,11 @@ def test_table_stats_counts_aliases_and_canonicals() -> None:
     table.add("Acme", "acme corp")
     table.add("Acme", "acme ltd")
     assert table_stats(table) == {"aliases": 2, "canonicals": 1}
+
+
+def test_pending_returns_copy() -> None:
+    """Checks that pending() cannot be mutated to corrupt the queue."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.pending().clear()
+    assert len(queue.pending()) == 1
