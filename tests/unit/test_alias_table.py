@@ -20,6 +20,7 @@ Contains:
     test_queue_from_borderline_assigns_stable_ids
     test_apply_decisions_writes_approved_merges
     test_find_candidates_matches_shared_tokens
+    test_table_stats_counts_aliases_and_canonicals
 """
 
 import pytest
@@ -180,3 +181,13 @@ def test_find_candidates_matches_shared_tokens() -> None:
     table.add("Acme", "acme corporation")
     assert find_candidates(table, "ACME Corporation Ltd") == ["acme corporation"]
     assert find_candidates(table, "globex") == []
+
+
+def test_table_stats_counts_aliases_and_canonicals() -> None:
+    """Checks that table stats count aliases and distinct canonicals."""
+    from resolution.alias_table import table_stats
+
+    table = AliasTable()
+    table.add("Acme", "acme corp")
+    table.add("Acme", "acme ltd")
+    assert table_stats(table) == {"aliases": 2, "canonicals": 1}
