@@ -18,6 +18,7 @@ Contains:
     test_take_unknown_id_raises
     test_decided_items_cannot_be_resubmitted
     test_queue_from_borderline_assigns_stable_ids
+    test_apply_decisions_writes_approved_merges
 """
 
 import pytest
@@ -156,3 +157,15 @@ def test_queue_from_borderline_assigns_stable_ids() -> None:
     queue = queue_from_borderline([("acme", "acme corp", 0.8), ("acme", "acme ltd", 0.75)])
     ids = [item.item_id for item in queue.pending()]
     assert ids == ["review-0000", "review-0001"]
+
+
+def test_apply_decisions_writes_approved_merges() -> None:
+    """Checks that approved review items land in the alias table."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item("a", "acme", "acme corp"))
+    queue.submit(make_item("b", "acme", "acme ltd"))
+    queue.decided["a"] = True
+    table = AliasTable()
+    applied = apply_decisions(queue, table)
+    assert applied == 1
+    assert table.canonical_for("acme corp") == "acme"
