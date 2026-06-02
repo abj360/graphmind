@@ -17,6 +17,11 @@ Contains:
     test_reject_records_false_decision
     test_take_unknown_id_raises
     test_decided_items_cannot_be_resubmitted
+    test_queue_from_borderline_assigns_stable_ids
+    test_apply_decisions_writes_approved_merges
+    test_find_candidates_matches_shared_tokens
+    test_table_stats_counts_aliases_and_canonicals
+    test_pending_returns_copy
 """
 
 import pytest
@@ -148,3 +153,50 @@ def test_decided_items_cannot_be_resubmitted() -> None:
     queue.approve("review-1")
     queue.submit(make_item())
     assert queue.pending() == []
+
+
+def test_queue_from_borderline_assigns_stable_ids() -> None:
+    """Checks that queue construction assigns sequential stable ids."""
+    queue = queue_from_borderline([("acme", "acme corp", 0.8), ("acme", "acme ltd", 0.75)])
+    ids = [item.item_id for item in queue.pending()]
+    assert ids == ["review-0000", "review-0001"]
+
+
+def test_apply_decisions_writes_approved_merges() -> None:
+    """Checks that approved review items land in the alias table."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item("a", "acme", "acme corp"))
+    queue.submit(make_item("b", "acme", "acme ltd"))
+    queue.decided["a"] = True
+    table = AliasTable()
+    applied = apply_decisions(queue, table)
+    assert applied == 1
+    assert table.canonical_for("acme corp") == "acme"
+
+
+def test_find_candidates_matches_shared_tokens() -> None:
+    """Checks that candidate search finds token-overlapping aliases."""
+    from resolution.alias_table import find_candidates
+
+    table = AliasTable()
+    table.add("Acme", "acme corporation")
+    assert find_candidates(table, "ACME Corporation Ltd") == ["acme corporation"]
+    assert find_candidates(table, "globex") == []
+
+
+def test_table_stats_counts_aliases_and_canonicals() -> None:
+    """Checks that table stats count aliases and distinct canonicals."""
+    from resolution.alias_table import table_stats
+
+    table = AliasTable()
+    table.add("Acme", "acme corp")
+    table.add("Acme", "acme ltd")
+    assert table_stats(table) == {"aliases": 2, "canonicals": 1}
+
+
+def test_pending_returns_copy() -> None:
+    """Checks that pending() cannot be mutated to corrupt the queue."""
+    queue = MergeReviewQueue()
+    queue.submit(make_item())
+    queue.pending().clear()
+    assert len(queue.pending()) == 1
