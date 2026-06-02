@@ -25,6 +25,7 @@
  *  *   test: metrics payload uses the canned helper
  *  *   test: graphml export escapes special characters
  *  *   test: graphml export validates edge endpoints
+ *  *   test: labels endpoint handles empty graph
  */
 
 import assert from "node:assert/strict";
@@ -256,4 +257,10 @@ test("GET /api/export/graphml rejects dangling edges as 500", async () => {
   const app = createApp(driver, fakeConfig());
   const response = await request(app).get("/api/export/graphml");
   assert.equal(response.status, 500);
+});
+
+test("GET /api/graph/labels handles an empty graph", async () => {
+  const { app } = await makeApp({ "RETURN DISTINCT n.entity_type": [] });
+  const response = await request(app).get("/api/graph/labels");
+  assert.deepEqual(response.body, []);
 });
