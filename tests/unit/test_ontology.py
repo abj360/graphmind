@@ -7,6 +7,7 @@ Contains:
     test_unmatched_predicate_is_rejected
     test_empty_ontology_allows_everything
     test_enforce_partitions_kept_and_rejected
+    test_rule_matching_is_predicate_case_insensitive
 """
 
 from extract.ontology import (
@@ -45,3 +46,9 @@ def test_enforce_partitions_kept_and_rejected() -> None:
     assert len(kept) == 1
     assert len(violations) == 1
     assert "joined" in violations[0].reason
+
+
+def test_rule_matching_is_predicate_case_insensitive() -> None:
+    """Checks that rule predicates match case-insensitively."""
+    ontology = Ontology({OntologyRule("PERSON", "Founded", "ORG")})
+    assert ontology.allows(make_triple("Alice", "founded", "Acme"))
