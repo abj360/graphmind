@@ -500,3 +500,40 @@ button {
 .graph-canvas .edge-label-halo {
   text-shadow: 0 0 4px #0f1620;
 }
+
+.detail-crosslink {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #74b3ce;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+kbd {
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #223047;
+  background: #16202e;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.detail-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.detail-panel th {
+  text-align: left;
+  color: #9fb0c7;
+  font-weight: normal;
+  padding-bottom: 4px;
+}
