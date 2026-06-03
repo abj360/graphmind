@@ -6,6 +6,9 @@ Contains:
     test_matching_rule_allows_triple
     test_unmatched_predicate_is_rejected
     test_empty_ontology_allows_everything
+    test_enforce_partitions_kept_and_rejected
+    test_rule_matching_is_predicate_case_insensitive
+    test_add_rule_derives_new_ontology
 """
 
 from extract.ontology import (
@@ -33,3 +36,28 @@ def test_empty_ontology_allows_everything() -> None:
     """Checks that an empty rule set imposes no constraints."""
     ontology = Ontology(set())
     assert ontology.allows(make_triple("X", "whatever", "Y"))
+
+
+def test_enforce_partitions_kept_and_rejected() -> None:
+    """Checks that enforcement partitions triples with reasons."""
+    ontology = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    kept, violations = ontology.enforce(
+        [make_triple("Alice", "founded", "Acme"), make_triple("Bob", "joined", "Acme")]
+    )
+    assert len(kept) == 1
+    assert len(violations) == 1
+    assert "joined" in violations[0].reason
+
+
+def test_rule_matching_is_predicate_case_insensitive() -> None:
+    """Checks that rule predicates match case-insensitively."""
+    ontology = Ontology({OntologyRule("PERSON", "Founded", "ORG")})
+    assert ontology.allows(make_triple("Alice", "founded", "Acme"))
+
+
+def test_add_rule_derives_new_ontology() -> None:
+    """Checks that add_rule extends the rule set immutably."""
+    base = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    extended = base.add_rule(OntologyRule("PERSON", "joined", "ORG"))
+    assert not base.allows(make_triple("Bob", "joined", "Acme"))
+    assert extended.allows(make_triple("Bob", "joined", "Acme"))
