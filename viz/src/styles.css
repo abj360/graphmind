@@ -515,3 +515,12 @@ button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+kbd {
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #223047;
+  background: #16202e;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
