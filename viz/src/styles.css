@@ -500,3 +500,9 @@ button {
 .graph-canvas .edge-label-halo {
   text-shadow: 0 0 4px #0f1620;
 }
+
+.detail-crosslink {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #74b3ce;
+}
