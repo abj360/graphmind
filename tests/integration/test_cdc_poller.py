@@ -12,6 +12,9 @@ Contains:
     test_doc_id_uses_relative_posix_path
     test_file_checksum_changes_with_content
     test_apply_events_routes_by_kind
+    test_summarize_events_counts_kinds
+    test_glob_pattern_limits_tracked_files
+    test_run_loop_stops_after_max_iterations
 """
 
 from pathlib import Path
@@ -131,3 +134,35 @@ def test_apply_events_routes_by_kind(tmp_path) -> None:
     routed: dict[str, list[str]] = {"up": [], "down": []}
     apply_events(events, routed["up"].append, routed["down"].append)
     assert routed == {"up": [], "down": ["a.txt"]}
+
+
+def test_summarize_events_counts_kinds(tmp_path) -> None:
+    """Checks that the summary counts upserts and deletes separately."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    (corpus / "b.txt").write_text("beta")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    events = poller.poll_once()
+    assert summarize_events(events)[ChangeKind.UPSERT] == 2
+    assert filter_upserts(events) == events
+
+
+def test_glob_pattern_limits_tracked_files(tmp_path) -> None:
+    """Checks that non-matching files are ignored by the poller."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    (corpus / "b.md").write_text("beta")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    events = poller.poll_once()
+    assert [event.doc_id for event in events] == ["a.txt"]
+
+
+def test_run_loop_stops_after_max_iterations(tmp_path) -> None:
+    """Checks that the run loop honors the iteration cap."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.run(max_iterations=2)
+    assert poller.poll_once() == []

@@ -120,3 +120,31 @@ files = [
 lock-version = "2.0"
 python-versions = ">=3.12"
 content-hash = "8f4a3c2b1d9e7f6a5c4b3a2d1e0f9e8d7c6b5a49382716f0e9d8c7b6a5948372"
+
+[[package]]
+name = "httpx"
+version = "0.27.0"
+description = "The next generation HTTP client."
+files = [
+    {file = "httpx-0.27.0-py3-none-any.whl", hash = "sha256:71d5465162c13681bff01ad59b2cc68dd838ea1f10e51574bac27103f00c91a5"},
+]
+
+[package.dependencies]
+anyio = "*"
+certifi = "*"
+
+[[package]]
+name = "anyio"
+version = "4.3.0"
+description = "High level compatibility layer for multiple asynchronous event loop implementations"
+files = [
+    {file = "anyio-4.3.0-py3-none-any.whl", hash = "sha256:048e05d0f6caeed70d731f3db756d35dcc1f35747c8c403364a8332c630441b8"},
+]
+
+[[package]]
+name = "certifi"
+version = "2024.2.2"
+description = "Python package for providing Mozilla's CA Bundle."
+files = [
+    {file = "certifi-2024.2.2-py3-none-any.whl", hash = "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d96f65252f16fe98dd19608"},
+]
