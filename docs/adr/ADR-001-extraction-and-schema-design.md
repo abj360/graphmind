@@ -177,3 +177,41 @@ exactly-once semantics for no measurable gain at this corpus size.
   becomes a backfill tool.
 - If auto-merge precision measurably exceeds human review quality on
   the borderline band, the review floor moves — with data, not vibes.
+
+## References
+
+- `extract/schema.py` — the Triple contract
+- `extract/triple_extractor.py` — extraction pass
+- `extract/prompts/` — prompt templates and configuration
+- `extract/ontology.py` — enforcement rules
+- `resolution/entity_resolver.py` — embedding-based canonicalization
+- `load/neo4j_loader.py` — batched upsert writer
+- `docs/integration-retrieval-core.md` — downstream query integration
+
+## Decision: chunking respects sentence boundaries
+
+The chunker packs whole sentences under a character ceiling with a
+trailing-context overlap, rather than slicing at fixed offsets. Fixed
+offset windows cut sentences in half, and half a sentence is where
+extracted "relationships" that the text never stated come from. Overlap
+exists so facts spanning a boundary appear in full in at least one
+chunk.
+
+## Notes: secrets and PII handling
+
+- No credentials in code, ever: `.env.example` documents names, `.env`
+  is gitignored from day one, and compose injects values at runtime.
+- Source documents may contain PII; the graph stores what the text
+  states, so corpus access controls are the access controls for the
+  graph. Backups inherit the same handling rules as the database.
+
+## Changelog
+
+- 2026-04-02 — initial version (Peter)
+- 2026-04-11 — resolution section expanded after review (Peter)
+- 2026-04-21 — batching/retries notes added (Peter)
+- 2026-05-01 — CDC vs streaming alternative recorded (Peter)
+- 2026-05-09 — chunking decision promoted to its own section (Peter)
+- 2026-05-17 — secrets/PII notes added (Peter)
+- 2026-05-26 — citation-requirement consequence linked to the 05-20 fix (Peter)
+- 2026-06-04 — marked accepted ahead of v1.0 (Peter)
