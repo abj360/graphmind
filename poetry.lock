@@ -120,3 +120,15 @@ files = [
 lock-version = "2.0"
 python-versions = ">=3.12"
 content-hash = "8f4a3c2b1d9e7f6a5c4b3a2d1e0f9e8d7c6b5a49382716f0e9d8c7b6a5948372"
+
+[[package]]
+name = "httpx"
+version = "0.27.0"
+description = "The next generation HTTP client."
+files = [
+    {file = "httpx-0.27.0-py3-none-any.whl", hash = "sha256:71d5465162c13681bff01ad59b2cc68dd838ea1f10e51574bac27103f00c91a5"},
+]
+
+[package.dependencies]
+anyio = "*"
+certifi = "*"
