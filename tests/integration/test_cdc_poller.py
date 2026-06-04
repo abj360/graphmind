@@ -14,6 +14,7 @@ Contains:
     test_apply_events_routes_by_kind
     test_summarize_events_counts_kinds
     test_glob_pattern_limits_tracked_files
+    test_run_loop_stops_after_max_iterations
 """
 
 from pathlib import Path
@@ -156,3 +157,12 @@ def test_glob_pattern_limits_tracked_files(tmp_path) -> None:
     poller = make_poller(corpus, tmp_path / "state.json")
     events = poller.poll_once()
     assert [event.doc_id for event in events] == ["a.txt"]
+
+
+def test_run_loop_stops_after_max_iterations(tmp_path) -> None:
+    """Checks that the run loop honors the iteration cap."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    poller = make_poller(corpus, tmp_path / "state.json")
+    poller.run(max_iterations=2)
+    assert poller.poll_once() == []
