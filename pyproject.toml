@@ -40,3 +40,7 @@ known-first-party = ["extract", "resolution", "load", "tests"]
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
