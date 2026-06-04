@@ -196,3 +196,11 @@ offset windows cut sentences in half, and half a sentence is where
 extracted "relationships" that the text never stated come from. Overlap
 exists so facts spanning a boundary appear in full in at least one
 chunk.
+
+## Notes: secrets and PII handling
+
+- No credentials in code, ever: `.env.example` documents names, `.env`
+  is gitignored from day one, and compose injects values at runtime.
+- Source documents may contain PII; the graph stores what the text
+  states, so corpus access controls are the access controls for the
+  graph. Backups inherit the same handling rules as the database.
