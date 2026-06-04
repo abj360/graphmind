@@ -7,6 +7,7 @@
  *  *   runQuery(): executes a read query and unwraps records
  *  *   closeDriver(): releases the shared driver
  *  *   verifyConnectivity(): fails fast when Neo4j is down
+ *  *   runQueries(): executes several queries sequentially
  */
 
 import neo4j from "neo4j-driver";
@@ -64,4 +65,20 @@ export async function verifyConnectivity(driver) {
   } catch (error) {
     throw new Error(`neo4j unreachable: ${error.message}`);
   }
+}
+
+/**
+ * Executes several queries sequentially, collecting their records.
+ *
+ * @param driver - Neo4j driver instance.
+ * @param queries - Cypher statements to run in order.
+ * @param database - Target database name.
+ * @returns results - One record list per query, in order.
+ */
+export async function runQueries(driver, queries, database = "neo4j") {
+  const results = [];
+  for (const query of queries) {
+    results.push(await runQuery(driver, query, {}, database));
+  }
+  return results;
 }

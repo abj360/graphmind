@@ -28,6 +28,7 @@
  *  *   test: labels endpoint handles empty graph
  *  *   test: metrics hubs endpoint handles empty graph
  *  *   test: node endpoint encodes names in the query
+ *  *   test: export filename is ISO dated
  */
 
 import assert from "node:assert/strict";
@@ -280,4 +281,9 @@ test("GET /api/graph/node/:name passes the raw name to the query", async () => {
   await request(app).get("/api/graph/node/Acme%20Ltd");
   const call = driver.calls.find((entry) => entry.params.name);
   assert.equal(call.params.name, "Acme Ltd");
+});
+
+test("export filenames use the ISO date", async () => {
+  const { exportFilename } = await import("../src/routes/exportGraphml.js");
+  assert.match(exportFilename(new Date("2026-05-28T12:00:00Z")), /^graphmind-2026-05-28\.graphml$/);
 });
