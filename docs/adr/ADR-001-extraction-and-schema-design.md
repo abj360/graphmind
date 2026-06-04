@@ -177,3 +177,13 @@ exactly-once semantics for no measurable gain at this corpus size.
   becomes a backfill tool.
 - If auto-merge precision measurably exceeds human review quality on
   the borderline band, the review floor moves — with data, not vibes.
+
+## References
+
+- `extract/schema.py` — the Triple contract
+- `extract/triple_extractor.py` — extraction pass
+- `extract/prompts/` — prompt templates and configuration
+- `extract/ontology.py` — enforcement rules
+- `resolution/entity_resolver.py` — embedding-based canonicalization
+- `load/neo4j_loader.py` — batched upsert writer
+- `docs/integration-retrieval-core.md` — downstream query integration
