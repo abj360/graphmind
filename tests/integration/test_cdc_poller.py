@@ -13,6 +13,7 @@ Contains:
     test_file_checksum_changes_with_content
     test_apply_events_routes_by_kind
     test_summarize_events_counts_kinds
+    test_glob_pattern_limits_tracked_files
 """
 
 from pathlib import Path
@@ -144,3 +145,14 @@ def test_summarize_events_counts_kinds(tmp_path) -> None:
     events = poller.poll_once()
     assert summarize_events(events)[ChangeKind.UPSERT] == 2
     assert filter_upserts(events) == events
+
+
+def test_glob_pattern_limits_tracked_files(tmp_path) -> None:
+    """Checks that non-matching files are ignored by the poller."""
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "a.txt").write_text("alpha")
+    (corpus / "b.md").write_text("beta")
+    poller = make_poller(corpus, tmp_path / "state.json")
+    events = poller.poll_once()
+    assert [event.doc_id for event in events] == ["a.txt"]
