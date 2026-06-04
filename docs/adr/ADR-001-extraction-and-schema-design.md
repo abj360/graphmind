@@ -187,3 +187,12 @@ exactly-once semantics for no measurable gain at this corpus size.
 - `resolution/entity_resolver.py` — embedding-based canonicalization
 - `load/neo4j_loader.py` — batched upsert writer
 - `docs/integration-retrieval-core.md` — downstream query integration
+
+## Decision: chunking respects sentence boundaries
+
+The chunker packs whole sentences under a character ceiling with a
+trailing-context overlap, rather than slicing at fixed offsets. Fixed
+offset windows cut sentences in half, and half a sentence is where
+extracted "relationships" that the text never stated come from. Overlap
+exists so facts spanning a boundary appear in full in at least one
+chunk.
