@@ -204,3 +204,14 @@ chunk.
 - Source documents may contain PII; the graph stores what the text
   states, so corpus access controls are the access controls for the
   graph. Backups inherit the same handling rules as the database.
+
+## Changelog
+
+- 2026-04-02 — initial version (Peter)
+- 2026-04-11 — resolution section expanded after review (Peter)
+- 2026-04-21 — batching/retries notes added (Peter)
+- 2026-05-01 — CDC vs streaming alternative recorded (Peter)
+- 2026-05-09 — chunking decision promoted to its own section (Peter)
+- 2026-05-17 — secrets/PII notes added (Peter)
+- 2026-05-26 — citation-requirement consequence linked to the 05-20 fix (Peter)
+- 2026-06-04 — marked accepted ahead of v1.0 (Peter)
