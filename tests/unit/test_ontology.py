@@ -9,6 +9,7 @@ Contains:
     test_enforce_partitions_kept_and_rejected
     test_rule_matching_is_predicate_case_insensitive
     test_add_rule_derives_new_ontology
+    test_infer_rules_mines_observed_patterns
 """
 
 from extract.ontology import (
@@ -61,3 +62,11 @@ def test_add_rule_derives_new_ontology() -> None:
     extended = base.add_rule(OntologyRule("PERSON", "joined", "ORG"))
     assert not base.allows(make_triple("Bob", "joined", "Acme"))
     assert extended.allows(make_triple("Bob", "joined", "Acme"))
+
+
+def test_infer_rules_mines_observed_patterns() -> None:
+    """Checks that rule inference mines distinct observed patterns."""
+    rules = infer_rules(
+        [make_triple("Alice", "founded", "Acme"), make_triple("Bob", "founded", "Globex")]
+    )
+    assert rules == {OntologyRule("PERSON", "founded", "ORG")}
