@@ -11,6 +11,7 @@ Contains:
     test_add_rule_derives_new_ontology
     test_infer_rules_mines_observed_patterns
     test_diff_ontologies_finds_left_only_rules
+    test_rule_from_string_parses_shorthand
 """
 
 from extract.ontology import (
@@ -80,3 +81,11 @@ def test_diff_ontologies_finds_left_only_rules() -> None:
     )
     right = Ontology({OntologyRule("PERSON", "founded", "ORG")})
     assert diff_ontologies(left, right) == {OntologyRule("ORG", "acquired", "ORG")}
+
+
+def test_rule_from_string_parses_shorthand() -> None:
+    """Checks that shorthand parsing splits types and predicate."""
+    from extract.ontology import rule_from_string
+
+    rule = rule_from_string("PERSON works at ORG")
+    assert rule == OntologyRule("PERSON", "works at", "ORG")
