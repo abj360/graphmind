@@ -10,6 +10,7 @@ Contains:
     test_rule_matching_is_predicate_case_insensitive
     test_add_rule_derives_new_ontology
     test_infer_rules_mines_observed_patterns
+    test_diff_ontologies_finds_left_only_rules
 """
 
 from extract.ontology import (
@@ -70,3 +71,12 @@ def test_infer_rules_mines_observed_patterns() -> None:
         [make_triple("Alice", "founded", "Acme"), make_triple("Bob", "founded", "Globex")]
     )
     assert rules == {OntologyRule("PERSON", "founded", "ORG")}
+
+
+def test_diff_ontologies_finds_left_only_rules() -> None:
+    """Checks that the ontology diff isolates left-only rules."""
+    left = Ontology(
+        {OntologyRule("PERSON", "founded", "ORG"), OntologyRule("ORG", "acquired", "ORG")}
+    )
+    right = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    assert diff_ontologies(left, right) == {OntologyRule("ORG", "acquired", "ORG")}
