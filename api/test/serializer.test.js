@@ -7,6 +7,7 @@
  *  *   test: serializeEdge omits missing confidence
  *  *   test: toGraphML wraps nodes and edges in a graph element
  *  *   test: validateGraphInput rejects dangling edges
+ *  *   test: escapeXml covers all five metacharacters
  */
 
 import assert from "node:assert/strict";
@@ -50,4 +51,8 @@ test("validateGraphInput rejects edges with unknown endpoints", () => {
       edges: [{ id: "e0", source: "A", target: "ghost", predicate: "p" }],
     }),
   );
+});
+
+test("escapeXml escapes all five XML metacharacters", () => {
+  assert.equal(escapeXml(`<a b="c">&'</a>`), "&lt;a b=&quot;c&quot;&gt;&amp;&apos;&lt;/a&gt;");
 });
