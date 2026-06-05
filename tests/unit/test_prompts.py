@@ -10,6 +10,7 @@ Contains:
     test_load_prompt_config_reads_bundled_default
     test_load_prompt_config_reads_custom_file
     test_validate_prompt_config_rejects_bad_values
+    test_citation_block_present_only_when_required
 """
 
 import pytest
@@ -70,3 +71,11 @@ def test_validate_prompt_config_rejects_bad_values() -> None:
     """Checks that negative few-shot counts are rejected."""
     with pytest.raises(ValueError):
         validate_prompt_config(PromptConfig(few_shot_count=-1))
+
+
+def test_citation_block_present_only_when_required() -> None:
+    """Checks that the citation block appears only when citations are on."""
+    without = build_extraction_prompt("text", PromptConfig(require_citations=False))
+    with_ = build_extraction_prompt("text", PromptConfig(require_citations=True))
+    assert "source_span" not in without
+    assert "source_span" in with_
