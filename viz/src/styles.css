@@ -537,3 +537,14 @@ kbd {
   font-weight: normal;
   padding-bottom: 4px;
 }
+
+.graph-tooltip {
+  position: absolute;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(19, 28, 41, 0.95);
+  border: 1px solid #223047;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 10;
+}
