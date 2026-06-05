@@ -8,3 +8,17 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# Pipeline outputs and local corpus
+out/
+data/docs/
+
+# Backups
+backups/
+
+# OS noise
+.DS_Store
