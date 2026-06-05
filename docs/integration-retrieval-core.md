@@ -419,3 +419,24 @@ MATCH ()-[r:RELATED {inferred: true}]->() RETURN r LIMIT 50
 
 Questions about this integration go to the graph schema owner first;
 if the answer changes the schema, it becomes an ADR, not a chat log.
+
+## Migration checklist for consumers
+
+When a schema major version lands:
+
+1. Pin your queries to the new property names in a staging environment.
+2. Run the replay path on a representative document set.
+3. Diff graph answers between old and new for a fixed query suite —
+   answer drift is the only diff that matters.
+4. Roll out behind the integration's feature flag, then delete the flag.
+
+## Appendix: environment variables
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `NEO4J_URI` | Bolt endpoint for the graph | `bolt://neo4j:7687` |
+| `GRAPHMIND_EXTRACT_MIN_CONFIDENCE` | Extraction-side confidence floor | `0.0` |
+| `GRAPHMIND_EXTRACT_REQUIRE_SPAN` | Require source-span citations | `false` |
+| `GRAPHMIND_RESOLVE_THRESHOLD` | Auto-merge cosine threshold | `0.85` |
+| `GRAPHMIND_LOAD_BATCH_SIZE` | Rows per UNWIND batch | `500` |
+| `GRAPHMIND_CDC_INTERVAL_SECONDS` | Poll interval for ingestion | `5` |
