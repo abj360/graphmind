@@ -9,6 +9,7 @@ Contains:
     test_component_report_counts_components
     test_merge_inferred_dedupes_existing_edges
     test_bridge_scores_same_type_bonus
+    test_format_bridge_report_renders_scores
 """
 
 from extract.relationship_inference import (
@@ -63,3 +64,13 @@ def test_bridge_scores_same_type_bonus() -> None:
     score, predicate = inferer._score_bridge("acme", "globex", {"acme": "ORG", "globex": "ORG"})
     assert predicate == "related to"
     assert score > 0.4
+
+
+def test_format_bridge_report_renders_scores() -> None:
+    """Checks that the bridge report renders predicates and scores."""
+    from extract.relationship_inference import format_bridge_report
+
+    triples = make_triple_chain(["alpha", "beta"]) + make_triple_chain(["gamma", "delta"])
+    bridges = RelationshipInferer().infer(triples)
+    report = format_bridge_report(bridges)
+    assert "BRIDGE" in report

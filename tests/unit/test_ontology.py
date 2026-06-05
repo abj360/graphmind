@@ -9,6 +9,10 @@ Contains:
     test_enforce_partitions_kept_and_rejected
     test_rule_matching_is_predicate_case_insensitive
     test_add_rule_derives_new_ontology
+    test_infer_rules_mines_observed_patterns
+    test_diff_ontologies_finds_left_only_rules
+    test_rule_from_string_parses_shorthand
+    test_merge_combines_rule_sets
 """
 
 from extract.ontology import (
@@ -61,3 +65,36 @@ def test_add_rule_derives_new_ontology() -> None:
     extended = base.add_rule(OntologyRule("PERSON", "joined", "ORG"))
     assert not base.allows(make_triple("Bob", "joined", "Acme"))
     assert extended.allows(make_triple("Bob", "joined", "Acme"))
+
+
+def test_infer_rules_mines_observed_patterns() -> None:
+    """Checks that rule inference mines distinct observed patterns."""
+    rules = infer_rules(
+        [make_triple("Alice", "founded", "Acme"), make_triple("Bob", "founded", "Globex")]
+    )
+    assert rules == {OntologyRule("PERSON", "founded", "ORG")}
+
+
+def test_diff_ontologies_finds_left_only_rules() -> None:
+    """Checks that the ontology diff isolates left-only rules."""
+    left = Ontology(
+        {OntologyRule("PERSON", "founded", "ORG"), OntologyRule("ORG", "acquired", "ORG")}
+    )
+    right = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    assert diff_ontologies(left, right) == {OntologyRule("ORG", "acquired", "ORG")}
+
+
+def test_rule_from_string_parses_shorthand() -> None:
+    """Checks that shorthand parsing splits types and predicate."""
+    from extract.ontology import rule_from_string
+
+    rule = rule_from_string("PERSON works at ORG")
+    assert rule == OntologyRule("PERSON", "works at", "ORG")
+
+
+def test_merge_combines_rule_sets() -> None:
+    """Checks that merging ontologies unions their rules."""
+    left = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    right = Ontology({OntologyRule("ORG", "acquired", "ORG")})
+    merged = left.merge(right)
+    assert merged.allows(make_triple("Acme", "acquired", "ByteWorks", subject_type="ORG"))
