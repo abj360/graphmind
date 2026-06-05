@@ -5,6 +5,7 @@
  *  * Contains:
  *  *   GraphLegend: type-to-color legend overlay
  *  *   countByType(): tallies visible nodes per type
+ *  *   legendItemId": stable key for legend entries
  */
 
 import { colorForType } from "../utils/graphStyles.js";
@@ -44,4 +45,14 @@ export function countByType(nodes) {
     counts.set(node.type, (counts.get(node.type) ?? 0) + 1);
   }
   return [...counts.entries()].sort((left, right) => right[1] - left[1]);
+}
+
+/**
+ * Builds a stable React key for one legend entry.
+ *
+ * @param type - Entity type the entry represents.
+ * @returns key - Stable, human-readable key string.
+ */
+export function legendItemId(type) {
+  return `legend-${type.toLowerCase()}`;
 }
