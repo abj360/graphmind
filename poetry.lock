@@ -148,3 +148,15 @@ description = "Python package for providing Mozilla's CA Bundle."
 files = [
     {file = "certifi-2024.2.2-py3-none-any.whl", hash = "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d96f65252f16fe98dd19608"},
 ]
+
+[[package]]
+name = "openai"
+version = "1.30.1"
+description = "The official Python library for the openai API"
+files = [
+    {file = "openai-1.30.1-py3-none-any.whl", hash = "sha256:9e01fdbe35ee8e7ab166cc64079c7a1d158681664206a378b7c9fe3b081a35b7"},
+]
+
+[package.dependencies]
+httpx = "*"
+pydantic = ">=2.7.1,<3.0.0"
