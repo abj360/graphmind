@@ -4,6 +4,7 @@
  *  *
  *  * Contains:
  *  *   GraphLegend: type-to-color legend overlay
+ *  *   countByType(): tallies visible nodes per type
  */
 
 import { colorForType } from "../utils/graphStyles.js";
@@ -29,4 +30,18 @@ export default function GraphLegend({ nodes }) {
       ))}
     </ul>
   );
+}
+
+/**
+ * Tallies visible nodes per entity type for the legend.
+ *
+ * @param nodes - Visible node list.
+ * @returns counts - Sorted [type, count] entries, most common first.
+ */
+export function countByType(nodes) {
+  const counts = new Map();
+  for (const node of nodes) {
+    counts.set(node.type, (counts.get(node.type) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((left, right) => right[1] - left[1]);
 }
