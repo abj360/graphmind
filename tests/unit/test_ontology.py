@@ -12,6 +12,7 @@ Contains:
     test_infer_rules_mines_observed_patterns
     test_diff_ontologies_finds_left_only_rules
     test_rule_from_string_parses_shorthand
+    test_merge_combines_rule_sets
 """
 
 from extract.ontology import (
@@ -89,3 +90,11 @@ def test_rule_from_string_parses_shorthand() -> None:
 
     rule = rule_from_string("PERSON works at ORG")
     assert rule == OntologyRule("PERSON", "works at", "ORG")
+
+
+def test_merge_combines_rule_sets() -> None:
+    """Checks that merging ontologies unions their rules."""
+    left = Ontology({OntologyRule("PERSON", "founded", "ORG")})
+    right = Ontology({OntologyRule("ORG", "acquired", "ORG")})
+    merged = left.merge(right)
+    assert merged.allows(make_triple("Acme", "acquired", "ByteWorks", subject_type="ORG"))
