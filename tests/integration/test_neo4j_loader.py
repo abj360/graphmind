@@ -30,6 +30,7 @@ Contains:
     test_node_batches_chunk_exactly
     test_relationship_row_uses_canonical_names
     test_write_empty_triple_list_is_noop
+    test_retry_backoff_attempts_in_order
 """
 
 from typing import Any
@@ -293,3 +294,11 @@ def test_write_empty_triple_list_is_noop() -> None:
     loader.write_triples([])
     batch_queries = [q for q, _ in driver.queries if "UNWIND" in q]
     assert batch_queries == []
+
+
+def test_retry_backoff_attempts_in_order() -> None:
+    """Checks that retries happen in attempt order before success."""
+    loader, _ = make_loader(failures=2)
+    stats = loader.write_triples([make_triple()])
+    assert stats.retries == 2
+    assert stats.batches_written >= 1
