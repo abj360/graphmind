@@ -27,6 +27,7 @@ Contains:
     test_relationship_batches_skip_empty_input
     test_metrics_track_skipped_self_loops
     test_load_stats_duration_is_set
+    test_node_batches_chunk_exactly
 """
 
 from typing import Any
@@ -266,3 +267,11 @@ def test_load_stats_duration_is_set() -> None:
     loader, _ = make_loader()
     stats = loader.write_triples([make_triple()])
     assert stats.duration_seconds >= 0.0
+
+
+def test_node_batches_chunk_exactly() -> None:
+    """Checks that node_batches yields fixed-size groups."""
+    writer = BatchWriter(batch_size=3)
+    triples = [make_triple(f"S{i}", "links", f"O{i}") for i in range(4)]
+    batches = list(writer.node_batches(triples))
+    assert [len(batch) for batch in batches] == [3, 3, 2]
