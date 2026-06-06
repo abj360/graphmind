@@ -571,3 +571,7 @@ kbd {
   width: 8px;
   height: 8px;
 }
+
+.graph-canvas {
+  user-select: none;
+}
