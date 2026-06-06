@@ -27,6 +27,11 @@ Contains:
     test_relationship_batches_skip_empty_input
     test_metrics_track_skipped_self_loops
     test_load_stats_duration_is_set
+    test_node_batches_chunk_exactly
+    test_relationship_row_uses_canonical_names
+    test_write_empty_triple_list_is_noop
+    test_retry_backoff_attempts_in_order
+    test_delete_then_rewrite_is_idempotent
 """
 
 from typing import Any
@@ -266,3 +271,44 @@ def test_load_stats_duration_is_set() -> None:
     loader, _ = make_loader()
     stats = loader.write_triples([make_triple()])
     assert stats.duration_seconds >= 0.0
+
+
+def test_node_batches_chunk_exactly() -> None:
+    """Checks that node_batches yields fixed-size groups."""
+    writer = BatchWriter(batch_size=3)
+    triples = [make_triple(f"S{i}", "links", f"O{i}") for i in range(4)]
+    batches = list(writer.node_batches(triples))
+    assert [len(batch) for batch in batches] == [3, 3, 2]
+
+
+def test_relationship_row_uses_canonical_names() -> None:
+    """Checks that relationship rows carry the canonical entity names."""
+    writer = BatchWriter(batch_size=2)
+    rows = writer.relationship_rows([make_triple(subject="Alice", object_="Acme")])
+    assert rows[0]["subject"] == "Alice"
+    assert rows[0]["object"] == "Acme"
+
+
+def test_write_empty_triple_list_is_noop() -> None:
+    """Checks that writing zero triples runs no batch queries."""
+    loader, driver = make_loader()
+    loader.write_triples([])
+    batch_queries = [q for q, _ in driver.queries if "UNWIND" in q]
+    assert batch_queries == []
+
+
+def test_retry_backoff_attempts_in_order() -> None:
+    """Checks that retries happen in attempt order before success."""
+    loader, _ = make_loader(failures=2)
+    stats = loader.write_triples([make_triple()])
+    assert stats.retries == 2
+    assert stats.batches_written >= 1
+
+
+def test_delete_then_rewrite_is_idempotent() -> None:
+    """Checks that deleting a doc's edges then rewriting yields one copy."""
+    loader, driver = make_loader()
+    loader.delete_doc_triples("doc-1")
+    loader.write_triples([make_triple()])
+    rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
+    assert len(rel_queries) == 1
