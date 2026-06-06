@@ -575,3 +575,7 @@ kbd {
 .graph-canvas {
   user-select: none;
 }
+
+.detail-crosslink:hover {
+  text-decoration: underline;
+}
