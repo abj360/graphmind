@@ -12,6 +12,7 @@ Contains:
     test_validate_prompt_config_rejects_bad_values
     test_citation_block_present_only_when_required
     test_config_from_dict_applies_overrides
+    test_render_prompt_preview_truncates
 """
 
 import pytest
@@ -89,3 +90,11 @@ def test_config_from_dict_applies_overrides() -> None:
     config = config_from_dict({"domain": "news", "few_shot_count": 1})
     assert config.domain == "news"
     assert config.few_shot_count == 1
+
+
+def test_render_prompt_preview_truncates() -> None:
+    """Checks that the preview never exceeds the truncation bound."""
+    from extract.prompts.templates import render_prompt_preview
+
+    preview = render_prompt_preview("x " * 500)
+    assert len(preview) <= 414
