@@ -31,6 +31,7 @@ Contains:
     test_relationship_row_uses_canonical_names
     test_write_empty_triple_list_is_noop
     test_retry_backoff_attempts_in_order
+    test_delete_then_rewrite_is_idempotent
 """
 
 from typing import Any
@@ -302,3 +303,12 @@ def test_retry_backoff_attempts_in_order() -> None:
     stats = loader.write_triples([make_triple()])
     assert stats.retries == 2
     assert stats.batches_written >= 1
+
+
+def test_delete_then_rewrite_is_idempotent() -> None:
+    """Checks that deleting a doc's edges then rewriting yields one copy."""
+    loader, driver = make_loader()
+    loader.delete_doc_triples("doc-1")
+    loader.write_triples([make_triple()])
+    rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
+    assert len(rel_queries) == 1
