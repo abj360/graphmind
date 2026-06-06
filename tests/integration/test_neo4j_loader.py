@@ -28,6 +28,7 @@ Contains:
     test_metrics_track_skipped_self_loops
     test_load_stats_duration_is_set
     test_node_batches_chunk_exactly
+    test_relationship_row_uses_canonical_names
 """
 
 from typing import Any
@@ -275,3 +276,11 @@ def test_node_batches_chunk_exactly() -> None:
     triples = [make_triple(f"S{i}", "links", f"O{i}") for i in range(4)]
     batches = list(writer.node_batches(triples))
     assert [len(batch) for batch in batches] == [3, 3, 2]
+
+
+def test_relationship_row_uses_canonical_names() -> None:
+    """Checks that relationship rows carry the canonical entity names."""
+    writer = BatchWriter(batch_size=2)
+    rows = writer.relationship_rows([make_triple(subject="Alice", object_="Acme")])
+    assert rows[0]["subject"] == "Alice"
+    assert rows[0]["object"] == "Acme"
