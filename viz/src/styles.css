@@ -548,3 +548,34 @@ kbd {
   pointer-events: none;
   z-index: 10;
 }
+
+
+@keyframes shimmer {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+.skeleton {
+  animation: shimmer 900ms ease-in-out infinite alternate;
+  background: #1c2940;
+  border-radius: 6px;
+  min-height: 12px;
+}
+
+
+.app-canvas::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.graph-canvas {
+  user-select: none;
+}
+
+.detail-crosslink:hover {
+  text-decoration: underline;
+}
