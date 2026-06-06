@@ -29,6 +29,7 @@ Contains:
     test_load_stats_duration_is_set
     test_node_batches_chunk_exactly
     test_relationship_row_uses_canonical_names
+    test_write_empty_triple_list_is_noop
 """
 
 from typing import Any
@@ -284,3 +285,11 @@ def test_relationship_row_uses_canonical_names() -> None:
     rows = writer.relationship_rows([make_triple(subject="Alice", object_="Acme")])
     assert rows[0]["subject"] == "Alice"
     assert rows[0]["object"] == "Acme"
+
+
+def test_write_empty_triple_list_is_noop() -> None:
+    """Checks that writing zero triples runs no batch queries."""
+    loader, driver = make_loader()
+    loader.write_triples([])
+    batch_queries = [q for q, _ in driver.queries if "UNWIND" in q]
+    assert batch_queries == []
