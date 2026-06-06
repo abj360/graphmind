@@ -8,6 +8,7 @@ Contains:
     FailingLLMClient: raises a configurable error for retry tests
     LangChainClient: adapts a LangChain chat model to LLMClient
     build_default_client(): constructs the configured production client
+    RetryingClient: adds bounded retries to any client
 """
 
 from typing import Protocol, runtime_checkable
@@ -137,3 +138,39 @@ def build_default_client(model_name: str, api_key_env: str = "OPENAI_API_KEY") -
     from langchain_openai import ChatOpenAI  # local import: optional dependency
 
     return LangChainClient(ChatOpenAI(model=model_name, api_key=api_key_env))
+
+
+class RetryingClient:
+    """Adds bounded retries to any LLMClient implementation.
+
+    Attributes:
+        inner: Wrapped client handling successful calls.
+        max_retries: Attempts per call before surfacing failure.
+    """
+
+    def __init__(self, inner: LLMClient, max_retries: int = 2) -> None:
+        """Creates a retrying wrapper around a client.
+
+        Args:
+            inner: Client to delegate to.
+            max_retries: Attempts per call before giving up.
+        """
+        self.inner = inner
+        self.max_retries = max_retries
+
+    def complete(self, prompt: str) -> str:
+        """Completes a prompt, retrying transient failures.
+
+        Args:
+            prompt: Rendered extraction prompt to complete.
+
+        Returns:
+            completion: Raw model output from the first successful attempt.
+        """
+        last_error: Exception | None = None
+        for _ in range(self.max_retries + 1):
+            try:
+                return self.inner.complete(prompt)
+            except RuntimeError as exc:
+                last_error = exc
+        raise RuntimeError(f"client failed after retries: {last_error}")
