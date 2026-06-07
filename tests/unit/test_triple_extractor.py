@@ -30,6 +30,7 @@ Contains:
     test_extract_batch_empty_documents
     test_split_batch_response_falls_back_to_first_doc
     test_estimate_extraction_cost_scales_with_size
+    test_redact_prompt_for_logging_truncates
 """
 
 import json
@@ -348,3 +349,12 @@ def test_estimate_extraction_cost_scales_with_size() -> None:
 
     config = ExtractionConfig()
     assert estimate_extraction_cost(200_000, config) > estimate_extraction_cost(100_000, config)
+
+
+def test_redact_prompt_for_logging_truncates() -> None:
+    """Checks that long prompts are truncated for logging."""
+    from extract.triple_extractor import redact_prompt_for_logging
+
+    prompt = "x" * 500
+    assert redact_prompt_for_logging(prompt).endswith("...[truncated]")
+    assert redact_prompt_for_logging("short") == "short"
