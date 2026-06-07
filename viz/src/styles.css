@@ -579,3 +579,9 @@ kbd {
 .detail-crosslink:hover {
   text-decoration: underline;
 }
+
+.metrics-buckets {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #54657e;
+}
