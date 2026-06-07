@@ -14,6 +14,7 @@ Contains:
     test_ngram_embedder_normalizes_case
     test_resolve_names_maps_to_canonical
     test_duplicate_rate_detects_inflation
+    test_summarize_merges_renders_decisions
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -98,3 +99,11 @@ def test_duplicate_rate_detects_inflation() -> None:
     """Checks that duplicate_rate reflects repeated mentions."""
     triples = [make_triple("Alice"), make_triple("Alice", "joined", "Acme")]
     assert duplicate_rate(triples) > 0.0
+
+
+def test_summarize_merges_renders_decisions() -> None:
+    """Checks that the merge summary lists applied merges."""
+    triples = [make_triple("Acme Corp"), make_triple("Acme Corporation", "acquired", "ByteWorks")]
+    result = EntityResolver(threshold=0.7).resolve(triples)
+    summary = summarize_merges(result)
+    assert "MERGE" in summary or "REVIEW" in summary
