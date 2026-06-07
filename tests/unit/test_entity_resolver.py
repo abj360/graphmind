@@ -13,6 +13,7 @@ Contains:
     test_ngram_embedder_is_deterministic
     test_ngram_embedder_normalizes_case
     test_resolve_names_maps_to_canonical
+    test_duplicate_rate_detects_inflation
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -91,3 +92,9 @@ def test_resolve_names_maps_to_canonical() -> None:
     """Checks that resolve_names canonicalizes case variants."""
     mapping = resolve_names(["Alice", "ALICE ", "Bob"])
     assert mapping["Alice"] == mapping["ALICE "]
+
+
+def test_duplicate_rate_detects_inflation() -> None:
+    """Checks that duplicate_rate reflects repeated mentions."""
+    triples = [make_triple("Alice"), make_triple("Alice", "joined", "Acme")]
+    assert duplicate_rate(triples) > 0.0
