@@ -29,6 +29,7 @@ Contains:
     test_format_stats_summary_mentions_calls
     test_extract_batch_empty_documents
     test_split_batch_response_falls_back_to_first_doc
+    test_estimate_extraction_cost_scales_with_size
 """
 
 import json
@@ -339,3 +340,11 @@ def test_split_batch_response_falls_back_to_first_doc() -> None:
     batch = [("d1", "t1"), ("d2", "t2")]
     segments = TripleExtractor._split_batch_response(PAYLOAD, batch)
     assert segments[0][0] == "d1"
+
+
+def test_estimate_extraction_cost_scales_with_size() -> None:
+    """Checks that the cost estimate grows with corpus size."""
+    from extract.triple_extractor import estimate_extraction_cost
+
+    config = ExtractionConfig()
+    assert estimate_extraction_cost(200_000, config) > estimate_extraction_cost(100_000, config)
