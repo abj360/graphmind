@@ -9,6 +9,7 @@
  *  *   fetchLabels(): loads entity type counts
  *  *   fetchDedupMetrics(): loads the dedup metrics payload
  *  *   graphmlExportUrl(): absolute URL of the GraphML export
+ *  *   fetchNodeDetail(): loads one node's neighborhood
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -69,4 +70,14 @@ export function fetchDedupMetrics() {
  */
 export function graphmlExportUrl() {
   return `${API_BASE}/api/export/graphml`;
+}
+
+/**
+ * Loads one node's neighborhood for the detail panel.
+ *
+ * @param name - Canonical entity name to expand.
+ * @returns graph - { nodes, edges } neighborhood payload.
+ */
+export function fetchNodeDetail(name) {
+  return fetchJson(`/api/graph/node/${encodeURIComponent(name)}`);
 }
