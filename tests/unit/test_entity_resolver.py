@@ -12,6 +12,7 @@ Contains:
     test_cosine_similarity_rejects_length_mismatch
     test_ngram_embedder_is_deterministic
     test_ngram_embedder_normalizes_case
+    test_resolve_names_maps_to_canonical
 """
 
 from resolution.embedding import NgramEmbeddingProvider, cosine_similarity
@@ -84,3 +85,9 @@ def test_ngram_embedder_normalizes_case() -> None:
     """Checks that embeddings are case-insensitive."""
     provider = NgramEmbeddingProvider()
     assert provider.embed("ACME") == provider.embed("acme")
+
+
+def test_resolve_names_maps_to_canonical() -> None:
+    """Checks that resolve_names canonicalizes case variants."""
+    mapping = resolve_names(["Alice", "ALICE ", "Bob"])
+    assert mapping["Alice"] == mapping["ALICE "]
