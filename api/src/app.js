@@ -12,8 +12,8 @@ import express from "express";
 
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { exportGraphmlRouter } from "./routes/exportGraphml.js";
-import { graphRouter, mountLabelsEndpoint } from "./routes/graph.js";
-import { metricsRouter } from "./routes/metrics.js";
+import { graphRouter, mountLabelsEndpoint, mountNodeEndpoint } from "./routes/graph.js";
+import { metricsRouter, mountHubsEndpoint } from "./routes/metrics.js";
 
 /**
  * Builds the configured Express application for the BFF.
@@ -29,9 +29,12 @@ export function createApp(driver, config) {
   mountHealthEndpoint(app);
   const graph = graphRouter(driver, config);
   mountLabelsEndpoint(graph, driver, config);
+  mountNodeEndpoint(graph, driver, config);
   app.use("/api", graph);
   app.use("/api", exportGraphmlRouter(driver, config));
-  app.use("/api", metricsRouter(driver, config));
+  const metrics = metricsRouter(driver, config);
+  mountHubsEndpoint(metrics, driver, config);
+  app.use("/api", metrics);
   app.use(notFoundHandler);
   app.use(errorHandler);
   return app;
