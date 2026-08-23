@@ -3,6 +3,7 @@
 llm_client.py --- pluggable LLM client protocol used by the extraction pipeline
 
 Contains:
+    MissingAPIKeyError: the configured API key environment variable is unset
     LLMClient: minimal completion protocol every provider implements
     FakeLLMClient: deterministic scripted client for tests
     FailingLLMClient: raises a configurable error for retry tests
@@ -11,7 +12,12 @@ Contains:
     RetryingClient: adds bounded retries to any client
 """
 
+import os
 from typing import Protocol, runtime_checkable
+
+
+class MissingAPIKeyError(RuntimeError):
+    """Raised when the environment holds no API key for the configured provider."""
 
 
 @runtime_checkable
@@ -134,10 +140,17 @@ def build_default_client(model_name: str, api_key_env: str = "OPENAI_API_KEY") -
 
     Returns:
         client: LLMClient backed by a LangChain chat model.
+
+    Raises:
+        MissingAPIKeyError: The named environment variable is unset or empty.
     """
     from langchain_openai import ChatOpenAI  # local import: optional dependency
+    from pydantic import SecretStr
 
-    return LangChainClient(ChatOpenAI(model=model_name, api_key=api_key_env))
+    api_key = os.environ.get(api_key_env, "")
+    if not api_key:
+        raise MissingAPIKeyError(f"{api_key_env} is not set")
+    return LangChainClient(ChatOpenAI(model=model_name, api_key=SecretStr(api_key)))
 
 
 class RetryingClient:
