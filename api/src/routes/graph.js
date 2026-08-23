@@ -51,7 +51,10 @@ export function toViewGraph(records) {
         type: target.properties.entity_type ?? "CONCEPT",
       });
     }
-    if (source && target && relationship) {
+    if (relationship && !(source && target)) {
+      throw new Error(`relationship ${relationship.properties.predicate} is missing an endpoint`);
+    }
+    if (relationship) {
       const edgeId = `${source.properties.name}|${relationship.properties.predicate}|${target.properties.name}`;
       edges.set(edgeId, {
         id: edgeId,
