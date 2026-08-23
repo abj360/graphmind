@@ -15,7 +15,7 @@ import { Router } from "express";
 
 import { runQuery } from "../neo4jClient.js";
 import { toViewGraph, parseLimit } from "./graph.js";
-import { graphStats, toGraphML, validateGraphInput } from "../graphml/serializer.js";
+import { toGraphML, validateGraphInput } from "../graphml/serializer.js";
 
 const EXPORT_QUERY = `
 MATCH (n:Entity)

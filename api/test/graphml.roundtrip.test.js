@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { escapeXml, toGraphML } from "../src/graphml/serializer.js";
+import { toGraphML } from "../src/graphml/serializer.js";
 
 test("special characters in labels are escaped in GraphML output", () => {
   const document = toGraphML({
