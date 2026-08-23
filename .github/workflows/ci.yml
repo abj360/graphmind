@@ -30,7 +30,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install mypy pydantic
+      # Installing the project too: without neo4j and langchain on the path
+      # their types resolve to Any and real mismatches type-check clean.
+      - run: pip install -e ".[dev]" mypy
       - run: mypy extract resolution load
 
   pytest:
