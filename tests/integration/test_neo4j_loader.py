@@ -65,21 +65,23 @@ class RecordingDriver:
             failures: Number of calls that raise before succeeding.
         """
         self.queries: list[tuple[str, dict[str, Any]]] = []
+        self.databases: list[str] = []
         self.failures_remaining = failures
         self.closed = False
 
-    def execute_query(self, query: str, parameters: dict[str, Any], database: str) -> None:
+    def execute_query(self, query_: str, parameters_: dict[str, Any], *, database_: str) -> None:
         """Records one query, raising while failures remain.
 
         Args:
-            query: Cypher statement to record.
-            parameters: Query parameters to record.
-            database: Target database name, recorded implicitly.
+            query_: Cypher statement to record.
+            parameters_: Query parameters to record.
+            database_: Target database the loader selected.
         """
-        if self.failures_remaining > 0 and "UNWIND" in query:
+        if self.failures_remaining > 0 and "UNWIND" in query_:
             self.failures_remaining -= 1
             raise TransientWriteError("simulated transient failure")
-        self.queries.append((query, parameters))
+        self.databases.append(database_)
+        self.queries.append((query_, parameters_))
 
     def close(self) -> None:
         """Marks the driver as closed."""
@@ -312,3 +314,16 @@ def test_delete_then_rewrite_is_idempotent() -> None:
     loader.write_triples([make_triple()])
     rel_queries = [p for q, p in driver.queries if q == UPSERT_RELS_QUERY]
     assert len(rel_queries) == 1
+
+
+def test_writes_go_to_the_configured_database() -> None:
+    """Verifies the loader selects the configured database, not the default.
+
+    The real driver reserves bare keyword names for Cypher parameters, so a
+    plain database= is sent as a query parameter and writes land in whatever
+    database the connection defaults to.
+    """
+    loader, driver = make_loader()
+    loader.write_triples([make_triple()])
+    assert driver.databases
+    assert set(driver.databases) == {loader.config.database}
