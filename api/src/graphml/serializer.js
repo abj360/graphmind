@@ -85,7 +85,9 @@ export function validateGraphInput(graph) {
   const nodeIds = new Set(graph.nodes.map((node) => node.id));
   for (const edge of graph.edges) {
     if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) {
-      throw new Error(`edge references unknown endpoint: ${edge.id ?? `${edge.source}->${edge.target}`}`);
+      throw new Error(
+        `edge references unknown endpoint: ${edge.id ?? `${edge.source}->${edge.target}`}`,
+      );
     }
   }
   return graph;

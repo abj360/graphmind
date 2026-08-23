@@ -100,9 +100,11 @@ export function metricsRecords() {
     "count(r) AS total": [
       {
         get: (key) =>
-          ({ total: { toNumber: () => 9 }, predicates: { toNumber: () => 4 }, meanConfidence: 0.77 })[
-            key
-          ],
+          ({
+            total: { toNumber: () => 9 },
+            predicates: { toNumber: () => 4 },
+            meanConfidence: 0.77,
+          })[key],
       },
     ],
     "toLower(n.name) AS folded": [],

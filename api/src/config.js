@@ -58,6 +58,8 @@ export function validateConfig(config) {
  * @returns summary - Log-friendly config description, password masked.
  */
 export function describeConfig(config) {
-  return `port=${config.port} neo4j=${config.neo4jUri} user=${config.neo4jUser} ` +
-    `password=*** db=${config.neo4jDatabase} cors=${config.corsOrigin}`;
+  return (
+    `port=${config.port} neo4j=${config.neo4jUri} user=${config.neo4jUser} ` +
+    `password=*** db=${config.neo4jDatabase} cors=${config.corsOrigin}`
+  );
 }
