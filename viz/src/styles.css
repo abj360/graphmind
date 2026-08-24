@@ -272,7 +272,6 @@ body {
   color: #ef476f;
 }
 
-
 @media (max-width: 860px) {
   .app-main {
     grid-template-columns: 1fr;
@@ -285,7 +284,6 @@ body {
     max-height: 40vh;
   }
 }
-
 
 .app-sidebar::-webkit-scrollbar {
   width: 8px;
@@ -317,10 +315,10 @@ button {
 
 .app-canvas {
   background:
-    radial-gradient(circle at 1px 1px, #1c2940 1px, transparent 0) 0 0 / 24px 24px,
+    radial-gradient(circle at 1px 1px, #1c2940 1px, transparent 0) 0 0 / 24px
+      24px,
     #0f1620;
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -329,9 +327,10 @@ button {
   }
 }
 
-
 .search-input {
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .detail-edge:hover {
@@ -398,7 +397,6 @@ button {
   text-decoration: underline;
 }
 
-
 @media print {
   .app-sidebar,
   .app-header {
@@ -409,7 +407,6 @@ button {
     grid-template-columns: 1fr;
   }
 }
-
 
 .graph-canvas:focus-visible {
   outline: 3px solid #e9c46a;
@@ -549,7 +546,6 @@ kbd {
   z-index: 10;
 }
 
-
 @keyframes shimmer {
   from {
     opacity: 0.4;
@@ -565,7 +561,6 @@ kbd {
   border-radius: 6px;
   min-height: 12px;
 }
-
 
 .app-canvas::-webkit-scrollbar {
   width: 8px;
@@ -585,7 +580,6 @@ kbd {
   font-size: 11px;
   color: #54657e;
 }
-
 
 @media (min-width: 1600px) {
   .app-main {

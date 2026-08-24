@@ -66,7 +66,8 @@ export function matchesQuery(node, query) {
     return true;
   }
   return (
-    node.label.toLowerCase().includes(query) || node.type.toLowerCase().includes(query)
+    node.label.toLowerCase().includes(query) ||
+    node.type.toLowerCase().includes(query)
   );
 }
 
@@ -81,7 +82,11 @@ export function matchesQuery(node, query) {
 export function FilterToggle({ label, checked, onToggle }) {
   return (
     <label className="filter-toggle">
-      <input type="checkbox" checked={checked} onChange={() => onToggle(!checked)} />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={() => onToggle(!checked)}
+      />
       {label}
     </label>
   );
@@ -119,7 +124,12 @@ export function ClearButton({ visible, onClear }) {
     return null;
   }
   return (
-    <button type="button" className="search-clear" onClick={onClear} aria-label="clear filter">
+    <button
+      type="button"
+      className="search-clear"
+      onClick={onClear}
+      aria-label="clear filter"
+    >
       ×
     </button>
   );
@@ -186,7 +196,9 @@ export function RegexToggle({ enabled, onToggle }) {
 export function SearchHelp({ regexMode }) {
   return (
     <p className="search-help">
-      {regexMode ? "regex mode: patterns like ^acme|corp$ work" : "substring mode: plain text filter"}
+      {regexMode
+        ? "regex mode: patterns like ^acme|corp$ work"
+        : "substring mode: plain text filter"}
     </p>
   );
 }

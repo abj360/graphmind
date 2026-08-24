@@ -23,14 +23,25 @@
  */
 export default function NodeDetailPanel({ node, edges, onClose }) {
   if (!node) {
-    return <div className="detail-panel detail-empty">select a node to inspect it</div>;
+    return (
+      <div className="detail-panel detail-empty">
+        select a node to inspect it
+      </div>
+    );
   }
-  const incident = edges.filter((edge) => edge.source === node.id || edge.target === node.id);
+  const incident = edges.filter(
+    (edge) => edge.source === node.id || edge.target === node.id,
+  );
   return (
     <div className="detail-panel">
       <header className="detail-header">
         <h2>{node.label}</h2>
-        <button type="button" className="detail-close" onClick={onClose} aria-label="close">
+        <button
+          type="button"
+          className="detail-close"
+          onClick={onClose}
+          aria-label="close"
+        >
           ×
         </button>
       </header>
@@ -110,7 +121,9 @@ export function groupByDirection(edges, focus) {
  * @returns edges - Sorted copy of the input list.
  */
 export function sortByConfidence(edges) {
-  return [...edges].sort((left, right) => (right.confidence ?? -1) - (left.confidence ?? -1));
+  return [...edges].sort(
+    (left, right) => (right.confidence ?? -1) - (left.confidence ?? -1),
+  );
 }
 
 /**
@@ -142,13 +155,20 @@ export function relatedTypes(node, edges, nodes) {
   const typeOf = new Map(nodes.map((entry) => [entry.id, entry.type]));
   const counts = new Map();
   for (const edge of edges) {
-    const other = edge.source === node.id ? edge.target : edge.target === node.id ? edge.source : null;
+    const other =
+      edge.source === node.id
+        ? edge.target
+        : edge.target === node.id
+          ? edge.source
+          : null;
     if (other) {
       const type = typeOf.get(other) ?? "CONCEPT";
       counts.set(type, (counts.get(type) ?? 0) + 1);
     }
   }
-  return [...counts.entries()].sort((left, right) => right[1] - left[1]).map(([type]) => type);
+  return [...counts.entries()]
+    .sort((left, right) => right[1] - left[1])
+    .map(([type]) => type);
 }
 
 /**

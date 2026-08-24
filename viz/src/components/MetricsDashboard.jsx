@@ -47,7 +47,9 @@ export default function MetricsDashboard() {
   }, []);
 
   if (error) {
-    return <div className="metrics-panel metrics-error">metrics unavailable</div>;
+    return (
+      <div className="metrics-panel metrics-error">metrics unavailable</div>
+    );
   }
   if (!metrics) {
     return <div className="metrics-panel">loading metrics…</div>;
@@ -85,9 +87,7 @@ function DuplicateExamples({ examples }) {
   return (
     <ul className="metrics-duplicates">
       {examples.map((cluster) => (
-        <li key={cluster.folded}>
-          {cluster.variants.join(" / ")}
-        </li>
+        <li key={cluster.folded}>{cluster.variants.join(" / ")}</li>
       ))}
     </ul>
   );
@@ -133,7 +133,12 @@ export const METRICS_REFRESH_MS = 30_000;
  */
 export function RefreshButton({ onRefresh, busy }) {
   return (
-    <button type="button" className="metrics-refresh-button" onClick={onRefresh} disabled={busy}>
+    <button
+      type="button"
+      className="metrics-refresh-button"
+      onClick={onRefresh}
+      disabled={busy}
+    >
       {busy ? "refreshing…" : "refresh"}
     </button>
   );
@@ -167,7 +172,11 @@ export function useMetricsRefresh(onPayload) {
  * @returns element - Inline error row.
  */
 export function MetricsError({ message }) {
-  return <p className="metrics-error">metrics unavailable{message ? `: ${message}` : ""}</p>;
+  return (
+    <p className="metrics-error">
+      metrics unavailable{message ? `: ${message}` : ""}
+    </p>
+  );
 }
 
 /**

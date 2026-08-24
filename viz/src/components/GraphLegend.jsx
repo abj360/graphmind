@@ -25,7 +25,10 @@ export default function GraphLegend({ nodes }) {
     <ul className="graph-legend">
       {types.map((type) => (
         <li key={type}>
-          <span className="legend-swatch" style={{ backgroundColor: colorForType(type) }} />
+          <span
+            className="legend-swatch"
+            style={{ backgroundColor: colorForType(type) }}
+          />
           {type}
         </li>
       ))}

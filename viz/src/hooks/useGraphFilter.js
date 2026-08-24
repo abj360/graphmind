@@ -29,7 +29,9 @@ export function useGraphFilter(graph) {
     }
     const nodes = graph.nodes.filter((node) => matchesQuery(node, normalized));
     const visible = new Set(nodes.map((node) => node.id));
-    const edges = graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target));
+    const edges = graph.edges.filter(
+      (edge) => visible.has(edge.source) && visible.has(edge.target),
+    );
     return { nodes, edges };
   }, [graph, query]);
   return { query, setQuery, filtered };
@@ -97,9 +99,13 @@ export function useRegexFilter(graph, pattern) {
     if (!pattern) {
       return graph;
     }
-    const nodes = graph.nodes.filter((node) => pattern.test(node.label) || pattern.test(node.type));
+    const nodes = graph.nodes.filter(
+      (node) => pattern.test(node.label) || pattern.test(node.type),
+    );
     const visible = new Set(nodes.map((node) => node.id));
-    const edges = graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target));
+    const edges = graph.edges.filter(
+      (edge) => visible.has(edge.source) && visible.has(edge.target),
+    );
     return { nodes, edges };
   }, [graph, pattern]);
 }

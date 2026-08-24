@@ -52,7 +52,9 @@ export default function App() {
   const handleClosePanel = useCallback(() => setSelectedNode(null), []);
 
   if (error) {
-    return <div className="app-status app-error">failed to load graph: {error}</div>;
+    return (
+      <div className="app-status app-error">failed to load graph: {error}</div>
+    );
   }
   if (loading) {
     return <div className="app-status">loading graph…</div>;
@@ -70,7 +72,11 @@ export default function App() {
         </section>
         <aside className="app-sidebar">
           <MetricsDashboard />
-          <NodeDetailPanel node={selectedNode} edges={graph.edges} onClose={handleClosePanel} />
+          <NodeDetailPanel
+            node={selectedNode}
+            edges={graph.edges}
+            onClose={handleClosePanel}
+          />
         </aside>
       </main>
     </div>
