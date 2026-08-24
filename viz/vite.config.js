@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * vite.config.js --- vite build configuration for the viewer
  *  *
