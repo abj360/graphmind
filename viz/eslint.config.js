@@ -6,6 +6,8 @@
  *  *   config export
  */
 
+import react from "eslint-plugin-react";
+
 /**
  * Flat ESLint configuration for the React viewer sources.
  */
@@ -19,7 +21,9 @@ export default [
         ecmaFeatures: { jsx: true },
       },
     },
+    plugins: { react },
     rules: {
+      "react/jsx-uses-vars": "error",
       "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       eqeqeq: "error",
       "no-var": "error",
