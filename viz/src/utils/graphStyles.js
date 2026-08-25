@@ -174,6 +174,7 @@ export function buildFullStylesheet() {
     buildNodeStyle(),
     ...buildTypeSelectors(),
     buildEdgeStyle(),
+    buildEdgeConfidenceColor(),
     buildInferredEdgeStyle(),
     buildSelectedNodeStyle(),
     buildSelfLoopStyle(),
