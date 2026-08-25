@@ -1,8 +1,21 @@
-# graphmind
+<div align="center">
 
-LLM-driven knowledge graph extraction: **chunk → extract SPO triples → resolve
-entities → infer bridging relationships → load into Neo4j → explore** in an
-interactive graph viewer.
+<img src="docs/media/wordmark.png" alt="graphmind" width="620" />
+
+Reads a folder of plain text, extracts subject–predicate–object triples, resolves
+duplicate entities, infers the bridges between disconnected clusters, loads it all
+into Neo4j, and lets you explore the result.
+
+[![ci](https://github.com/abj360/graphmind/actions/workflows/ci.yml/badge.svg)](https://github.com/abj360/graphmind/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.12+-6f5cf0)](pyproject.toml)
+[![node](https://img.shields.io/badge/node-22-6f5cf0)](api/package.json)
+[![license](https://img.shields.io/badge/license-MIT-6f5cf0)](LICENSE.md)
+
+<br />
+
+<img src="docs/media/viewer-demo.gif" alt="Selecting an entity in the graphmind viewer, then filtering the graph by name" width="900" />
+
+</div>
 
 graphmind turns a directory of plain text files into a browsable property graph
 in Neo4j, with provenance and confidence scores on every edge, embedding-based
@@ -112,6 +125,20 @@ Highlights:
   handling.
 - Entity-type legend with counts, node detail panel with incident relationships
   and confidence badges, and a self-refreshing dedup metrics dashboard.
+
+Selecting an entity opens its neighborhood, with the direction and confidence of
+every incident relationship:
+
+<p align="center">
+  <img src="docs/media/node-detail.png" alt="The viewer with one entity selected, showing its incident relationships and their confidence scores" width="900" />
+</p>
+
+To explore without standing up Neo4j, serve the API from a seeded in-memory graph:
+
+```bash
+node api/scripts/demo_server.js     # BFF on :4000 with demo data
+npm --prefix viz run dev            # viewer on :5173
+```
 
 See [docs/viewer-guide.md](docs/viewer-guide.md) for the full tour.
 
@@ -271,3 +298,9 @@ See [docs/ops-neo4j.md](docs/ops-neo4j.md) for the full operations runbook.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+<div align="center">
+Maintained by <a href="https://github.com/abj360">abj360</a> · MIT licensed
+</div>
