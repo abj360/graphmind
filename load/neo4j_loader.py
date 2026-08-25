@@ -34,7 +34,7 @@ import logging
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, ClassVar, Protocol
+from typing import Any, ClassVar, Protocol, cast
 
 from extract.schema import Triple
 from load.batch_writer import BatchWriter
@@ -129,13 +129,20 @@ class LoadError(RuntimeError):
 class Neo4jDriver(Protocol):
     """Describes the slice of the neo4j driver the loader uses."""
 
-    def execute_query(self, query: str, parameters: dict[str, Any], database: str) -> None:
+    def execute_query(self, query_: str, parameters_: dict[str, Any], database_: str) -> object:
         """Executes one Cypher statement with parameters.
 
+        The trailing underscores match the real driver, which reserves bare
+        keyword names for Cypher parameters: a plain database= is sent to the
+        server as a query parameter rather than selecting the database.
+
         Args:
-            query: Cypher statement to run.
-            parameters: Query parameters, including the rows payload.
-            database: Target database name.
+            query_: Cypher statement to run.
+            parameters_: Query parameters, including the rows payload.
+            database_: Target database name.
+
+        Returns:
+            result: Whatever the driver returns; the loader ignores it.
         """
         ...
 
@@ -175,9 +182,13 @@ class Neo4jLoader:
             return
         from neo4j import GraphDatabase  # local import: optional dependency
 
-        self._driver = GraphDatabase.driver(
+        driver = GraphDatabase.driver(
             self.config.uri, auth=(self.config.user, self.config.password)
         )
+        # neo4j narrows query_ to LiteralString to keep interpolated Cypher out
+        # of the driver. The protocol cannot say that and still accept the test
+        # doubles, so the real driver is adopted here rather than widened there.
+        self._driver = cast(Neo4jDriver, driver)
 
     def close(self) -> None:
         """Releases the Neo4j driver connection."""
@@ -230,7 +241,7 @@ class Neo4jLoader:
         """
         if self._driver is None:
             raise LoadError("loader is not connected")
-        self._driver.execute_query(query, parameters, database=self.config.database)
+        self._driver.execute_query(query, parameters, database_=self.config.database)
 
     def _write_batch(self, query: str, rows: list[dict[str, Any]], is_node_batch: bool) -> None:
         """Writes one batch of rows, retrying transient driver failures.

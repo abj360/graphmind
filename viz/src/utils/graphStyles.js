@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * graphStyles.js --- cytoscape style builders and layout constants for the viewer
  *  *
@@ -17,10 +16,12 @@
  *  *   buildDimmedStyle(): fades non-matching elements
  *  *   buildEdgeLabelStyle(): edge label styling rules
  *  *   buildHoverStyle(): subtle highlight on hover
- *  *   fontFamilyFor(): consistent font stack token
+ *  *   GRAPH_FONT_FAMILY: consistent font stack token
  *  *   buildCompoundNodeSizing(): degree-scaled node diameters
  *  *   buildEdgeConfidenceColor(): confidence-to-color mapping
  */
+
+export const GRAPH_FONT_FAMILY = "Inter, Segoe UI, system-ui, sans-serif";
 
 export const GRAPH_LAYOUT = {
   name: "cose",
@@ -28,6 +29,8 @@ export const GRAPH_LAYOUT = {
   nodeRepulsion: 8000,
   idealEdgeLength: 120,
   padding: 40,
+  nodeDimensionsIncludeLabels: true,
+  componentSpacing: 120,
 };
 
 export const TYPE_COLORS = {
@@ -62,6 +65,8 @@ export function buildNodeStyle() {
     selector: "node",
     style: {
       label: "data(label)",
+      color: "#c7d3e3",
+      "font-family": GRAPH_FONT_FAMILY,
       "font-size": 10,
       "text-wrap": "wrap",
       "text-max-width": 90,
@@ -114,7 +119,7 @@ export function buildEdgeStyle() {
  */
 export function buildInferredEdgeStyle() {
   return {
-    selector: "edge[inferred]",
+    selector: "edge[?inferred]",
     style: {
       "line-style": "dashed",
       "line-color": "#dee2e6",
@@ -169,7 +174,9 @@ export function buildFullStylesheet() {
     buildNodeStyle(),
     ...buildTypeSelectors(),
     buildEdgeStyle(),
+    buildEdgeConfidenceColor(),
     buildInferredEdgeStyle(),
+    buildSelectedNodeStyle(),
     buildSelfLoopStyle(),
     ...buildParallelEdgeStyles(),
   ];
@@ -237,8 +244,6 @@ export function buildHoverStyle() {
     },
   };
 }
-
-export const GRAPH_FONT_FAMILY = "Inter, Segoe UI, system-ui, sans-serif";
 
 /**
  * Builds degree-scaled node sizing overrides for hub visibility.

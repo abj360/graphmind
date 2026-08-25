@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * GraphViewer.jsx --- Cytoscape.js canvas rendering the knowledge graph
  *  *
@@ -74,6 +73,8 @@ export default function GraphViewer({ graph, onSelectNode }) {
       layout: GRAPH_LAYOUT,
       style: buildFullStylesheet(),
       wheelSensitivity: 0.2,
+      minZoom: 0.15,
+      maxZoom: 2,
     });
     if (onSelectNode) {
       cy.on("tap", "node", (event) => onSelectNode(event.target.data()));
@@ -349,7 +350,9 @@ export function pruneDisconnected(graph) {
   const visible = new Set(graph.nodes.map((node) => node.id));
   return {
     nodes: graph.nodes,
-    edges: graph.edges.filter((edge) => visible.has(edge.source) && visible.has(edge.target)),
+    edges: graph.edges.filter(
+      (edge) => visible.has(edge.source) && visible.has(edge.target),
+    ),
   };
 }
 
@@ -360,7 +363,9 @@ export function pruneDisconnected(graph) {
  * @returns keys - Set of source|predicate|target identity strings.
  */
 export function edgeKeySet(edges) {
-  return new Set(edges.map((edge) => `${edge.source}|${edge.predicate}|${edge.target}`));
+  return new Set(
+    edges.map((edge) => `${edge.source}|${edge.predicate}|${edge.target}`),
+  );
 }
 
 /**

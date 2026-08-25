@@ -117,9 +117,11 @@ test("GET /api/metrics/dedup shapes the metrics payload", async () => {
     "count(r) AS total": [
       {
         get: (key) =>
-          ({ total: { toNumber: () => 9 }, predicates: { toNumber: () => 5 }, meanConfidence: 0.8 })[
-            key
-          ],
+          ({
+            total: { toNumber: () => 9 },
+            predicates: { toNumber: () => 5 },
+            meanConfidence: 0.8,
+          })[key],
       },
     ],
     "toLower(n.name) AS folded": [],
@@ -133,9 +135,7 @@ test("GET /api/metrics/dedup shapes the metrics payload", async () => {
 
 test("GET /api/metrics/dedup lists duplicate clusters", async () => {
   const { app } = await makeApp({
-    "toLower(n.name) AS folded": [
-      { get: (key) => (key === "folded" ? "acme" : ["Acme", "ACME"]) },
-    ],
+    "toLower(n.name) AS folded": [{ get: (key) => (key === "folded" ? "acme" : ["Acme", "ACME"]) }],
   });
   const response = await request(app).get("/api/metrics/dedup");
   assert.equal(response.body.duplicates.clusters, 1);

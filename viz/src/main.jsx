@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * main.jsx --- React entrypoint mounting the viewer application
  *  *
