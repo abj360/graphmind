@@ -117,7 +117,7 @@ export function buildEdgeStyle() {
  */
 export function buildInferredEdgeStyle() {
   return {
-    selector: "edge[inferred]",
+    selector: "edge[?inferred]",
     style: {
       "line-style": "dashed",
       "line-color": "#dee2e6",
