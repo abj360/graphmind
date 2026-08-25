@@ -29,6 +29,8 @@ export const GRAPH_LAYOUT = {
   nodeRepulsion: 8000,
   idealEdgeLength: 120,
   padding: 40,
+  nodeDimensionsIncludeLabels: true,
+  componentSpacing: 120,
 };
 
 export const TYPE_COLORS = {
