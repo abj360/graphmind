@@ -73,6 +73,8 @@ export default function GraphViewer({ graph, onSelectNode }) {
       layout: GRAPH_LAYOUT,
       style: buildFullStylesheet(),
       wheelSensitivity: 0.2,
+      minZoom: 0.15,
+      maxZoom: 2,
     });
     if (onSelectNode) {
       cy.on("tap", "node", (event) => onSelectNode(event.target.data()));
