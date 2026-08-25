@@ -175,6 +175,7 @@ export function buildFullStylesheet() {
     ...buildTypeSelectors(),
     buildEdgeStyle(),
     buildInferredEdgeStyle(),
+    buildSelectedNodeStyle(),
     buildSelfLoopStyle(),
     ...buildParallelEdgeStyles(),
   ];
@@ -242,7 +243,6 @@ export function buildHoverStyle() {
     },
   };
 }
-
 
 /**
  * Builds degree-scaled node sizing overrides for hub visibility.
