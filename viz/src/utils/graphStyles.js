@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * graphStyles.js --- cytoscape style builders and layout constants for the viewer
  *  *

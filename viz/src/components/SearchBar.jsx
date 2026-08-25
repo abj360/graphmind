@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * SearchBar.jsx --- search and filter controls for the graph viewer
  *  *

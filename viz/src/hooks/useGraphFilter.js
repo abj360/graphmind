@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * useGraphFilter.js --- hook filtering the visible graph by search text
  *  *

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * GraphViewer.jsx --- Cytoscape.js canvas rendering the knowledge graph
  *  *

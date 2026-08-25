@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * MetricsDashboard.jsx --- dashboard panel showing node/edge dedup metrics
  *  *

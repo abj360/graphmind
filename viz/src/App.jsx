@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * App.jsx --- root component composing viewer, controls, and panels
  *  *

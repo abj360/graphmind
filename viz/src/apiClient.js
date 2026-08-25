@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * apiClient.js --- typed fetch wrappers for the BFF endpoints
  *  *

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * GraphLegend.jsx --- legend mapping entity types to their palette colors
  *  *

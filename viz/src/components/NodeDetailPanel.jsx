@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * NodeDetailPanel.jsx --- side panel showing details of the selected node
  *  *
