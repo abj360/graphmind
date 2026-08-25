@@ -4,7 +4,7 @@
  *  * Contains:
  *  *   GraphLegend: type-to-color legend overlay
  *  *   countByType(): tallies visible nodes per type
- *  *   legendItemId": stable key for legend entries
+ *  *   legendItemId(): stable key for legend entries
  */
 
 import { colorForType } from "../utils/graphStyles.js";
@@ -16,19 +16,20 @@ import { colorForType } from "../utils/graphStyles.js";
  * @returns element - Legend overlay listing present types.
  */
 export default function GraphLegend({ nodes }) {
-  const types = [...new Set(nodes.map((node) => node.type))].sort();
-  if (types.length === 0) {
+  const counts = countByType(nodes);
+  if (counts.length === 0) {
     return null;
   }
   return (
     <ul className="graph-legend">
-      {types.map((type) => (
-        <li key={type}>
+      {counts.map(([type, count]) => (
+        <li key={legendItemId(type)}>
           <span
             className="legend-swatch"
             style={{ backgroundColor: colorForType(type) }}
           />
           {type}
+          <span className="legend-count">{count}</span>
         </li>
       ))}
     </ul>
