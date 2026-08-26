@@ -27,7 +27,7 @@ require_tools() {
 
 wait_for_neo4j() {
     log "waiting for neo4j at ${NEO4J_HOST}:7687"
-    for attempt in $(seq 1 30); do
+    for _ in $(seq 1 30); do
         if cypher-shell -a "bolt://${NEO4J_HOST}:7687" -u "$NEO4J_USER" -p "$NEO4J_PASSWORD" \
             "RETURN 1" >/dev/null 2>&1; then
             log "neo4j is reachable"

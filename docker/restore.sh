@@ -24,7 +24,11 @@ usage() {
 resolve_archive() {
     local requested="$1"
     if [ "$requested" = "latest" ]; then
-        ls -1t "${BACKUP_DIR}"/neo4j-*.tar.gz 2>/dev/null | head -n 1
+        local newest=""
+        for archive in "${BACKUP_DIR}"/neo4j-*.tar.gz; do
+            [ -e "$archive" ] && newest="$archive"
+        done
+        printf '%s\n' "$newest"
     else
         printf '%s\n' "$requested"
     fi
