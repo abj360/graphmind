@@ -9,7 +9,7 @@
 
 </div>
 
-graphmind is a knowledge-graph pipeline that turns a directory of plain text into
+Graphmind is a knowledge-graph pipeline that turns a directory of plain text into
 a queryable property graph in Neo4j. It chunks each document, extracts
 subject–predicate–object triples with an LLM, collapses duplicate entities by
 embedding similarity, infers the bridging relationships between otherwise
