@@ -2,26 +2,27 @@
 
 <img src="docs/media/wordmark.png" alt="graphmind" width="620" />
 
-Reads a folder of plain text, extracts subject–predicate–object triples, resolves
-duplicate entities, infers the bridges between disconnected clusters, loads it all
-into Neo4j, and lets you explore the result.
-
 [![ci](https://github.com/abj360/graphmind/actions/workflows/ci.yml/badge.svg)](https://github.com/abj360/graphmind/actions/workflows/ci.yml)
 [![python](https://img.shields.io/badge/python-3.12+-6f5cf0)](pyproject.toml)
 [![node](https://img.shields.io/badge/node-22-6f5cf0)](api/package.json)
 [![license](https://img.shields.io/badge/license-MIT-6f5cf0)](LICENSE.md)
 
-<br />
-
-<img src="docs/media/viewer-demo.gif" alt="Selecting an entity in the graphmind viewer, then filtering the graph by name" width="900" />
-
 </div>
 
-graphmind turns a directory of plain text files into a browsable property graph
-in Neo4j, with provenance and confidence scores on every edge, embedding-based
-entity deduplication, incremental CDC ingestion that keeps the graph fresh
-without full rebuilds, an Express BFF, and a React + Cytoscape.js viewer for
-interactive exploration.
+graphmind is a knowledge-graph pipeline that turns a directory of plain text into
+a queryable property graph in Neo4j. It chunks each document, extracts
+subject–predicate–object triples with an LLM, collapses duplicate entities by
+embedding similarity, infers the bridging relationships between otherwise
+disconnected clusters, and writes the result as idempotent upserts carrying
+provenance and a confidence score on every edge. CDC polling keeps the graph
+current without a full rebuild, and an Express BFF and React + Cytoscape.js
+viewer make it explorable.
+
+<div align="center">
+
+<img src="docs/media/viewer-demo.gif" alt="Selecting an entity in the graphmind viewer, then filtering the graph by name" width="940" />
+
+</div>
 
 > **Headline metric:** incremental CDC ingestion with upsert-only writes cut
 > graph rebuild time from ~40 minutes (full pipeline re-run) to under 3 minutes
