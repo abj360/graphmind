@@ -9,14 +9,10 @@
 
 </div>
 
-Graphmind is a knowledge-graph pipeline that turns a directory of plain text into
-a queryable property graph in Neo4j. It chunks each document, extracts
-subject–predicate–object triples with an LLM, collapses duplicate entities by
-embedding similarity, infers the bridging relationships between otherwise
-disconnected clusters, and writes the result as idempotent upserts carrying
-provenance and a confidence score on every edge. CDC polling keeps the graph
-current without a full rebuild, and an Express BFF and React + Cytoscape.js
-viewer make it explorable.
+&nbsp;&nbsp;&nbsp;&nbsp;Graphmind is a knowledge-graph pipeline that turns a directory of plain text
+into a queryable Neo4j property graph, extracting subject–predicate–object triples
+with an LLM, collapsing duplicate entities by embedding similarity, and carrying
+provenance and a confidence score on every edge.
 
 <div align="center">
 
