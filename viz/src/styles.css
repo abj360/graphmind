@@ -5,8 +5,8 @@
 body {
   margin: 0;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  background: #0f1620;
-  color: #e9ecef;
+  background: #181818;
+  color: #cccccc;
 }
 
 .app-shell {
@@ -20,8 +20,8 @@ body {
   align-items: center;
   gap: 16px;
   padding: 10px 16px;
-  background: #16202e;
-  border-bottom: 1px solid #223047;
+  background: #202020;
+  border-bottom: 1px solid #2b2b2b;
 }
 
 .app-header h1 {
@@ -44,8 +44,8 @@ body {
 
 .app-sidebar {
   overflow-y: auto;
-  border-left: 1px solid #223047;
-  background: #131c29;
+  border-left: 1px solid #2b2b2b;
+  background: #1e1e1e;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -60,7 +60,7 @@ body {
 .app-status {
   padding: 48px;
   text-align: center;
-  color: #9fb0c7;
+  color: #a0a0a0;
 }
 
 .app-error {
@@ -79,19 +79,19 @@ body {
   flex: 1;
   padding: 6px 10px;
   border-radius: 6px;
-  border: 1px solid #223047;
-  background: #0f1620;
+  border: 1px solid #2b2b2b;
+  background: #181818;
   color: inherit;
 }
 
 .search-input:focus {
-  outline: 2px solid #457b9d;
+  outline: 2px solid #6f5cf0;
   outline-offset: 1px;
 }
 
 .search-count {
   font-size: 12px;
-  color: #9fb0c7;
+  color: #a0a0a0;
   white-space: nowrap;
 }
 
@@ -100,7 +100,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #c9d4e3;
+  color: #cccccc;
 }
 
 .graph-legend {
@@ -110,8 +110,8 @@ body {
   margin: 0;
   padding: 8px 12px;
   list-style: none;
-  background: rgba(19, 28, 41, 0.9);
-  border: 1px solid #223047;
+  background: rgba(24, 24, 24, 0.9);
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
   font-size: 12px;
   display: flex;
@@ -128,8 +128,8 @@ body {
 }
 
 .metrics-panel {
-  background: #16202e;
-  border: 1px solid #223047;
+  background: #202020;
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
   padding: 12px;
 }
@@ -139,7 +139,7 @@ body {
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9fb0c7;
+  color: #a0a0a0;
 }
 
 .metrics-grid {
@@ -151,7 +151,7 @@ body {
 }
 
 .metrics-grid dt {
-  color: #9fb0c7;
+  color: #a0a0a0;
 }
 
 .metrics-grid dd {
@@ -170,7 +170,7 @@ body {
 .metrics-note {
   margin: 8px 0 0;
   font-size: 12px;
-  color: #9fb0c7;
+  color: #a0a0a0;
 }
 
 .metrics-error {
@@ -178,15 +178,15 @@ body {
 }
 
 .detail-panel {
-  background: #16202e;
-  border: 1px solid #223047;
+  background: #202020;
+  border: 1px solid #2b2b2b;
   border-radius: 8px;
   padding: 12px;
   font-size: 13px;
 }
 
 .detail-empty {
-  color: #9fb0c7;
+  color: #a0a0a0;
   text-align: center;
   padding: 24px 12px;
 }
@@ -206,7 +206,7 @@ body {
 .detail-close {
   background: none;
   border: none;
-  color: #9fb0c7;
+  color: #a0a0a0;
   font-size: 18px;
   cursor: pointer;
 }
@@ -220,7 +220,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #457b9d;
+  color: #6f5cf0;
 }
 
 .detail-edges {
@@ -237,16 +237,16 @@ body {
   align-items: baseline;
   gap: 6px;
   padding: 6px 8px;
-  background: #0f1620;
+  background: #181818;
   border-radius: 6px;
 }
 
 .detail-direction {
-  color: #457b9d;
+  color: #6f5cf0;
 }
 
 .detail-predicate {
-  color: #9fb0c7;
+  color: #a0a0a0;
   font-size: 12px;
 }
 
@@ -280,7 +280,7 @@ body {
 
   .app-sidebar {
     border-left: none;
-    border-top: 1px solid #223047;
+    border-top: 1px solid #2b2b2b;
     max-height: 40vh;
   }
 }
@@ -290,17 +290,17 @@ body {
 }
 
 .app-sidebar::-webkit-scrollbar-thumb {
-  background: #223047;
+  background: #2b2b2b;
   border-radius: 4px;
 }
 
 ::selection {
-  background: #457b9d;
+  background: #6f5cf0;
   color: #ffffff;
 }
 
 :focus-visible {
-  outline: 2px solid #457b9d;
+  outline: 2px solid #6f5cf0;
   outline-offset: 1px;
 }
 
@@ -315,9 +315,9 @@ button {
 
 .app-canvas {
   background:
-    radial-gradient(circle at 1px 1px, #1c2940 1px, transparent 0) 0 0 / 24px
+    radial-gradient(circle at 1px 1px, #2b2b2b 1px, transparent 0) 0 0 / 24px
       24px,
-    #0f1620;
+    #141414;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -334,13 +334,13 @@ button {
 }
 
 .detail-edge:hover {
-  background: #16202e;
+  background: #202020;
 }
 
 .search-clear {
   background: none;
   border: none;
-  color: #9fb0c7;
+  color: #a0a0a0;
   font-size: 16px;
   cursor: pointer;
   padding: 0 4px;
@@ -359,7 +359,7 @@ button {
 .legend-count {
   margin-left: auto;
   font-size: 11px;
-  color: #9fb0c7;
+  color: #a0a0a0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -368,12 +368,12 @@ button {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9fb0c7;
+  color: #a0a0a0;
 }
 
 .metrics-refresh {
   font-size: 11px;
-  color: #54657e;
+  color: #6e6e6e;
   text-align: right;
   margin-top: 8px;
 }
@@ -382,13 +382,13 @@ button {
   content: "◇";
   display: block;
   font-size: 28px;
-  color: #223047;
+  color: #2b2b2b;
   margin-bottom: 8px;
 }
 
 .detail-panel a,
 .metrics-panel a {
-  color: #74b3ce;
+  color: #9d8dff;
   text-decoration: none;
 }
 
@@ -416,9 +416,9 @@ button {
 .regex-toggle {
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid #223047;
-  background: #0f1620;
-  color: #54657e;
+  border: 1px solid #2b2b2b;
+  background: #181818;
+  color: #6e6e6e;
   font-family: ui-monospace, monospace;
   font-size: 12px;
   cursor: pointer;
@@ -432,7 +432,7 @@ button {
 .search-help {
   margin: 4px 0 0;
   font-size: 11px;
-  color: #54657e;
+  color: #6e6e6e;
 }
 
 .search-highlight {
@@ -444,9 +444,9 @@ button {
   margin-top: 8px;
   padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid #223047;
-  background: #0f1620;
-  color: #9fb0c7;
+  border: 1px solid #2b2b2b;
+  background: #181818;
+  color: #a0a0a0;
   font-size: 12px;
   cursor: pointer;
 }
@@ -458,7 +458,7 @@ button {
 
 .metrics-refresh-button:not(:disabled):hover {
   color: #ffffff;
-  border-color: #457b9d;
+  border-color: #6f5cf0;
 }
 
 .graph-legend li[data-hidden="true"] {
@@ -479,29 +479,29 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #54657e;
+  color: #6e6e6e;
   pointer-events: none;
 }
 
 .app-sidebar > * + * {
-  border-top: 1px solid #1c2940;
+  border-top: 1px solid #2b2b2b;
   padding-top: 12px;
 }
 
 .app-header .header-meta {
   margin-left: auto;
   font-size: 11px;
-  color: #54657e;
+  color: #6e6e6e;
 }
 
 .graph-canvas .edge-label-halo {
-  text-shadow: 0 0 4px #0f1620;
+  text-shadow: 0 0 4px #181818;
 }
 
 .detail-crosslink {
   margin-top: 8px;
   font-size: 12px;
-  color: #74b3ce;
+  color: #9d8dff;
 }
 
 .visually-hidden {
@@ -516,8 +516,8 @@ button {
 kbd {
   padding: 1px 5px;
   border-radius: 4px;
-  border: 1px solid #223047;
-  background: #16202e;
+  border: 1px solid #2b2b2b;
+  background: #202020;
   font-family: ui-monospace, monospace;
   font-size: 11px;
 }
@@ -530,7 +530,7 @@ kbd {
 
 .detail-panel th {
   text-align: left;
-  color: #9fb0c7;
+  color: #a0a0a0;
   font-weight: normal;
   padding-bottom: 4px;
 }
@@ -539,8 +539,8 @@ kbd {
   position: absolute;
   padding: 6px 10px;
   border-radius: 6px;
-  background: rgba(19, 28, 41, 0.95);
-  border: 1px solid #223047;
+  background: rgba(24, 24, 24, 0.95);
+  border: 1px solid #2b2b2b;
   font-size: 12px;
   pointer-events: none;
   z-index: 10;
@@ -557,7 +557,7 @@ kbd {
 
 .skeleton {
   animation: shimmer 900ms ease-in-out infinite alternate;
-  background: #1c2940;
+  background: #2b2b2b;
   border-radius: 6px;
   min-height: 12px;
 }
@@ -578,7 +578,7 @@ kbd {
 .metrics-buckets {
   margin: 6px 0 0;
   font-size: 11px;
-  color: #54657e;
+  color: #6e6e6e;
 }
 
 @media (min-width: 1600px) {

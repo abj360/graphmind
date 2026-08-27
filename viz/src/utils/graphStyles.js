@@ -65,7 +65,7 @@ export function buildNodeStyle() {
     selector: "node",
     style: {
       label: "data(label)",
-      color: "#c7d3e3",
+      color: "#cccccc",
       "font-family": GRAPH_FONT_FAMILY,
       "font-size": 10,
       "text-wrap": "wrap",
@@ -75,7 +75,7 @@ export function buildNodeStyle() {
       width: 22,
       height: 22,
       "border-width": 1,
-      "border-color": "#1d3557",
+      "border-color": "#2b2b2b",
     },
   };
 }
