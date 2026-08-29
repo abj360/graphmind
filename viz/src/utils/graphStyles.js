@@ -13,6 +13,7 @@
  *  *   buildParallelEdgeStyles(): fanned curves for parallel edges
  *  *   buildFullStylesheet(): composes every style block
  *  *   buildSelectedNodeStyle(): highlight for the selected node
+ *  *   buildFiringStyle(): brightened state for a pulsing node
  *  *   buildDimmedStyle(): fades non-matching elements
  *  *   buildEdgeLabelStyle(): edge label styling rules
  *  *   buildHoverStyle(): subtle highlight on hover
@@ -176,6 +177,7 @@ export function buildFullStylesheet() {
     buildEdgeStyle(),
     buildEdgeConfidenceColor(),
     buildInferredEdgeStyle(),
+    buildFiringStyle(),
     buildSelectedNodeStyle(),
     buildSelfLoopStyle(),
     ...buildParallelEdgeStyles(),
@@ -193,6 +195,26 @@ export function buildSelectedNodeStyle() {
     style: {
       "border-width": 3,
       "border-color": "#e9c46a",
+    },
+  };
+}
+
+/**
+ * Builds the brightened style a node wears while it is pulsing.
+ *
+ * @returns style - Cytoscape style definition for a firing node.
+ */
+export function buildFiringStyle() {
+  return {
+    selector: "node.firing",
+    style: {
+      "border-width": 3,
+      "border-color": "#9d8dff",
+      "overlay-color": "#6f5cf0",
+      "overlay-opacity": 0.28,
+      "overlay-padding": 7,
+      "transition-property": "border-width border-color overlay-opacity",
+      "transition-duration": "420ms",
     },
   };
 }
