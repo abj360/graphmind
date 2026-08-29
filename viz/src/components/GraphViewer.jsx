@@ -30,6 +30,7 @@
 import cytoscape from "cytoscape";
 import { useEffect, useRef } from "react";
 
+import { startMotion } from "../utils/graphMotion.js";
 import { buildFullStylesheet, GRAPH_LAYOUT } from "../utils/graphStyles.js";
 
 /**
@@ -70,7 +71,6 @@ export default function GraphViewer({ graph, onSelectNode }) {
     const cy = cytoscape({
       container: containerRef.current,
       elements: toElements(graph),
-      layout: GRAPH_LAYOUT,
       style: buildFullStylesheet(),
       wheelSensitivity: 0.2,
       minZoom: 0.15,
@@ -84,8 +84,17 @@ export default function GraphViewer({ graph, onSelectNode }) {
         }
       });
     }
+    let stopMotion = () => {};
+    const layout = cy.layout(GRAPH_LAYOUT);
+    layout.one("layoutstop", () => {
+      stopMotion = startMotion(cy);
+    });
+    layout.run();
     cyRef.current = cy;
-    return () => cy.destroy();
+    return () => {
+      stopMotion();
+      cy.destroy();
+    };
   }, [graph, onSelectNode]);
 
   return <div ref={containerRef} className="graph-canvas" />;
