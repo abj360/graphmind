@@ -16,7 +16,7 @@ provenance and a confidence score on every edge.
 
 <div align="center">
 
-<img src="docs/media/viewer-demo.gif" alt="Selecting an entity in the graphmind viewer, then filtering the graph by name" width="940" />
+<img src="docs/media/viewer-demo.gif" alt="The graphmind viewer: the graph drifting and firing, an entity selected, then the graph filtered by name" width="940" />
 
 </div>
 
