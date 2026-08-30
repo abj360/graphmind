@@ -7,14 +7,10 @@
 [![node](https://img.shields.io/badge/node-22-6f5cf0)](api/package.json)
 [![license](https://img.shields.io/badge/license-MIT-6f5cf0)](LICENSE.md)
 
-</div>
-
-&nbsp;&nbsp;&nbsp;&nbsp;Graphmind is a knowledge-graph pipeline that turns a directory of plain text
+Graphmind is a knowledge-graph pipeline that turns a directory of plain text
 into a queryable Neo4j property graph, extracting subject–predicate–object triples
 with an LLM, collapsing duplicate entities by embedding similarity, and carrying
 provenance and a confidence score on every edge.
-
-<div align="center">
 
 <img src="docs/media/viewer-demo.gif" alt="The graphmind viewer: the graph drifting and firing, an entity selected, then the graph filtered by name" width="940" />
 
