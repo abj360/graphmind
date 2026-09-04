@@ -25,6 +25,24 @@ provenance and a confidence score on every edge.
 > graph rebuild time from ~40 minutes (full pipeline re-run) to under 3 minutes
 > on the reference corpus.
 
+## How you use it
+
+1. **Bring the stack up** — `docker compose -f docker/docker-compose.yml up --build`.
+2. **Run the pipeline over your documents** — three steps, each resumable:
+   ```bash
+   python -m extract.triple_extractor --corpus /data/docs --out /out/triples.jsonl
+   python -m resolution.entity_resolver --graph /out/triples.jsonl --out /out/resolved.jsonl
+   python -m load.neo4j_loader --input /out/resolved.jsonl
+   ```
+3. **Explore what it built** — open the viewer on `:5173`, click an entity to open its
+   neighbourhood, or filter by name. Every edge carries a confidence score, and edges
+   the model inferred are drawn dashed so they are never mistaken for extracted fact.
+4. **Query it as a graph.** It is an ordinary Neo4j property graph, so your own Cypher
+   works; the [BFF](#api-bff) serves the same data as JSON if you are building on top.
+
+After the first load, [CDC polling](#incremental-updates-cdc) keeps the graph current
+as documents change, without rebuilding it.
+
 ## Features
 
 - **Sentence-aware text chunking** with configurable size and trailing-context
