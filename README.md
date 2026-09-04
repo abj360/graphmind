@@ -2,10 +2,14 @@
 
 <img src="docs/media/wordmark.png" alt="graphmind" width="620" />
 
-[![ci](https://github.com/abj360/graphmind/actions/workflows/ci.yml/badge.svg)](https://github.com/abj360/graphmind/actions/workflows/ci.yml)
-[![python](https://img.shields.io/badge/python-3.12+-6f5cf0)](pyproject.toml)
-[![node](https://img.shields.io/badge/node-22-6f5cf0)](api/package.json)
-[![license](https://img.shields.io/badge/license-MIT-6f5cf0)](LICENSE.md)
+[![python 3.12+](https://img.shields.io/badge/Python%203.12+-3776AB?logo=python&logoColor=white)](pyproject.toml)
+[![neo4j](https://img.shields.io/badge/Neo4j-4581C3?logo=neo4j&logoColor=white)](load/)
+[![langchain](https://img.shields.io/badge/LangChain-1C3C3C?logo=langchain&logoColor=white)](extract/)
+[![express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white)](api/package.json)
+[![react](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)](viz/package.json)
+[![cytoscape.js](https://img.shields.io/badge/Cytoscape.js-F7931E)](viz/src/components/GraphViewer.jsx)
+[![docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](docker/)
+[![mit](https://img.shields.io/badge/MIT-6f5cf0?logo=opensourceinitiative&logoColor=white)](LICENSE.md)
 
 Graphmind is a knowledge-graph pipeline that turns a directory of plain text
 into a queryable Neo4j property graph, extracting subject–predicate–object triples
